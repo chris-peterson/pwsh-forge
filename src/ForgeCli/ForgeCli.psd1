@@ -50,7 +50,6 @@
 
     FunctionsToExport = @(
         # Providers
-        'Register-ForgeProvider'
         'Get-ForgeProvider'
 
         # Commands
@@ -59,11 +58,5 @@
         'Get-Repo'
     )
 
-    AliasesToExport = @(
-        # TODO: coordinate with GitlabCli removing its short aliases first
-        # 'issue'
-        # 'issues'
-        # 'cr'
-        # 'repo'
-    )
+    AliasesToExport = @()
 }

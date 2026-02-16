@@ -1,38 +1,12 @@
-function Register-ForgeProvider {
-    [CmdletBinding()]
-    [OutputType([void])]
-    param(
-        [Parameter(Mandatory)]
-        [string]
-        $Name,
-
-        [Parameter(Mandatory)]
-        [string[]]
-        $HostPattern,
-
-        [Parameter(Mandatory)]
-        [hashtable]
-        $Commands
-    )
-
-    $global:ForgeProviders[$Name.ToLower()] = @{
-        Name         = $Name
-        HostPatterns = $HostPattern
-        Commands     = $Commands
-    }
-
-    Write-Verbose "ForgeCli: Registered provider '$Name' (patterns: $($HostPattern -join ', '))"
-}
-
 function Find-ForgeProviders {
     <#
     .SYNOPSIS
-    Scans for loaded provider modules that haven't registered yet.
+    Scans for loaded provider modules and registers them.
 
     .DESCRIPTION
-    Handles the case where a provider was imported before ForgeCli.
     Checks each known provider's module name against loaded modules
-    and auto-registers any that are found.
+    and registers any that are found. Handles the case where a
+    provider was imported before ForgeCli.
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Discovers multiple providers')]
     [CmdletBinding()]
@@ -48,11 +22,12 @@ function Find-ForgeProviders {
         $LoadedModule = Get-Module $Known.ModuleName -ErrorAction SilentlyContinue
 
         if ($LoadedModule) {
-            Write-Verbose "ForgeCli: Discovered loaded module '$($Known.ModuleName)', auto-registering..."
-            Register-ForgeProvider `
-                -Name $Known.Name `
-                -HostPattern $Known.HostPatterns `
-                -Commands $Known.Commands
+            Write-Verbose "ForgeCli: Discovered loaded module '$($Known.ModuleName)', registering..."
+            $global:ForgeProviders[$Key] = @{
+                Name         = $Known.Name
+                HostPatterns = $Known.HostPatterns
+                Commands     = $Known.Commands
+            }
         }
     }
 }

@@ -21,9 +21,9 @@ GitHubCli:   calls GitHub API → returns issues
 
 ```powershell
 # Install the forge (dispatch layer) and one or more providers
-Import-Module ./pwsh-forge/src/ForgeCli/ForgeCli.psd1
-Import-Module ./pwsh-github/src/GitHubCli/GitHubCli.psd1   # for GitHub
-Import-Module ./pwsh-gitlab/src/GitlabCli/GitlabCli.psd1   # for GitLab
+Install-Module ForgeCli
+Install-Module GitHubCli    # for GitHub
+Install-Module GitlabCli    # for GitLab
 ```
 
 Import order doesn't matter.  ForgeCli auto-discovers loaded provider
@@ -74,15 +74,6 @@ Get-Issue -Provider github
 Get-ChangeRequest -Provider gitlab
 ```
 
-### Aliases
-
-| Alias     | Command              |
-|-----------|----------------------|
-| `issue`   | `Get-Issue`          |
-| `issues`  | `Get-Issue`          |
-| `cr`      | `Get-ChangeRequest`  |
-| `repo`    | `Get-Repo`           |
-
 ### Diagnostics
 
 ```powershell
@@ -115,26 +106,6 @@ Unrecognized forge host: 'bitbucket.org'
 Currently supported: GitHub, GitLab
 Request support: https://github.com/chris-peterson/pwsh-forge/issues
 ```
-
-## Provider Development
-
-To create a provider for a new forge, your module needs to:
-
-1. Implement the provider commands (e.g., `Get-MyForgeIssue`)
-2. Call `Register-ForgeProvider` on import (if ForgeCli is loaded)
-
-```powershell
-# In your module's initialization:
-if (Get-Command Register-ForgeProvider -ErrorAction SilentlyContinue) {
-    Register-ForgeProvider -Name 'MyForge' -HostPattern 'myforge\.com' -Commands @{
-        'Get-Issue'         = 'Get-MyForgeIssue'
-        'Get-ChangeRequest' = 'Get-MyForgePullRequest'
-        'Get-Repo'          = 'Get-MyForgeRepository'
-    }
-}
-```
-
-The `if` guard ensures your module works standalone without ForgeCli.
 
 ## Terminology
 

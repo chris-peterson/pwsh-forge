@@ -68,7 +68,6 @@ function Resolve-ForgeCommand {
 
 function Get-Issue {
     [CmdletBinding()]
-    [Alias('issue', 'issues')]
     param(
         [Parameter(Position=0)]
         [string]
@@ -189,7 +188,6 @@ function Get-Issue {
 
 function Get-ChangeRequest {
     [CmdletBinding()]
-    [Alias('cr')]
     param(
         [Parameter(Position=0)]
         [string]
@@ -311,7 +309,6 @@ function Get-ChangeRequest {
 
 function Get-Repo {
     [CmdletBinding()]
-    [Alias('repo')]
     param(
         [Parameter(Position=0)]
         [string]
