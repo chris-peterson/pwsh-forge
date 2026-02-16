@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      force_publish_module:
+        description: 'Force publish module (bypass change detection)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install PowerShell modules
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser
+          }
+
+      - name: Run Pester tests
+        id: pester
+        shell: pwsh
+        run: |
+          Import-Module Pester
+          $Config = New-PesterConfiguration
+          $Config.Run.Path = "./tests"
+          $Config.Run.Exit = $false
+          $Config.Run.PassThru = $true
+          $Config.TestResult.Enabled = $true
+          $Config.TestResult.OutputPath = "TestResults.xml"
+          $Config.TestResult.OutputFormat = "JUnitXml"
+          $Result = Invoke-Pester -Configuration $Config
+
+          $Summary = "## Test Results`n`n"
+          $Summary += "| ✅ Passed | ❌ Failed | ⏭️ Skipped | Total |`n"
+          $Summary += "|-----------|-----------|------------|-------|`n"
+          $Summary += "| $($Result.PassedCount) | $($Result.FailedCount) | $($Result.SkippedCount) | $($Result.TotalCount) |`n"
+
+          if ($Result.FailedCount -gt 0) {
+            $Summary += "`n### Failed Tests`n`n"
+            foreach ($test in $Result.Failed) {
+              $Summary += "- **$($test.Name)**`n"
+              $Summary += "  - $($test.ErrorRecord.Exception.Message)`n"
+            }
+          }
+
+          $Summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+          if ($Result.FailedCount -gt 0) {
+            exit 1
+          }
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: test-results
+          path: TestResults.xml
+
+  security:
+    name: Run Security Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          $Results = Invoke-ScriptAnalyzer -Path ./src -Recurse -Settings ./PSScriptAnalyzerSettings.ps1 -ReportSummary
+
+          $Errors = $Results | Where-Object Severity -eq 'Error'
+          $Warnings = $Results | Where-Object Severity -eq 'Warning'
+          $Info = $Results | Where-Object Severity -eq 'Information'
+
+          $Summary = "## Security Analysis Results`n`n"
+          $Summary += "| ❌ Errors | ⚠️ Warnings | ℹ️ Info |`n"
+          $Summary += "|-----------|-------------|---------|`n"
+          $Summary += "| $($Errors.Count) | $($Warnings.Count) | $($Info.Count) |`n`n"
+
+          $Grouped = $Results | Group-Object Severity, RuleName | Sort-Object Count -Descending
+          if ($Grouped) {
+            $Summary += "| Rule | Count |`n"
+            $Summary += "|------|-------|`n"
+            foreach ($g in $Grouped) {
+              $Severity = ($g.Name -split ', ')[0]
+              $Rule = ($g.Name -split ', ')[1]
+              $Icon = switch ($Severity) { 'Error' { '❌' } 'Warning' { '⚠️' } default { 'ℹ️' } }
+              $Summary += "| $Icon ``$Rule`` | $($g.Count) |`n"
+            }
+          }
+
+          $Summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+          $Results | ConvertTo-Json -Depth 5 | Out-File -FilePath SecurityResults.json
+
+          if ($Results) {
+            $Results | Format-Table
+            if ($Errors.Count -gt 0) {
+              Write-Host "Script analysis found errors" -ForegroundColor Red
+              exit 1
+            }
+            if ($Warnings.Count -gt 0) {
+              Write-Host "Script analysis found warnings" -ForegroundColor Yellow
+              exit 2
+            }
+            Write-Host "Script analysis found informational issues only" -ForegroundColor Cyan
+          }
+
+      - name: Upload security results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: security-results
+          path: SecurityResults.json
+
+  release-gate:
+    name: Release Gate
+    needs: [test, security]
+    if: github.event.repository.fork == false && github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    outputs:
+      changes_in_src: ${{ steps.changes.outputs.src }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Detect changes
+        uses: dorny/paths-filter@v3.0.2
+        id: changes
+        with:
+          filters: |
+            src:
+              - 'src/**'
+      - run: echo "All checks passed, proceeding with deployment"
+
+  publish-module:
+    name: Publish Module
+    needs: release-gate
+    if: needs.release-gate.outputs.changes_in_src == 'true' || inputs.force_publish_module == true
+    runs-on: ubuntu-latest
+    environment:
+      name: PowerShell Gallery
+      url: https://www.powershellgallery.com/packages/ForgeCli
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Publish PowerShell Module
+        uses: chris-peterson/publish-powershell-modules@v1
+        with:
+          ApiKey: ${{ secrets.PSGALLERY_API_KEY }}
