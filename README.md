@@ -1,6 +1,6 @@
 # pwsh-forge
 
-Unified PowerShell interface for GitHub, GitLab, and other software forges.
+Unified PowerShell interface for GitHub, GitLab, and other ["forges"](https://en.wikipedia.org/wiki/Forge_(software))
 
 Use the same commands regardless of which platform hosts your code.
 ForgeCli detects your git remote and routes to the right provider.
@@ -8,8 +8,8 @@ ForgeCli detects your git remote and routes to the right provider.
 ## How It Works
 
 ForgeCli is a thin dispatch layer.  It doesn't talk to any API directly.
-Instead, provider modules (GitHubCli, GitlabCli) do the real work.
-ForgeCli just figures out which one to call.
+Instead, provider modules (`GitHubCli`, `GitlabCli`) do the real work.
+`ForgeCli` just proxies cmdlets
 
 ```
 You run:     Get-Issue
@@ -26,12 +26,9 @@ Install-Module GitHubCli    # for GitHub
 Install-Module GitlabCli    # for GitLab
 ```
 
-Import order doesn't matter.  ForgeCli auto-discovers loaded provider
-modules on first use.
-
 ### Profile Setup
 
-Add to your `$PROFILE` for persistent use:
+Add to your `$PROFILE`
 
 ```powershell
 Import-Module GitHubCli    # if you use GitHub
@@ -74,16 +71,7 @@ Get-Issue -Provider github
 Get-ChangeRequest -Provider gitlab
 ```
 
-### Diagnostics
-
-```powershell
-# See which providers are registered
-Get-ForgeProvider
-```
-
 ## Error Messages
-
-ForgeCli gives actionable errors depending on the situation:
 
 **No providers installed:**
 ```
