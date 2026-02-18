@@ -159,9 +159,9 @@ function Get-Issue {
                     'all'    { $null }
                 }
             }
-            if ($Labels)    { Write-Warning "Get-Issue -Labels is not yet supported by the GitLab provider" }
-            if ($Sort)      { Write-Warning "Get-Issue -Sort is not yet supported by the GitLab provider" }
-            if ($Direction) { Write-Warning "Get-Issue -Direction is not yet supported by the GitLab provider" }
+            if ($Labels)    { Write-Warning "Get-Issue -Labels is not yet supported by the Gitlab provider" }
+            if ($Sort)      { Write-Warning "Get-Issue -Sort is not yet supported by the Gitlab provider" }
+            if ($Direction) { Write-Warning "Get-Issue -Direction is not yet supported by the Gitlab provider" }
         }
         default {
             # Unknown provider: best-effort pass-through
@@ -254,7 +254,7 @@ function Get-ChangeRequest {
                     'merged' { 'closed' }
                 }
                 if ($State -eq 'merged') {
-                    Write-Warning "GitHub does not have a 'merged' state filter; using 'closed' instead"
+                    Write-Warning "Github does not have a 'merged' state filter; using 'closed' instead"
                 }
             }
             if ($Mine)         { $Params.Mine      = $true }
@@ -262,9 +262,9 @@ function Get-ChangeRequest {
             if ($TargetBranch) { $Params.Base        = $TargetBranch }
             if ($MaxPages)     { $Params.MaxPages    = $MaxPages }
             if ($All)          { $Params.All         = $true }
-            if ($Author)       { Write-Warning "Get-ChangeRequest -Author is not yet supported by the GitHub provider" }
-            if ($IsDraft)      { Write-Warning "Get-ChangeRequest -IsDraft is not yet supported by the GitHub provider" }
-            if ($Since)        { Write-Warning "Get-ChangeRequest -Since is not yet supported by the GitHub provider" }
+            if ($Author)       { Write-Warning "Get-ChangeRequest -Author is not yet supported by the Github provider" }
+            if ($IsDraft)      { Write-Warning "Get-ChangeRequest -IsDraft is not yet supported by the Github provider" }
+            if ($Since)        { Write-Warning "Get-ChangeRequest -Since is not yet supported by the Github provider" }
         }
         'gitlab' {
             if ($Id)           { $Params.MergeRequestId = $Id }
@@ -284,7 +284,7 @@ function Get-ChangeRequest {
                     'merged' { 'merged' }
                 }
             }
-            if ($TargetBranch) { Write-Warning "Get-ChangeRequest -TargetBranch is not yet supported by the GitLab provider" }
+            if ($TargetBranch) { Write-Warning "Get-ChangeRequest -TargetBranch is not yet supported by the Gitlab provider" }
         }
         default {
             $AllParams = @{}
@@ -299,6 +299,222 @@ function Get-ChangeRequest {
             if ($Since)        { $AllParams.Since        = $Since }
             if ($MaxPages)     { $AllParams.MaxPages     = $MaxPages }
             if ($All)          { $AllParams.All          = $true }
+            Invoke-ForgeCommand -TargetCommand $Target.Command -Parameters $AllParams
+            return
+        }
+    }
+
+    & $Target.Command @Params
+}
+
+function Get-Branch {
+    [CmdletBinding()]
+    param(
+        [Parameter(Position=0)]
+        [string]
+        $Name,
+
+        [Parameter()]
+        [switch]
+        $Protected,
+
+        [Parameter()]
+        [string]
+        $Search,
+
+        [Parameter()]
+        [uint]
+        $MaxPages,
+
+        [switch]
+        [Parameter()]
+        $All,
+
+        [Parameter()]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Branch' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.ProviderName) {
+        'github' {
+            if ($Name)      { $Params.Name      = $Name }
+            if ($Protected) { $Params.Protected  = $true }
+            if ($MaxPages)  { $Params.MaxPages   = $MaxPages }
+            if ($All)       { $Params.All        = $true }
+            if ($Search)    { Write-Warning "Get-Branch -Search is not supported by the Github provider; use -Name for exact match" }
+        }
+        'gitlab' {
+            if ($Name)      { $Params.Ref        = $Name }
+            if ($Search)    { $Params.Search     = $Search }
+            if ($MaxPages)  { $Params.MaxPages   = $MaxPages }
+            if ($All)       { $Params.All        = $true }
+            if ($Protected) { Write-Warning "Get-Branch -Protected is not supported by the Gitlab provider; use Get-GitlabProtectedBranch" }
+        }
+        default {
+            $AllParams = @{}
+            if ($Name)      { $AllParams.Name      = $Name }
+            if ($Protected) { $AllParams.Protected  = $true }
+            if ($Search)    { $AllParams.Search     = $Search }
+            if ($MaxPages)  { $AllParams.MaxPages   = $MaxPages }
+            if ($All)       { $AllParams.All        = $true }
+            Invoke-ForgeCommand -TargetCommand $Target.Command -Parameters $AllParams
+            return
+        }
+    }
+
+    & $Target.Command @Params
+}
+
+function Get-Release {
+    [CmdletBinding()]
+    param(
+        [Parameter(Position=0)]
+        [string]
+        $Tag,
+
+        [Parameter()]
+        [switch]
+        $Latest,
+
+        [Parameter()]
+        [uint]
+        $MaxPages,
+
+        [switch]
+        [Parameter()]
+        $All,
+
+        [Parameter()]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Release' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.ProviderName) {
+        'github' {
+            if ($Tag)      { $Params.Tag      = $Tag }
+            if ($Latest)   { $Params.Latest   = $true }
+            if ($MaxPages) { $Params.MaxPages = $MaxPages }
+            if ($All)      { $Params.All      = $true }
+        }
+        'gitlab' {
+            if ($Tag)      { $Params.Tag      = $Tag }
+            if ($MaxPages) { $Params.MaxPages = $MaxPages }
+            if ($All)      { $Params.All      = $true }
+            if ($Latest)   { Write-Warning "Get-Release -Latest is not supported by the Gitlab provider" }
+        }
+        default {
+            $AllParams = @{}
+            if ($Tag)      { $AllParams.Tag      = $Tag }
+            if ($Latest)   { $AllParams.Latest   = $true }
+            if ($MaxPages) { $AllParams.MaxPages = $MaxPages }
+            if ($All)      { $AllParams.All      = $true }
+            Invoke-ForgeCommand -TargetCommand $Target.Command -Parameters $AllParams
+            return
+        }
+    }
+
+    & $Target.Command @Params
+}
+
+function Get-User {
+    [CmdletBinding()]
+    param(
+        [Parameter(Position=0)]
+        [string]
+        $Username,
+
+        [Parameter()]
+        [switch]
+        $Me,
+
+        [Parameter()]
+        [string]
+        $Select,
+
+        [Parameter()]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-User' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.ProviderName) {
+        'github' {
+            if ($Username) { $Params.Username = $Username }
+            if ($Me)       { $Params.Me       = $true }
+            if ($Select)   { $Params.Select   = $Select }
+        }
+        'gitlab' {
+            if ($Username) { $Params.UserId   = $Username }
+            if ($Me)       { $Params.Me       = $true }
+            if ($Select)   { $Params.Select   = $Select }
+        }
+        default {
+            $AllParams = @{}
+            if ($Username) { $AllParams.Username = $Username }
+            if ($Me)       { $AllParams.Me       = $true }
+            if ($Select)   { $AllParams.Select   = $Select }
+            Invoke-ForgeCommand -TargetCommand $Target.Command -Parameters $AllParams
+            return
+        }
+    }
+
+    & $Target.Command @Params
+}
+
+function Get-Group {
+    [CmdletBinding()]
+    param(
+        [Parameter(Position=0)]
+        [string]
+        $Name,
+
+        [Parameter()]
+        [switch]
+        $Mine,
+
+        [Parameter()]
+        [uint]
+        $MaxPages,
+
+        [switch]
+        [Parameter()]
+        $All,
+
+        [Parameter()]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Group' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.ProviderName) {
+        'github' {
+            if ($Name)     { $Params.Name     = $Name }
+            if ($Mine)     { $Params.Mine     = $true }
+            if ($MaxPages) { $Params.MaxPages = $MaxPages }
+            if ($All)      { $Params.All      = $true }
+        }
+        'gitlab' {
+            if ($Name)     { $Params.GroupId  = $Name }
+            if ($MaxPages) { $Params.MaxPages = $MaxPages }
+            if ($All)      { $Params.All      = $true }
+            if ($Mine)     { Write-Warning "Get-Group -Mine is not directly supported by the Gitlab provider" }
+        }
+        default {
+            $AllParams = @{}
+            if ($Name)     { $AllParams.Name     = $Name }
+            if ($Mine)     { $AllParams.Mine     = $true }
+            if ($MaxPages) { $AllParams.MaxPages = $MaxPages }
+            if ($All)      { $AllParams.All      = $true }
             Invoke-ForgeCommand -TargetCommand $Target.Command -Parameters $AllParams
             return
         }
@@ -354,7 +570,7 @@ function Get-Repo {
             if ($Select)   { $Params.Select        = $Select }
             if ($MaxPages) { $Params.MaxPages      = $MaxPages }
             if ($All)      { $Params.All           = $true }
-            if ($IncludeArchived) { Write-Warning "Get-Repo -IncludeArchived is not applicable to GitHub" }
+            if ($IncludeArchived) { Write-Warning "Get-Repo -IncludeArchived is not applicable to Github" }
         }
         'gitlab' {
             if ($Id)       { $Params.ProjectId      = $Id }

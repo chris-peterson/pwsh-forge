@@ -8,13 +8,13 @@ ForgeCli detects your git remote and routes to the right provider.
 ## How It Works
 
 ForgeCli is a thin dispatch layer.  It doesn't talk to any API directly.
-Instead, provider modules (`GitHubCli`, `GitlabCli`) do the real work.
+Instead, provider modules (GitHubCli, GitlabCli) do the real work.
 `ForgeCli` just proxies cmdlets
 
 ```
 You run:     Get-Issue
-ForgeCli:    reads git remote → github.com → routes to GitHubCli
-GitHubCli:   calls GitHub API → returns issues
+ForgeCli:    reads git remote → github.com → routes to GithubCli
+GithubCli:   calls Github API → returns issues
 ```
 
 ## Installation
@@ -22,7 +22,7 @@ GitHubCli:   calls GitHub API → returns issues
 ```powershell
 # Install the forge (dispatch layer) and one or more providers
 Install-Module ForgeCli
-Install-Module GitHubCli    # for GitHub
+Install-Module GithubCli    # for GitHub
 Install-Module GitlabCli    # for GitLab
 ```
 
@@ -31,7 +31,7 @@ Install-Module GitlabCli    # for GitLab
 Add to your `$PROFILE`
 
 ```powershell
-Import-Module GitHubCli    # if you use GitHub
+Import-Module GithubCli    # if you use GitHub
 Import-Module GitlabCli    # if you use GitLab
 Import-Module ForgeCli     # unified interface (can go anywhere in the list)
 ```
@@ -77,21 +77,21 @@ Get-ChangeRequest -Provider gitlab
 ```
 No forge providers are registered.
 Install and import a provider module, then re-import ForgeCli.
-  GitHub: Install-Module GitHubCli
-  GitLab: Install-Module GitlabCli
+  Github: Install-Module GithubCli
+  Gitlab: Install-Module GitlabCli
 ```
 
 **Wrong provider for the current repo:**
 ```
-This is a GitHub repository, but the GitHub provider is not loaded.
-  Install-Module GitHubCli
-  Import-Module GitHubCli
+This is a Github repository, but the Github provider is not loaded.
+  Install-Module GithubCli
+  Import-Module GithubCli
 ```
 
 **Unrecognized forge:**
 ```
 Unrecognized forge host: 'bitbucket.org'
-Currently supported: GitHub, GitLab
+Currently supported: Github, Gitlab
 Request support: https://github.com/chris-peterson/pwsh-forge/issues
 ```
 
@@ -104,6 +104,6 @@ and rationale (e.g., why "ChangeRequest" instead of "PullRequest" or "MergeReque
 
 | Module | Purpose |
 |--------|---------|
-| **pwsh-forge** | Unified dispatch layer (this module) |
+| **pwsh-forge** | :arrow_left: this module |
 | [pwsh-github](https://github.com/chris-peterson/pwsh-github) | GitHub provider |
 | [pwsh-gitlab](https://github.com/chris-peterson/pwsh-gitlab) | GitLab provider |

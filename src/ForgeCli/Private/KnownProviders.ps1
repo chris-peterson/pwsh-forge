@@ -8,24 +8,32 @@
 
 $global:ForgeKnownProviders = @{
     'github' = @{
-        Name         = 'GitHub'
-        ModuleName   = 'GitHubCli'
+        Name         = 'Github'
+        ModuleName   = 'GithubCli'
         HostPatterns = @('github')
         Commands     = @{
-            'Get-Issue'         = 'Get-GitHubIssue'
-            'Get-ChangeRequest' = 'Get-GitHubPullRequest'
-            'Get-Repo'          = 'Get-GitHubRepository'
+            'Get-Branch'        = 'Get-GithubBranch'
+            'Get-ChangeRequest' = 'Get-GithubPullRequest'
+            'Get-Group'         = 'Get-GithubOrganization'
+            'Get-Issue'         = 'Get-GithubIssue'
+            'Get-Release'       = 'Get-GithubRelease'
+            'Get-Repo'          = 'Get-GithubRepository'
+            'Get-User'          = 'Get-GithubUser'
         }
-        InstallHint  = 'Install-Module GitHubCli  # https://github.com/chris-peterson/pwsh-github'
+        InstallHint  = 'Install-Module GithubCli  # https://github.com/chris-peterson/pwsh-github'
     }
     'gitlab' = @{
-        Name         = 'GitLab'
+        Name         = 'Gitlab'
         ModuleName   = 'GitlabCli'
         HostPatterns = @('gitlab')
         Commands     = @{
-            'Get-Issue'         = 'Get-GitlabIssue'
+            'Get-Branch'        = 'Get-GitlabBranch'
             'Get-ChangeRequest' = 'Get-GitlabMergeRequest'
+            'Get-Group'         = 'Get-GitlabGroup'
+            'Get-Issue'         = 'Get-GitlabIssue'
+            'Get-Release'       = 'Get-GitlabRelease'
             'Get-Repo'          = 'Get-GitlabProject'
+            'Get-User'          = 'Get-GitlabUser'
         }
         InstallHint  = 'Install-Module GitlabCli  # https://github.com/chris-peterson/pwsh-gitlab'
     }

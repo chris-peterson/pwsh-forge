@@ -1,13 +1,13 @@
 @{
-    ModuleVersion = '0.1.0'
+    ModuleVersion = '0.2.0'
 
     PrivateData = @{
         PSData = @{
             LicenseUri = 'https://github.com/chris-peterson/pwsh-forge/blob/main/LICENSE'
             ProjectUri = 'https://github.com/chris-peterson/pwsh-forge'
             Tags = @(
-                'GitHub',
-                'GitLab',
+                'Github',
+                'Gitlab',
                 'Forge',
                 'Git',
                 'API',
@@ -22,8 +22,16 @@
             )
             ReleaseNotes =
 @'
-* Initial plugin architecture with provider registration and dispatch
-* Unified commands: Get-Issue, Get-ChangeRequest, Get-Repo
+Initial plugin architecture with provider registration and dispatch
+
+Supported Cmdlets:
+* Get-Branch
+* Get-ChangeRequest
+* Get-Group
+* Get-Issue
+* Get-Release
+* Get-Repo
+* Get-User
 '@
         }
     }
@@ -53,9 +61,13 @@
         'Get-ForgeProvider'
 
         # Commands
-        'Get-Issue'
+        'Get-Branch'
         'Get-ChangeRequest'
+        'Get-Group'
+        'Get-Issue'
+        'Get-Release'
         'Get-Repo'
+        'Get-User'
     )
 
     AliasesToExport = @()

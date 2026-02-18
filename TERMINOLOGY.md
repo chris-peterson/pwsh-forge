@@ -2,13 +2,13 @@
 
 Cross-platform terminology mapping for the unified PowerShell Git interface.
 
-GitHub and GitLab use different names for the same concepts.
+Github and Gitlab use different names for the same concepts.
 This document is the source of truth for how platform-specific terms
 map to the **common terms** used by ForgeCli.
 
 ## Core Resources
 
-| Common Term        | GitHub             | GitLab             | Notes                                                              |
+| Common Term        | Github             | Gitlab             | Notes                                                              |
 |--------------------|--------------------|--------------------|---------------------------------------------------------------------|
 | **Repo**           | Repository         | Project            | The code container. See [naming rationale](#why-repo).              |
 | **ChangeRequest**  | Pull Request       | Merge Request      | The code review unit. See [naming rationale](#why-changerequest).   |
@@ -25,9 +25,9 @@ map to the **common terms** used by ForgeCli.
 
 ### Repo
 
-Maps to: `GitHub.Repository` / `GitLab.Project`
+Maps to: `Github.Repository` / `Gitlab.Project`
 
-| Common Property    | GitHub                | GitLab                    |
+| Common Property    | Github                | Gitlab                    |
 |--------------------|-----------------------|---------------------------|
 | Id                 | `id`                  | `id`                      |
 | Name               | `name`                | `name`                    |
@@ -41,9 +41,9 @@ Maps to: `GitHub.Repository` / `GitLab.Project`
 
 ### ChangeRequest
 
-Maps to: `GitHub.PullRequest` / `GitLab.MergeRequest`
+Maps to: `Github.PullRequest` / `Gitlab.MergeRequest`
 
-| Common Property    | GitHub                | GitLab                    |
+| Common Property    | Github                | Gitlab                    |
 |--------------------|-----------------------|---------------------------|
 | Id                 | `number`              | `iid`                     |
 | Title              | `title`               | `title`                   |
@@ -60,7 +60,7 @@ Maps to: `GitHub.PullRequest` / `GitLab.MergeRequest`
 
 ### Issue
 
-| Common Property    | GitHub                | GitLab                    |
+| Common Property    | Github                | Gitlab                    |
 |--------------------|-----------------------|---------------------------|
 | Id                 | `number`              | `iid`                     |
 | Title              | `title`               | `title`                   |
@@ -79,9 +79,9 @@ Maps to: `GitHub.PullRequest` / `GitLab.MergeRequest`
 
 "Repo" is how developers actually talk about their code containers.
 Both "repository" and "project" carry platform-specific baggage:
-- **GitHub** uses "repository" as the primary resource but reserves
+- **Github** uses "repository" as the primary resource but reserves
   "project" for its project-board feature (Projects v2)
-- **GitLab** uses "project" as the primary resource, with "repository"
+- **Gitlab** uses "project" as the primary resource, with "repository"
   referring to the underlying git storage
 
 "Repo" sidesteps both collisions. It aligns with everyday developer
@@ -89,25 +89,25 @@ language ("clone this repo", "which repo is that in?") and is shorter
 than either formal name.
 
 The mapping is explicit:
-- `Get-Repo` dispatches to `Get-GitHubRepository` or `Get-GitlabProject`
+- `Get-Repo` dispatches to `Get-GithubRepository` or `Get-GitlabProject`
 
 ### Why "ChangeRequest"
 
 Neither "pull request" nor "merge request" is neutral:
-- "Pull request" is GitHub-specific, originating from the fork-and-pull model
-- "Merge request" is GitLab/Gitea terminology
+- "Pull request" is Github-specific, originating from the fork-and-pull model
+- "Merge request" is Gitlab/Gitea terminology
 
 "ChangeRequest" describes what the entity actually is: a request to
 review and accept a set of changes. It's platform-neutral and
 self-documenting. The `cr` alias keeps it terse.
 
 The mapping is explicit:
-- `Get-ChangeRequest` dispatches to `Get-GitHubPullRequest` or `Get-GitlabMergeRequest`
+- `Get-ChangeRequest` dispatches to `Get-GithubPullRequest` or `Get-GitlabMergeRequest`
 
 ### Why "Group" over "Organization"
 
-"Group" is more generic and applies beyond GitHub's org model.
-GitLab groups can be nested; GitHub orgs cannot. "Group" works as
+"Group" is more generic and applies beyond Github's org model.
+Gitlab groups can be nested; Github orgs cannot. "Group" works as
 an abstraction over both.
 
 ## Unified Command Surface
@@ -115,13 +115,15 @@ an abstraction over both.
 ForgeCli uses the common terms for command names, dispatching to the
 provider-specific command based on git remote context:
 
-| ForgeCli Command        | GitHub Provider            | GitLab Provider             |
+| ForgeCli Command        | Github Provider            | Gitlab Provider             |
 |-------------------------|----------------------------|-----------------------------|
-| `Get-Repo`              | `Get-GitHubRepository`     | `Get-GitlabProject`         |
-| `Get-Issue`             | `Get-GitHubIssue`          | `Get-GitlabIssue`           |
-| `Get-ChangeRequest`     | `Get-GitHubPullRequest`    | `Get-GitlabMergeRequest`    |
-| `Get-Group`             | *(future)*                 | `Get-GitlabGroup`           |
+| `Get-Branch`            | `Get-GithubBranch`         | `Get-GitlabBranch`          |
+| `Get-ChangeRequest`     | `Get-GithubPullRequest`    | `Get-GitlabMergeRequest`    |
+| `Get-Group`             | `Get-GithubOrganization`   | `Get-GitlabGroup`           |
+| `Get-Issue`             | `Get-GithubIssue`          | `Get-GitlabIssue`           |
+| `Get-Release`           | `Get-GithubRelease`        | `Get-GitlabRelease`         |
+| `Get-Repo`              | `Get-GithubRepository`     | `Get-GitlabProject`         |
+| `Get-User`              | `Get-GithubUser`           | `Get-GitlabUser`            |
 
-Provider detection uses `Get-LocalGitContext` which reads the git remote
-to determine whether the current directory is a GitHub or GitLab repo.
-Providers register their command mappings via `Register-ForgeProvider`.
+Provider detection reads the git remote to determine whether the current
+directory is a Github or Gitlab repo, then routes to the appropriate provider.

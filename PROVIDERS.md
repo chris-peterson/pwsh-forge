@@ -6,7 +6,7 @@ The mapping code lives inline in each command in
 
 ## Get-Issue
 
-| Common Param   | GitHub                | GitLab                  |
+| Common Param   | Github                | Gitlab                  |
 |----------------|-----------------------|-------------------------|
 | `-Id`          | `-IssueNumber`        | `-IssueId`              |
 | `-State open`  | `-State open`         | `-State opened`         |
@@ -25,7 +25,7 @@ The mapping code lives inline in each command in
 
 ## Get-ChangeRequest
 
-| Common Param     | GitHub                  | GitLab                  |
+| Common Param     | Github                  | Gitlab                  |
 |------------------|-------------------------|-------------------------|
 | `-Id`            | `-PullRequestNumber`    | `-MergeRequestId`       |
 | `-State open`    | `-State open`           | `-State opened`         |
@@ -44,7 +44,7 @@ The mapping code lives inline in each command in
 
 ## Get-Repo
 
-| Common Param       | GitHub                | GitLab                |
+| Common Param       | Github                | Gitlab                |
 |--------------------|-----------------------|-----------------------|
 | `-Id`              | `-Repository`         | `-ProjectId`          |
 | `-Mine`            | `-Mine`               | `-Mine`               |
@@ -54,9 +54,45 @@ The mapping code lives inline in each command in
 | `-MaxPages`        | `-MaxPages`           | `-MaxPages`           |
 | `-All`             | `-All`                | `-All`                |
 
+## Get-Branch
+
+| Common Param   | Github                | Gitlab                  |
+|----------------|-----------------------|-------------------------|
+| `-Name`        | `-Name`               | `-Ref`                  |
+| `-Protected`   | `-Protected`          | not supported (use `Get-GitlabProtectedBranch`) |
+| `-Search`      | not supported         | `-Search`               |
+| `-MaxPages`    | `-MaxPages`           | `-MaxPages`             |
+| `-All`         | `-All`                | `-All`                  |
+
+## Get-Release
+
+| Common Param   | Github                | Gitlab                  |
+|----------------|-----------------------|-------------------------|
+| `-Tag`         | `-Tag`                | `-Tag`                  |
+| `-Latest`      | `-Latest`             | not supported           |
+| `-MaxPages`    | `-MaxPages`           | `-MaxPages`             |
+| `-All`         | `-All`                | `-All`                  |
+
+## Get-User
+
+| Common Param   | Github                | Gitlab                  |
+|----------------|-----------------------|-------------------------|
+| `-Username`    | `-Username`           | `-UserId`               |
+| `-Me`          | `-Me`                 | `-Me`                   |
+| `-Select`      | `-Select`             | `-Select`               |
+
+## Get-Group
+
+| Common Param   | Github                | Gitlab                  |
+|----------------|-----------------------|-------------------------|
+| `-Name`        | `-Name`               | `-GroupId`              |
+| `-Mine`        | `-Mine`               | not directly supported  |
+| `-MaxPages`    | `-MaxPages`           | `-MaxPages`             |
+| `-All`         | `-All`                | `-All`                  |
+
 ## Adding Support
 
-When a cell says "not yet supported", the forge command will emit a
+When a cell says "not supported", the forge command will emit a
 warning at runtime. To fix it, add the mapping in the provider's
 `switch` block in [Forge.psm1](src/ForgeCli/Forge.psm1) and update
 this table.
