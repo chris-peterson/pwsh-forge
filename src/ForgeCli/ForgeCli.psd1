@@ -22,16 +22,24 @@
             )
             ReleaseNotes =
 @'
-Initial plugin architecture with provider registration and dispatch
+Plugin architecture with provider registration and dispatch
 
 Supported Cmdlets:
+* Close-Issue
 * Get-Branch
 * Get-ChangeRequest
+* Get-Commit
 * Get-Group
 * Get-Issue
 * Get-Release
 * Get-Repo
 * Get-User
+* Merge-ChangeRequest
+* New-ChangeRequest
+* New-Issue
+* New-Repo
+* Search-Repo
+* Update-Issue
 '@
         }
     }
@@ -61,13 +69,21 @@ Supported Cmdlets:
         'Get-ForgeProvider'
 
         # Commands
+        'Close-Issue'
         'Get-Branch'
         'Get-ChangeRequest'
+        'Get-Commit'
         'Get-Group'
         'Get-Issue'
         'Get-Release'
         'Get-Repo'
         'Get-User'
+        'Merge-ChangeRequest'
+        'New-ChangeRequest'
+        'New-Issue'
+        'New-Repo'
+        'Search-Repo'
+        'Update-Issue'
     )
 
     AliasesToExport = @()
