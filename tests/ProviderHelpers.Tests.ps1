@@ -16,6 +16,16 @@ Describe "Get-ForgeProvider" {
         $Result | Should -BeNullOrEmpty
         $warnings | Should -Not -BeNullOrEmpty
     }
+
+    It "Should return registered providers" {
+        $global:ForgeProviders['github'] = $global:ForgeKnownProviders['github']
+        $global:ForgeProviders['gitlab'] = $global:ForgeKnownProviders['gitlab']
+
+        $Result = @(Get-ForgeProvider)
+        $Result.Count | Should -Be 2
+        $Result.Name | Should -Contain 'Github'
+        $Result.Name | Should -Contain 'Gitlab'
+    }
 }
 
 Describe "KnownProviders" {
