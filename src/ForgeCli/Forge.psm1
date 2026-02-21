@@ -579,7 +579,7 @@ function New-Issue {
 }
 
 function Update-Issue {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory, Position=0)]
         [string]
@@ -634,7 +634,9 @@ function Update-Issue {
         }
     }
 
-    & $Target.Command @Params
+    if ($PSCmdlet.ShouldProcess($Id, 'Update Issue')) {
+        & $Target.Command @Params
+    }
 }
 
 function Close-Issue {
