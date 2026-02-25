@@ -44,6 +44,7 @@ function Resolve-ForgeCommand {
         $CommandName,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -121,6 +122,7 @@ function Get-Issue {
         $All,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -236,6 +238,7 @@ function Get-ChangeRequest {
         $All,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -331,6 +334,7 @@ function Get-Branch {
         $All,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -388,6 +392,7 @@ function Get-Release {
         $All,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -438,6 +443,7 @@ function Get-User {
         $Select,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -489,6 +495,7 @@ function Get-Group {
         $All,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -543,6 +550,7 @@ function New-Issue {
         $Labels,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -599,6 +607,7 @@ function Update-Issue {
         $State,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -647,6 +656,7 @@ function Close-Issue {
         $Id,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -699,6 +709,7 @@ function New-ChangeRequest {
         $Draft,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -755,6 +766,7 @@ function Merge-ChangeRequest {
         $DeleteSourceBranch,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -804,6 +816,7 @@ function New-Repo {
         $Visibility,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -868,6 +881,7 @@ function Get-Commit {
         $All,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -932,6 +946,7 @@ function Search-Repo {
         $All,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )
@@ -997,6 +1012,7 @@ function Get-Repo {
         $All,
 
         [Parameter()]
+        [ValidateSet([SupportedProvider])]
         [string]
         $Provider
     )

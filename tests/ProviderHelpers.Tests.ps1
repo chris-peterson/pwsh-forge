@@ -1,4 +1,5 @@
 BeforeAll {
+    . $PSScriptRoot/../src/ForgeCli/Private/Validations.ps1
     . $PSScriptRoot/../src/ForgeCli/Private/KnownProviders.ps1
     . $PSScriptRoot/../src/ForgeCli/Private/Functions/GitHelpers.ps1
     . $PSScriptRoot/../src/ForgeCli/Private/Functions/ProviderHelpers.ps1
@@ -6,21 +7,7 @@ BeforeAll {
 
 Describe "Get-ForgeProvider" {
 
-    BeforeEach {
-        $global:ForgeProviders = @{}
-        Mock Find-ForgeProviders {}
-    }
-
-    It "Should return nothing and warn when no providers are registered" {
-        $Result = Get-ForgeProvider -WarningVariable warnings -WarningAction SilentlyContinue
-        $Result | Should -BeNullOrEmpty
-        $warnings | Should -Not -BeNullOrEmpty
-    }
-
-    It "Should return registered providers" {
-        $global:ForgeProviders['github'] = $global:ForgeKnownProviders['github']
-        $global:ForgeProviders['gitlab'] = $global:ForgeKnownProviders['gitlab']
-
+    It "Should return both providers" {
         $Result = @(Get-ForgeProvider)
         $Result.Count | Should -Be 2
         $Result.Name | Should -Contain 'Github'
@@ -28,20 +15,18 @@ Describe "Get-ForgeProvider" {
     }
 }
 
-Describe "KnownProviders" {
+Describe "ForgeProviders" {
 
-    It "Should define Github as a known provider" {
-        $global:ForgeKnownProviders.ContainsKey('github') | Should -BeTrue
-        $global:ForgeKnownProviders['github'].ModuleName | Should -Be 'GithubCli'
+    It "Should define Github as a provider" {
+        $global:ForgeProviders.ContainsKey('github') | Should -BeTrue
     }
 
-    It "Should define Gitlab as a known provider" {
-        $global:ForgeKnownProviders.ContainsKey('gitlab') | Should -BeTrue
-        $global:ForgeKnownProviders['gitlab'].ModuleName | Should -Be 'GitlabCli'
+    It "Should define Gitlab as a provider" {
+        $global:ForgeProviders.ContainsKey('gitlab') | Should -BeTrue
     }
 
     It "Should map forge commands to provider commands" {
-        $GH = $global:ForgeKnownProviders['github'].Commands
+        $GH = $global:ForgeProviders['github'].Commands
         $GH['Close-Issue'] | Should -Be 'Close-GithubIssue'
         $GH['Get-Branch'] | Should -Be 'Get-GithubBranch'
         $GH['Get-ChangeRequest'] | Should -Be 'Get-GithubPullRequest'
@@ -58,7 +43,7 @@ Describe "KnownProviders" {
         $GH['Search-Repo'] | Should -Be 'Search-GithubRepository'
         $GH['Update-Issue'] | Should -Be 'Update-GithubIssue'
 
-        $GL = $global:ForgeKnownProviders['gitlab'].Commands
+        $GL = $global:ForgeProviders['gitlab'].Commands
         $GL['Close-Issue'] | Should -Be 'Close-GitlabIssue'
         $GL['Get-Branch'] | Should -Be 'Get-GitlabBranch'
         $GL['Get-ChangeRequest'] | Should -Be 'Get-GitlabMergeRequest'

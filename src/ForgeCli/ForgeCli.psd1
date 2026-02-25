@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '0.3.0'
+    ModuleVersion = '0.4.0'
 
     PrivateData = @{
         PSData = @{
@@ -54,7 +54,10 @@ Supported Cmdlets:
     PowerShellVersion = '7.1'
     CompatiblePSEditions = @('Core')
 
+    RequiredModules = @('GithubCli', 'GitlabCli')
+
     ScriptsToProcess = @(
+        'Private/Validations.ps1'
         'Private/KnownProviders.ps1'
         'Private/Functions/GitHelpers.ps1'
         'Private/Functions/ProviderHelpers.ps1'
