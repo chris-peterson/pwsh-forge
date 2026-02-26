@@ -1,8 +1,9 @@
-$global:ForgeCommands = (Import-PowerShellDataFile "$PSScriptRoot/../ForgeCli.psd1").FunctionsToExport
+$global:ForgeCommands = (Import-PowerShellDataFile "$PSScriptRoot/../ForgeCli.psd1").FunctionsToExport |
+    Where-Object { $_ -notlike '*Forge*' }
 
 $global:ForgeProviders = @{
     'github' = @{
-        Module       = 'GitHubCli'
+        Module       = 'GithubCli'
         Prefix       = 'Github'
         HostPatterns = @('github')
         Resource     = @{
