@@ -60,7 +60,7 @@ Supported Cmdlets:
         'Private/Functions/GitHelpers.ps1'
         'Private/Functions/ProviderHelpers.ps1'
     )
-    RootModule = 'Private/Init.ps1'
+    RootModule = 'Private/Init.psm1'
     NestedModules = @(
         'Forge.psm1'
     )
