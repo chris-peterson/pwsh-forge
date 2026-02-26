@@ -20,7 +20,7 @@
                 'Linux',
                 'MacOS'
             )
-            ExternalModuleDependencies = @('GithubCli', 'GitlabCli')
+            ExternalModuleDependencies = @('GitHubCli', 'GitlabCli')
             ReleaseNotes =
 @'
 Plugin architecture with provider registration and dispatch
