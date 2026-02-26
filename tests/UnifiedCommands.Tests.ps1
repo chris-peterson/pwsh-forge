@@ -1,6 +1,6 @@
 BeforeAll {
     . $PSScriptRoot/../src/ForgeCli/Private/Validations.ps1
-    . $PSScriptRoot/../src/ForgeCli/Private/KnownProviders.ps1
+    . $PSScriptRoot/../src/ForgeCli/Private/Init.ps1
     . $PSScriptRoot/../src/ForgeCli/Private/Functions/GitHelpers.ps1
     . $PSScriptRoot/../src/ForgeCli/Private/Functions/ProviderHelpers.ps1
     . ([scriptblock]::Create((Get-Content "$PSScriptRoot/../src/ForgeCli/Forge.psm1" -Raw)))

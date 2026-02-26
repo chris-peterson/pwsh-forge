@@ -1,15 +1,31 @@
-function Get-ForgeProvider {
+function Resolve-ForgeCommand {
+    <#
+    .SYNOPSIS
+    Resolves the provider and returns the target command name.
+    #>
     [CmdletBinding()]
-    [OutputType([PSCustomObject])]
-    param()
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $CommandName,
 
-    foreach ($Key in $global:ForgeProviders.Keys) {
-        $Provider = $global:ForgeProviders[$Key]
-        [PSCustomObject]@{
-            Name         = $Provider.Name
-            HostPatterns = $Provider.HostPatterns -join ', '
-            Commands     = ($Provider.Commands.Keys | Sort-Object) -join ', '
-        }
+        [Parameter()]
+        # [ValidateSet([SupportedProvider])] <-- omitted on purpose, this is a key internal function
+        [string]
+        $Provider
+    )
+
+    $Resolved = Resolve-ForgeProvider -Provider $Provider -CommandName $CommandName
+
+    $TargetCommand = $Resolved.Commands[$CommandName]
+    if (-not $TargetCommand) {
+        $Available = ($Resolved.Commands.Keys | Sort-Object) -join ', '
+        throw "Provider '$($Resolved.Name)' does not support '$CommandName'. Available: $Available"
+    }
+
+    [PSCustomObject]@{
+        Provider = $Resolved.Name
+        Command  = $TargetCommand
     }
 }
 
@@ -25,39 +41,52 @@ function Resolve-ForgeProvider {
         $CommandName
     )
 
+    $Resolved = $null
+
+    # '.' means explicitly infer from git remote
+    if ($Provider -eq '.') { $Provider = '' }
+
     # Explicit provider override
     if ($Provider) {
         $Key = $Provider.ToLower()
         if ($global:ForgeProviders.ContainsKey($Key)) {
-            return $global:ForgeProviders[$Key]
+            $Resolved = $global:ForgeProviders[$Key]
+        } else {
+            throw "Unknown provider: '$Provider'"
         }
-        throw "Unknown provider: '$Provider'"
-    }
-
-    # Auto-detect from git remote
-    $Context = Get-ForgeRemoteHost
-    if (-not $Context.Host) {
-        throw @"
+    } else {
+        # Auto-detect from git remote
+        $Context = Get-ForgeRemoteHost
+        if (-not $Context.Host) {
+            throw @"
 Could not detect a forge provider from the current directory.
 Either cd into a git repository, or specify a provider:
   $CommandName -Provider github
   $CommandName -Provider gitlab
 "@
-    }
-
-    # Match against registered providers
-    foreach ($Key in $global:ForgeProviders.Keys) {
-        $Registered = $global:ForgeProviders[$Key]
-        foreach ($Pattern in $Registered.HostPatterns) {
-            if ($Context.Host -match $Pattern) {
-                return $Registered
-            }
         }
-    }
 
-    $SupportedList = ($global:ForgeProviders.Values | ForEach-Object { $_.Name }) -join ', '
-    throw @"
+        # Match against registered providers
+        foreach ($Key in $global:ForgeProviders.Keys) {
+            $Registered = $global:ForgeProviders[$Key]
+            foreach ($Pattern in $Registered.HostPatterns) {
+                if ($Context.Host -match $Pattern) {
+                    $Resolved = $Registered
+                    break
+                }
+            }
+            if ($Resolved) { break }
+        }
+
+        if (-not $Resolved) {
+            $SupportedList = ($global:ForgeProviders.Keys) -join ', '
+            throw @"
 Unrecognized forge host: '$($Context.Host)'
 Currently supported: $SupportedList
 "@
+        }
+    }
+
+    $Resolved.Name = $Key
+    return $Resolved
 }

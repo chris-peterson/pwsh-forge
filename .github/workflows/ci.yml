@@ -163,4 +163,3 @@ jobs:
         uses: chris-peterson/publish-powershell@main
         with:
           ApiKey: ${{ secrets.PSGALLERY_API_KEY }}
-          SkipValidation: 'true'

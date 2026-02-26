@@ -20,6 +20,7 @@
                 'Linux',
                 'MacOS'
             )
+            ExternalModuleDependencies = @('GithubCli', 'GitlabCli')
             ReleaseNotes =
 @'
 Plugin architecture with provider registration and dispatch
@@ -54,24 +55,17 @@ Supported Cmdlets:
     PowerShellVersion = '7.1'
     CompatiblePSEditions = @('Core')
 
-    RequiredModules = @('GithubCli', 'GitlabCli')
-
     ScriptsToProcess = @(
         'Private/Validations.ps1'
-        'Private/KnownProviders.ps1'
         'Private/Functions/GitHelpers.ps1'
         'Private/Functions/ProviderHelpers.ps1'
     )
-
+    RootModule = 'Private/Init.ps1'
     NestedModules = @(
         'Forge.psm1'
     )
 
     FunctionsToExport = @(
-        # Providers
-        'Get-ForgeProvider'
-
-        # Commands
         'Close-Issue'
         'Get-Branch'
         'Get-ChangeRequest'

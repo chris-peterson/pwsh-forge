@@ -8,13 +8,15 @@ ForgeCli detects your git remote and routes to the right provider.
 ## How It Works
 
 ForgeCli is a thin dispatch layer.  It doesn't talk to any API directly.
-Instead, provider modules (GitHubCli, GitlabCli) do the real work.
-`ForgeCli` just proxies cmdlets
+Instead, provider modules (GithubCli, GitlabCli) do the real work.
+ForgeCli maps each unified command to the provider-specific equivalent
+using a [noun mapping](TERMINOLOGY.md#noun-mapping) (`Repo` → `Repository` / `Project`, etc.)
+and auto-detects the provider from your git remote.
 
 ```
-You run:     Get-Issue
-ForgeCli:    reads git remote → github.com → routes to GithubCli
-GithubCli:   calls Github API → returns issues
+You run:     Get-Repo
+ForgeCli:    reads git remote → github.com → Get-GithubRepository
+GithubCli:   calls Github API → returns repo info
 ```
 
 ## Installation
@@ -31,9 +33,7 @@ Install-Module GitlabCli    # for GitLab
 Add to your `$PROFILE`
 
 ```powershell
-Import-Module GithubCli    # if you use GitHub
-Import-Module GitlabCli    # if you use GitLab
-Import-Module ForgeCli     # unified interface (can go anywhere in the list)
+Import-Module ForgeCli     # auto-imports installed providers (GithubCli, GitlabCli)
 ```
 
 ## Usage
@@ -73,26 +73,20 @@ Get-ChangeRequest -Provider gitlab
 
 ## Error Messages
 
-**No providers installed:**
-```
-No forge providers are registered.
-Install and import a provider module, then re-import ForgeCli.
-  Github: Install-Module GithubCli
-  Gitlab: Install-Module GitlabCli
-```
+**Not in a git repo:**
 
-**Wrong provider for the current repo:**
-```
-This is a Github repository, but the Github provider is not loaded.
-  Install-Module GithubCli
-  Import-Module GithubCli
+```text
+Could not detect a forge provider from the current directory.
+Either cd into a git repository, or specify a provider:
+  Get-Issue -Provider github
+  Get-Issue -Provider gitlab
 ```
 
 **Unrecognized forge:**
-```
+
+```text
 Unrecognized forge host: 'bitbucket.org'
-Currently supported: Github, Gitlab
-Request support: https://github.com/chris-peterson/pwsh-forge/issues
+Currently supported: github, gitlab
 ```
 
 ## Terminology

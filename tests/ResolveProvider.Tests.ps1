@@ -1,6 +1,6 @@
 BeforeAll {
     . $PSScriptRoot/../src/ForgeCli/Private/Validations.ps1
-    . $PSScriptRoot/../src/ForgeCli/Private/KnownProviders.ps1
+    . $PSScriptRoot/../src/ForgeCli/Private/Init.ps1
     . $PSScriptRoot/../src/ForgeCli/Private/Functions/GitHelpers.ps1
     . $PSScriptRoot/../src/ForgeCli/Private/Functions/ProviderHelpers.ps1
     . ([scriptblock]::Create((Get-Content "$PSScriptRoot/../src/ForgeCli/Forge.psm1" -Raw)))
@@ -60,14 +60,14 @@ Describe "Resolve-ForgeCommand" {
 
     It "Should return provider name and mapped command" {
         $Result = Resolve-ForgeCommand -CommandName 'Get-Issue' -Provider 'github'
-        $Result.ProviderName | Should -Be 'github'
+        $Result.Provider | Should -Be 'github'
         $Result.Command | Should -Be 'Get-GithubIssue'
     }
 
     It "Should normalize provider name to lowercase" {
         $global:ForgeProviders['github'].Name = 'GitHub'
         $Result = Resolve-ForgeCommand -CommandName 'Get-Issue' -Provider 'github'
-        $Result.ProviderName | Should -Be 'github'
+        $Result.Provider | Should -Be 'github'
     }
 
     It "Should throw for unsupported command" {
