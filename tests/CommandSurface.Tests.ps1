@@ -1,6 +1,6 @@
 BeforeAll {
     . $PSScriptRoot/../src/ForgeCli/Private/Validations.ps1
-    . $PSScriptRoot/../src/ForgeCli/Private/Init.ps1
+    Import-Module $PSScriptRoot/../src/ForgeCli/Private/Init.psm1 -Force
     . $PSScriptRoot/../src/ForgeCli/Private/Functions/GitHelpers.ps1
     . $PSScriptRoot/../src/ForgeCli/Private/Functions/ProviderHelpers.ps1
 
