@@ -25,35 +25,10 @@ jobs:
       - name: Install PowerShell modules
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
           Set-PSRepository PSGallery -InstallationPolicy Trusted
-
-          $Modules = @('Pester', 'GithubCli', 'GitlabCli')
-          foreach ($Name in $Modules) {
-            Write-Host "Installing $Name..." -ForegroundColor Cyan
-            try {
-              Install-Module -Name $Name -Force -Scope CurrentUser
-              $Installed = Get-Module -ListAvailable -Name $Name
-              Write-Host "  Installed: $($Installed.Name) v$($Installed.Version) @ $($Installed.ModuleBase)"
-            } catch {
-              Write-Host "  FAILED to install ${Name}: $_" -ForegroundColor Red
-              throw
-            }
-          }
-
-          Write-Host "`nVerifying module imports..." -ForegroundColor Cyan
-          foreach ($Name in $Modules) {
-            try {
-              Import-Module $Name -ErrorAction Stop
-              Write-Host "  Import OK: $Name"
-            } catch {
-              Write-Host "  FAILED to import ${Name}: $_" -ForegroundColor Red
-              throw
-            }
-          }
-
-          Write-Host "`nAll modules installed and imported successfully" -ForegroundColor Green
-          Get-Module | Format-Table Name, Version, ModuleBase
+          Install-Module -Name Pester -Force -Scope CurrentUser
+          Install-Module -Name GitHubCli -Force -Scope CurrentUser
+          Install-Module -Name GitlabCli -Force -Scope CurrentUser
 
       - name: Run Pester tests
         id: pester
