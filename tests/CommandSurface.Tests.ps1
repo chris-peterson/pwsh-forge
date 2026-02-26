@@ -56,6 +56,14 @@ BeforeAll {
 
 Describe "Command Surface" {
 
+    It "Every provider should have identical Resource keys" {
+        $ExpectedKeys = $global:ForgeProviders.Values.Resource.Keys | Sort-Object -Unique
+        foreach ($Key in $global:ForgeProviders.Keys) {
+            $ActualKeys = $global:ForgeProviders[$Key].Resource.Keys | Sort-Object
+            $ActualKeys | Should -Be $ExpectedKeys -Because "provider '$Key' Resource keys should be consistent"
+        }
+    }
+
     It "Every provider should map every forge command" {
         $Missing = @()
         foreach ($ProviderKey in $global:ForgeProviders.Keys) {

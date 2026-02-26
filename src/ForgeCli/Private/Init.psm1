@@ -6,9 +6,18 @@ $global:ForgeProviders = @{
         Prefix       = 'Github'
         HostPatterns = @('github')
         Resource     = @{
-            'ChangeRequest' = 'PullRequest'
-            'Group'         = 'Organization'
-            'Repo'          = 'Repository'
+            'Branch'               = 'Branch'
+            'ChangeRequest'        = 'PullRequest'
+            'ChangeRequestComment' = 'PullRequestComment'
+            'Commit'               = 'Commit'
+            'Group'                = 'Organization'
+            'GroupMember'          = 'OrganizationMember'
+            'Issue'                = 'Issue'
+            'IssueComment'         = 'IssueComment'
+            'Milestone'            = 'Milestone'
+            'Release'              = 'Release'
+            'Repo'                 = 'Repository'
+            'User'                 = 'User'
         }
     }
     'gitlab' = @{
@@ -16,8 +25,18 @@ $global:ForgeProviders = @{
         Prefix       = 'Gitlab'
         HostPatterns = @('gitlab')
         Resource     = @{
-            'ChangeRequest' = 'MergeRequest'
-            'Repo'          = 'Project'
+            'Branch'               = 'Branch'
+            'ChangeRequest'        = 'MergeRequest'
+            'ChangeRequestComment' = 'MergeRequestNote'
+            'Commit'               = 'Commit'
+            'Group'                = 'Group'
+            'GroupMember'          = 'GroupMember'
+            'Issue'                = 'Issue'
+            'IssueComment'         = 'IssueNote'
+            'Milestone'            = 'Milestone'
+            'Release'              = 'Release'
+            'Repo'                 = 'Project'
+            'User'                 = 'User'
         }
     }
 }
@@ -27,7 +46,10 @@ foreach ($Key in $global:ForgeProviders.Keys) {
     $Commands = @{}
     foreach ($ForgeCommand in $global:ForgeCommands) {
         $Verb, $Noun = $ForgeCommand -split '-', 2
-        $MappedNoun = if ($Provider.Resource.ContainsKey($Noun)) { $Provider.Resource[$Noun] } else { $Noun }
+        $MappedNoun = $Provider.Resource[$Noun]
+        if (-not $MappedNoun) {
+            throw "Forge command '$ForgeCommand' uses noun '$Noun' which is not mapped in the '$Key' provider. Add it to the Resource table in Init.psm1."
+        }
         $Commands[$ForgeCommand] = "$Verb-$($Provider.Prefix)$MappedNoun"
     }
     $Provider.Commands = $Commands

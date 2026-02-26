@@ -13,34 +13,69 @@ BeforeAll {
     function New-GithubIssue { param($Title, $Description, [string[]]$Assignees, [string[]]$Labels) }
     function Update-GithubIssue { param($IssueId, $Title, $Description, $State) }
     function Close-GithubIssue { param($IssueId) }
+    function Open-GithubIssue { param($IssueId) }
+    function Get-GithubIssueComment { param($IssueId, $Since, [uint]$MaxPages, [switch]$All) }
+    function New-GithubIssueComment { param($IssueId, $Body) }
     function Get-GithubPullRequest { param($PullRequestId, $State, [switch]$Mine, $Head, $Base, [uint]$MaxPages, [switch]$All) }
     function New-GithubPullRequest { param($Title, $SourceBranch, $TargetBranch, $Description, [switch]$Draft) }
+    function Update-GithubPullRequest { param($PullRequestId, $Title, $Description, $State, $TargetBranch) }
+    function Close-GithubPullRequest { param($PullRequestId) }
     function Merge-GithubPullRequest { param($PullRequestId, $MergeMethod, [switch]$DeleteSourceBranch) }
+    function Get-GithubPullRequestComment { param($PullRequestId) }
+    function New-GithubPullRequestComment { param($PullRequestId, $Body) }
     function Get-GithubRepository { param($RepositoryId, [switch]$Mine, $Organization, $Select, [uint]$MaxPages, [switch]$All) }
     function New-GithubRepository { param($Name, $Description, $Visibility) }
+    function Update-GithubRepository { param($Name, $Description, $Visibility, $DefaultBranch) }
+    function Remove-GithubRepository { param($RepositoryId) }
     function Search-GithubRepository { param($Query, $Scope, [uint]$MaxPages, [switch]$All) }
+    function Search-Github { param($Query, $Scope, [uint]$MaxPages, [switch]$All) }
     function Get-GithubOrganization { param($Name, [switch]$Mine, [uint]$MaxPages, [switch]$All) }
+    function Get-GithubOrganizationMember { param($Organization, $Username, [uint]$MaxPages, [switch]$All) }
+    function Add-GithubOrganizationMember { param($Organization, $Username, $Role) }
+    function Remove-GithubOrganizationMember { param($Organization, $Username) }
     function Get-GithubBranch { param($Name, [switch]$Protected, [uint]$MaxPages, [switch]$All) }
+    function New-GithubBranch { param($Name, $Ref) }
+    function Remove-GithubBranch { param($BranchId) }
     function Get-GithubRelease { param($Tag, [switch]$Latest, [uint]$MaxPages, [switch]$All) }
     function Get-GithubUser { param($Username, [switch]$Me, $Select) }
     function Get-GithubCommit { param($Sha, $Branch, $Author, $Since, $Until, [uint]$MaxPages, [switch]$All) }
+    function Get-GithubMilestone { param($MilestoneId, $State) }
+    function Invoke-GithubApi { param($HttpMethod, $Path, [hashtable]$Query, [hashtable]$Body, [uint]$MaxPages) }
+    function Get-GithubConfiguration { param() }
 
     # GitLab provider command stubs
     function Get-GitlabIssue { param($IssueId, $State, [switch]$Mine, $GroupId, $AssigneeUsername, $AuthorUsername, $CreatedAfter, [uint]$MaxPages, [switch]$All) }
     function New-GitlabIssue { param($Title, $Description, $Labels) }
     function Update-GitlabIssue { param($IssueId, $Title, $Description, $StateEvent) }
     function Close-GitlabIssue { param($IssueId) }
+    function Open-GitlabIssue { param($IssueId) }
+    function Get-GitlabIssueNote { param($IssueId) }
+    function New-GitlabIssueNote { param($IssueId, $Note) }
     function Get-GitlabMergeRequest { param($MergeRequestId, $State, [switch]$Mine, $GroupId, $SourceBranch, $Username, [switch]$IsDraft, $CreatedAfter, [uint]$MaxPages, [switch]$All) }
     function New-GitlabMergeRequest { param($Title, $SourceBranch, $TargetBranch, $Description) }
+    function Update-GitlabMergeRequest { param($MergeRequestId, $Title, $Description, [switch]$Draft, [switch]$MarkReady, [switch]$Close, [switch]$Reopen) }
+    function Close-GitlabMergeRequest { param($MergeRequestId) }
     function Merge-GitlabMergeRequest { param($MergeRequestId, [switch]$Squash, [switch]$ShouldRemoveSourceBranch) }
+    function Get-GitlabMergeRequestNote { param($MergeRequestId) }
     function Get-GitlabProject { param($ProjectId, [switch]$Mine, $GroupId, $Select, [switch]$IncludeArchived, [uint]$MaxPages, [switch]$All) }
     function New-GitlabProject { param($Name, $Description, $Visibility) }
+    function Update-GitlabProject { param($Name, $Visibility, $DefaultBranch) }
+    function Remove-GitlabProject { param($ProjectId) }
     function Search-GitlabProject { param($Search, [uint]$MaxPages, [switch]$All) }
+    function Search-Gitlab { param($Search, $Scope, [switch]$All) }
     function Get-GitlabGroup { param($GroupId, [uint]$MaxPages, [switch]$All) }
+    function Get-GitlabGroupMember { param($GroupId, $UserId, [uint]$MaxPages, [switch]$All) }
+    function Add-GitlabGroupMember { param($GroupId, $UserId, $AccessLevel) }
+    function Remove-GitlabGroupMember { param($GroupId, $UserId) }
     function Get-GitlabBranch { param($Ref, $Search, [uint]$MaxPages, [switch]$All) }
+    function New-GitlabBranch { param($Branch, $Ref) }
+    function Remove-GitlabBranch { param($Branch) }
     function Get-GitlabRelease { param($Tag, [uint]$MaxPages, [switch]$All) }
     function Get-GitlabUser { param($UserId, [switch]$Me, $Select) }
     function Get-GitlabCommit { param($Sha, $Ref, [uint]$MaxPages, [switch]$All) }
+    function Get-GitlabMilestone { param($MilestoneId, $State) }
+    function Invoke-GitlabApi { param($HttpMethod, $Path, [hashtable]$Query, [hashtable]$Body, [uint]$MaxPages) }
+    function Get-GitlabConfiguration { param() }
 }
 
 # =============================================================================
@@ -814,3 +849,514 @@ Describe "Get-Commit" {
         }
     }
 }
+
+# =============================================================================
+# Close/Update Change Request
+# =============================================================================
+
+Describe "Close-ChangeRequest" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Close-GithubPullRequest {}
+        }
+
+        It "Should map Id to PullRequestId" {
+            Close-ChangeRequest -Id '99' -Provider github
+            Should -Invoke Close-GithubPullRequest -ParameterFilter { $PullRequestId -eq '99' }
+        }
+
+        It "Should not call provider command with -WhatIf" {
+            Close-ChangeRequest -Id '99' -Provider github -WhatIf
+            Should -Invoke Close-GithubPullRequest -Times 0
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Close-GitlabMergeRequest {}
+        }
+
+        It "Should map Id to MergeRequestId" {
+            Close-ChangeRequest -Id '99' -Provider gitlab
+            Should -Invoke Close-GitlabMergeRequest -ParameterFilter { $MergeRequestId -eq '99' }
+        }
+    }
+}
+
+Describe "Update-ChangeRequest" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Update-GithubPullRequest {}
+        }
+
+        It "Should map Id to PullRequestId" {
+            Update-ChangeRequest -Id '99' -Title 'Updated' -Provider github
+            Should -Invoke Update-GithubPullRequest -ParameterFilter { $PullRequestId -eq '99' }
+        }
+
+        It "Should pass Title and Description" {
+            Update-ChangeRequest -Id '99' -Title 'New title' -Description 'New desc' -Provider github
+            Should -Invoke Update-GithubPullRequest -ParameterFilter {
+                $Title -eq 'New title' -and $Description -eq 'New desc'
+            }
+        }
+
+        It "Should pass State through unchanged" {
+            Update-ChangeRequest -Id '99' -State 'closed' -Provider github
+            Should -Invoke Update-GithubPullRequest -ParameterFilter { $State -eq 'closed' }
+        }
+
+        It "Should pass TargetBranch" {
+            Update-ChangeRequest -Id '99' -TargetBranch 'develop' -Provider github
+            Should -Invoke Update-GithubPullRequest -ParameterFilter { $TargetBranch -eq 'develop' }
+        }
+
+        It "Should warn about unsupported Draft" {
+            Update-ChangeRequest -Id '99' -Draft -Provider github -WarningVariable warnings -WarningAction SilentlyContinue
+            $warnings | Should -Not -BeNullOrEmpty
+        }
+
+        It "Should warn about unsupported MarkReady" {
+            Update-ChangeRequest -Id '99' -MarkReady -Provider github -WarningVariable warnings -WarningAction SilentlyContinue
+            $warnings | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Update-GitlabMergeRequest {}
+        }
+
+        It "Should map Id to MergeRequestId" {
+            Update-ChangeRequest -Id '99' -Title 'Updated' -Provider gitlab
+            Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $MergeRequestId -eq '99' }
+        }
+
+        It "Should pass Draft switch" {
+            Update-ChangeRequest -Id '99' -Draft -Provider gitlab
+            Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $Draft -eq $true }
+        }
+
+        It "Should pass MarkReady switch" {
+            Update-ChangeRequest -Id '99' -MarkReady -Provider gitlab
+            Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $MarkReady -eq $true }
+        }
+
+        It "Should map State 'closed' to Close switch" {
+            Update-ChangeRequest -Id '99' -State 'closed' -Provider gitlab
+            Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $Close -eq $true }
+        }
+
+        It "Should map State 'open' to Reopen switch" {
+            Update-ChangeRequest -Id '99' -State 'open' -Provider gitlab
+            Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $Reopen -eq $true }
+        }
+
+        It "Should warn about unsupported TargetBranch" {
+            Update-ChangeRequest -Id '99' -TargetBranch 'develop' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
+            $warnings | Should -Not -BeNullOrEmpty
+        }
+    }
+}
+
+# =============================================================================
+# Change Request Comments
+# =============================================================================
+
+Describe "Get-ChangeRequestComment" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Get-GithubPullRequestComment {}
+        }
+
+        It "Should map Id to PullRequestId" {
+            Get-ChangeRequestComment -Id '99' -Provider github
+            Should -Invoke Get-GithubPullRequestComment -ParameterFilter { $PullRequestId -eq '99' }
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Get-GitlabMergeRequestNote {}
+        }
+
+        It "Should map Id to MergeRequestId" {
+            Get-ChangeRequestComment -Id '99' -Provider gitlab
+            Should -Invoke Get-GitlabMergeRequestNote -ParameterFilter { $MergeRequestId -eq '99' }
+        }
+    }
+}
+
+# =============================================================================
+# Open-Issue, Issue Comments
+# =============================================================================
+
+Describe "Open-Issue" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Open-GithubIssue {}
+        }
+
+        It "Should map Id to IssueId" {
+            Open-Issue -Id '42' -Provider github
+            Should -Invoke Open-GithubIssue -ParameterFilter { $IssueId -eq '42' }
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Open-GitlabIssue {}
+        }
+
+        It "Should map Id to IssueId" {
+            Open-Issue -Id '42' -Provider gitlab
+            Should -Invoke Open-GitlabIssue -ParameterFilter { $IssueId -eq '42' }
+        }
+    }
+}
+
+Describe "New-IssueComment" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock New-GithubIssueComment {}
+        }
+
+        It "Should map Id to IssueId and pass Body" {
+            New-IssueComment -Id '42' -Body 'Fixed' -Provider github
+            Should -Invoke New-GithubIssueComment -ParameterFilter {
+                $IssueId -eq '42' -and $Body -eq 'Fixed'
+            }
+        }
+
+        It "Should not call provider command with -WhatIf" {
+            New-IssueComment -Id '42' -Body 'Fixed' -Provider github -WhatIf
+            Should -Invoke New-GithubIssueComment -Times 0
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock New-GitlabIssueNote {}
+        }
+
+        It "Should map Id to IssueId and Body to Note" {
+            New-IssueComment -Id '42' -Body 'Fixed' -Provider gitlab
+            Should -Invoke New-GitlabIssueNote -ParameterFilter {
+                $IssueId -eq '42' -and $Note -eq 'Fixed'
+            }
+        }
+    }
+}
+
+# =============================================================================
+# Branches (New, Remove)
+# =============================================================================
+
+Describe "New-Branch" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock New-GithubBranch {}
+        }
+
+        It "Should pass Name" {
+            New-Branch -Name 'feature/x' -Provider github
+            Should -Invoke New-GithubBranch -ParameterFilter { $Name -eq 'feature/x' }
+        }
+
+        It "Should pass Ref" {
+            New-Branch -Name 'feature/x' -Ref 'develop' -Provider github
+            Should -Invoke New-GithubBranch -ParameterFilter { $Ref -eq 'develop' }
+        }
+
+        It "Should not call provider command with -WhatIf" {
+            New-Branch -Name 'feature/x' -Provider github -WhatIf
+            Should -Invoke New-GithubBranch -Times 0
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock New-GitlabBranch {}
+        }
+
+        It "Should map Name to Branch" {
+            New-Branch -Name 'feature/x' -Provider gitlab
+            Should -Invoke New-GitlabBranch -ParameterFilter { $Branch -eq 'feature/x' }
+        }
+
+        It "Should pass Ref" {
+            New-Branch -Name 'feature/x' -Ref 'develop' -Provider gitlab
+            Should -Invoke New-GitlabBranch -ParameterFilter { $Ref -eq 'develop' }
+        }
+    }
+}
+
+Describe "Remove-Branch" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Remove-GithubBranch {}
+        }
+
+        It "Should map Name to BranchId" {
+            Remove-Branch -Name 'feature/x' -Provider github
+            Should -Invoke Remove-GithubBranch -ParameterFilter { $BranchId -eq 'feature/x' }
+        }
+
+        It "Should not call provider command with -WhatIf" {
+            Remove-Branch -Name 'feature/x' -Provider github -WhatIf
+            Should -Invoke Remove-GithubBranch -Times 0
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Remove-GitlabBranch {}
+        }
+
+        It "Should map Name to Branch" {
+            Remove-Branch -Name 'feature/x' -Provider gitlab
+            Should -Invoke Remove-GitlabBranch -ParameterFilter { $Branch -eq 'feature/x' }
+        }
+    }
+}
+
+# =============================================================================
+# Repositories (Remove)
+# =============================================================================
+
+Describe "Remove-Repo" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Remove-GithubRepository {}
+        }
+
+        It "Should map Id to RepositoryId" {
+            Remove-Repo -Id 'my-repo' -Provider github -Confirm:$false
+            Should -Invoke Remove-GithubRepository -ParameterFilter { $RepositoryId -eq 'my-repo' }
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Remove-GitlabProject {}
+        }
+
+        It "Should map Id to ProjectId" {
+            Remove-Repo -Id 'my-project' -Provider gitlab -Confirm:$false
+            Should -Invoke Remove-GitlabProject -ParameterFilter { $ProjectId -eq 'my-project' }
+        }
+    }
+}
+
+# =============================================================================
+# Group Members
+# =============================================================================
+
+Describe "Get-GroupMember" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Get-GithubOrganizationMember {}
+        }
+
+        It "Should map Group to Organization" {
+            Get-GroupMember -Group 'my-org' -Provider github
+            Should -Invoke Get-GithubOrganizationMember -ParameterFilter { $Organization -eq 'my-org' }
+        }
+
+        It "Should pass Username" {
+            Get-GroupMember -Group 'my-org' -Username 'jdoe' -Provider github
+            Should -Invoke Get-GithubOrganizationMember -ParameterFilter { $Username -eq 'jdoe' }
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Get-GitlabGroupMember {}
+        }
+
+        It "Should map Group to GroupId" {
+            Get-GroupMember -Group 'my-group' -Provider gitlab
+            Should -Invoke Get-GitlabGroupMember -ParameterFilter { $GroupId -eq 'my-group' }
+        }
+
+        It "Should map Username to UserId" {
+            Get-GroupMember -Group 'my-group' -Username 'jdoe' -Provider gitlab
+            Should -Invoke Get-GitlabGroupMember -ParameterFilter { $UserId -eq 'jdoe' }
+        }
+    }
+}
+
+Describe "Add-GroupMember" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Add-GithubOrganizationMember {}
+        }
+
+        It "Should map Group to Organization and pass Username" {
+            Add-GroupMember -Group 'my-org' -Username 'jdoe' -Provider github
+            Should -Invoke Add-GithubOrganizationMember -ParameterFilter {
+                $Organization -eq 'my-org' -and $Username -eq 'jdoe'
+            }
+        }
+
+        It "Should pass Role" {
+            Add-GroupMember -Group 'my-org' -Username 'jdoe' -Role 'admin' -Provider github
+            Should -Invoke Add-GithubOrganizationMember -ParameterFilter { $Role -eq 'admin' }
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Add-GitlabGroupMember {}
+        }
+
+        It "Should map Group to GroupId and Username to UserId" {
+            Add-GroupMember -Group 'my-group' -Username 'jdoe' -Provider gitlab
+            Should -Invoke Add-GitlabGroupMember -ParameterFilter {
+                $GroupId -eq 'my-group' -and $UserId -eq 'jdoe'
+            }
+        }
+
+        It "Should map Role to AccessLevel" {
+            Add-GroupMember -Group 'my-group' -Username 'jdoe' -Role 'developer' -Provider gitlab
+            Should -Invoke Add-GitlabGroupMember -ParameterFilter { $AccessLevel -eq 'developer' }
+        }
+    }
+}
+
+Describe "Remove-GroupMember" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Remove-GithubOrganizationMember {}
+        }
+
+        It "Should map Group to Organization and pass Username" {
+            Remove-GroupMember -Group 'my-org' -Username 'jdoe' -Provider github
+            Should -Invoke Remove-GithubOrganizationMember -ParameterFilter {
+                $Organization -eq 'my-org' -and $Username -eq 'jdoe'
+            }
+        }
+
+        It "Should not call provider command with -WhatIf" {
+            Remove-GroupMember -Group 'my-org' -Username 'jdoe' -Provider github -WhatIf
+            Should -Invoke Remove-GithubOrganizationMember -Times 0
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Remove-GitlabGroupMember {}
+        }
+
+        It "Should map Group to GroupId and Username to UserId" {
+            Remove-GroupMember -Group 'my-group' -Username 'jdoe' -Provider gitlab
+            Should -Invoke Remove-GitlabGroupMember -ParameterFilter {
+                $GroupId -eq 'my-group' -and $UserId -eq 'jdoe'
+            }
+        }
+    }
+}
+
+# =============================================================================
+# Milestones
+# =============================================================================
+
+Describe "Get-Milestone" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Get-GithubMilestone {}
+        }
+
+        It "Should map Id to MilestoneId" {
+            Get-Milestone -Id '1' -Provider github
+            Should -Invoke Get-GithubMilestone -ParameterFilter { $MilestoneId -eq '1' }
+        }
+
+        It "Should pass State through unchanged" {
+            Get-Milestone -State 'closed' -Provider github
+            Should -Invoke Get-GithubMilestone -ParameterFilter { $State -eq 'closed' }
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Get-GitlabMilestone {}
+        }
+
+        It "Should map Id to MilestoneId" {
+            Get-Milestone -Id '1' -Provider gitlab
+            Should -Invoke Get-GitlabMilestone -ParameterFilter { $MilestoneId -eq '1' }
+        }
+
+        It "Should map State 'open' to 'active'" {
+            Get-Milestone -State 'open' -Provider gitlab
+            Should -Invoke Get-GitlabMilestone -ParameterFilter { $State -eq 'active' }
+        }
+
+        It "Should keep State 'closed' as 'closed'" {
+            Get-Milestone -State 'closed' -Provider gitlab
+            Should -Invoke Get-GitlabMilestone -ParameterFilter { $State -eq 'closed' }
+        }
+    }
+}
+

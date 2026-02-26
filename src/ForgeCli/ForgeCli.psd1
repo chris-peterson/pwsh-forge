@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '0.4.0'
+    ModuleVersion = '0.5.0'
 
     PrivateData = @{
         PSData = @{
@@ -23,24 +23,19 @@
             ExternalModuleDependencies = @('GithubCli', 'GitlabCli')
             ReleaseNotes =
 @'
-Plugin architecture with provider registration and dispatch
-
-Supported Cmdlets:
-* Close-Issue
-* Get-Branch
-* Get-ChangeRequest
-* Get-Commit
-* Get-Group
-* Get-Issue
-* Get-Release
-* Get-Repo
-* Get-User
-* Merge-ChangeRequest
-* New-ChangeRequest
-* New-Issue
-* New-Repo
-* Search-Repo
-* Update-Issue
+New Cmdlets:
+* Add-GroupMember
+* Close-ChangeRequest
+* Get-ChangeRequestComment
+* Get-GroupMember
+* Get-Milestone
+* New-Branch
+* New-IssueComment
+* Open-Issue
+* Remove-Branch
+* Remove-GroupMember
+* Remove-Repo
+* Update-ChangeRequest
 '@
         }
     }
@@ -66,20 +61,32 @@ Supported Cmdlets:
     )
 
     FunctionsToExport = @(
+        'Add-GroupMember'
+        'Close-ChangeRequest'
         'Close-Issue'
         'Get-Branch'
         'Get-ChangeRequest'
+        'Get-ChangeRequestComment'
         'Get-Commit'
         'Get-Group'
+        'Get-GroupMember'
         'Get-Issue'
+        'Get-Milestone'
         'Get-Release'
         'Get-Repo'
         'Get-User'
         'Merge-ChangeRequest'
+        'New-Branch'
         'New-ChangeRequest'
         'New-Issue'
+        'New-IssueComment'
         'New-Repo'
+        'Open-Issue'
+        'Remove-Branch'
+        'Remove-GroupMember'
+        'Remove-Repo'
         'Search-Repo'
+        'Update-ChangeRequest'
         'Update-Issue'
     )
 

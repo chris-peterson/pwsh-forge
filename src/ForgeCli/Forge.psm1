@@ -775,6 +775,461 @@ function Search-Repo {
     & $Target.Command @Params
 }
 
+function Close-ChangeRequest {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Id,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Close-ChangeRequest' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.PullRequestId = $Id
+        }
+        'gitlab' {
+            $Params.MergeRequestId = $Id
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess("Change Request #$Id", 'Close')) {
+        & $Target.Command @Params
+    }
+}
+
+function Update-ChangeRequest {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Id,
+
+        [Parameter()]
+        [string]
+        $Title,
+
+        [Parameter()]
+        [string]
+        $Description,
+
+        [Parameter()]
+        [ValidateSet('open', 'closed')]
+        [string]
+        $State,
+
+        [Parameter()]
+        [string]
+        $TargetBranch,
+
+        [Parameter()]
+        [switch]
+        $Draft,
+
+        [Parameter()]
+        [switch]
+        $MarkReady,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Update-ChangeRequest' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.PullRequestId = $Id
+            if ($Title)        { $Params.Title        = $Title }
+            if ($Description)  { $Params.Description  = $Description }
+            if ($State)        { $Params.State        = $State }
+            if ($TargetBranch) { $Params.TargetBranch = $TargetBranch }
+            if ($Draft)        { Write-Warning "Update-ChangeRequest -Draft is not yet supported by the Github provider" }
+            if ($MarkReady)    { Write-Warning "Update-ChangeRequest -MarkReady is not yet supported by the Github provider" }
+        }
+        'gitlab' {
+            $Params.MergeRequestId = $Id
+            if ($Title)        { $Params.Title       = $Title }
+            if ($Description)  { $Params.Description = $Description }
+            if ($Draft)        { $Params.Draft       = $true }
+            if ($MarkReady)    { $Params.MarkReady   = $true }
+            if ($State) {
+                switch ($State) {
+                    'open'   { $Params.Reopen = $true }
+                    'closed' { $Params.Close  = $true }
+                }
+            }
+            if ($TargetBranch) { Write-Warning "Update-ChangeRequest -TargetBranch is not yet supported by the Gitlab provider" }
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess("Change Request #$Id", 'Update')) {
+        & $Target.Command @Params
+    }
+}
+
+function Get-ChangeRequestComment {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Id,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-ChangeRequestComment' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.PullRequestId = $Id
+        }
+        'gitlab' {
+            $Params.MergeRequestId = $Id
+        }
+    }
+
+    & $Target.Command @Params
+}
+
+function Open-Issue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Id,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Open-Issue' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.IssueId = $Id
+        }
+        'gitlab' {
+            $Params.IssueId = $Id
+        }
+    }
+
+    & $Target.Command @Params
+}
+
+function New-IssueComment {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Id,
+
+        [Parameter(Mandatory)]
+        [string]
+        $Body,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'New-IssueComment' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.IssueId = $Id
+            $Params.Body    = $Body
+        }
+        'gitlab' {
+            $Params.IssueId = $Id
+            $Params.Note    = $Body
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess("Issue #$Id", 'Add Comment')) {
+        & $Target.Command @Params
+    }
+}
+
+function New-Branch {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Name,
+
+        [Parameter()]
+        [string]
+        $Ref,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'New-Branch' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.Name = $Name
+            if ($Ref) { $Params.Ref = $Ref }
+        }
+        'gitlab' {
+            $Params.Branch = $Name
+            if ($Ref) { $Params.Ref = $Ref }
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess($Name, 'Create Branch')) {
+        & $Target.Command @Params
+    }
+}
+
+function Remove-Branch {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Name,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Remove-Branch' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.BranchId = $Name
+        }
+        'gitlab' {
+            $Params.Branch = $Name
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess($Name, 'Delete Branch')) {
+        & $Target.Command @Params
+    }
+}
+
+function Remove-Repo {
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact='High')]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Id,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Remove-Repo' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.RepositoryId = $Id
+        }
+        'gitlab' {
+            $Params.ProjectId = $Id
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess($Id, 'Delete Repository')) {
+        & $Target.Command @Params
+    }
+}
+
+function Get-GroupMember {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Group,
+
+        [Parameter()]
+        [string]
+        $Username,
+
+        [Parameter()]
+        [uint]
+        $MaxPages,
+
+        [switch]
+        [Parameter()]
+        $All,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-GroupMember' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.Organization = $Group
+            if ($Username) { $Params.Username = $Username }
+            if ($MaxPages) { $Params.MaxPages = $MaxPages }
+            if ($All)      { $Params.All      = $true }
+        }
+        'gitlab' {
+            $Params.GroupId = $Group
+            if ($Username) { $Params.UserId   = $Username }
+            if ($MaxPages) { $Params.MaxPages = $MaxPages }
+            if ($All)      { $Params.All      = $true }
+        }
+    }
+
+    & $Target.Command @Params
+}
+
+function Add-GroupMember {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $Group,
+
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Username,
+
+        [Parameter()]
+        [string]
+        $Role,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Add-GroupMember' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.Organization = $Group
+            $Params.Username     = $Username
+            if ($Role) { $Params.Role = $Role }
+        }
+        'gitlab' {
+            $Params.GroupId = $Group
+            $Params.UserId  = $Username
+            if ($Role) { $Params.AccessLevel = $Role }
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess("$Group/$Username", 'Add Member')) {
+        & $Target.Command @Params
+    }
+}
+
+function Remove-GroupMember {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $Group,
+
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Username,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Remove-GroupMember' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.Organization = $Group
+            $Params.Username     = $Username
+        }
+        'gitlab' {
+            $Params.GroupId = $Group
+            $Params.UserId  = $Username
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess("$Group/$Username", 'Remove Member')) {
+        & $Target.Command @Params
+    }
+}
+
+function Get-Milestone {
+    [CmdletBinding()]
+    param(
+        [Parameter(Position=0)]
+        [string]
+        $Id,
+
+        [Parameter()]
+        [ValidateSet('open', 'closed', 'all')]
+        [string]
+        $State,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Milestone' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            if ($Id)    { $Params.MilestoneId = $Id }
+            if ($State) { $Params.State       = $State }
+        }
+        'gitlab' {
+            if ($Id) { $Params.MilestoneId = $Id }
+            if ($State) {
+                $Params.State = switch ($State) {
+                    'open'   { 'active' }
+                    'closed' { 'closed' }
+                    'all'    { $null }
+                }
+            }
+        }
+    }
+
+    & $Target.Command @Params
+}
+
 function Get-Repo {
     [CmdletBinding()]
     param(
@@ -828,7 +1283,7 @@ function Get-Repo {
         'gitlab' {
             if ($Id)       { $Params.ProjectId    = $Id }
             if ($Mine)     { $Params.Mine         = $true }
-            if ($Group)    { $Params.GroupId       = $Group }
+            if ($Group)    { $Params.GroupId      = $Group }
             if ($Select)   { $Params.Select       = $Select }
             if ($MaxPages) { $Params.MaxPages     = $MaxPages }
             if ($All)      { $Params.All          = $true }
