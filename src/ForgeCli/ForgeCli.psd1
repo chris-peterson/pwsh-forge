@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '0.5.2'
+    ModuleVersion = '0.6.0'
 
     PrivateData = @{
         PSData = @{
@@ -23,19 +23,18 @@
             ExternalModuleDependencies = @('GithubCli', 'GitlabCli')
             ReleaseNotes =
 @'
-New Cmdlets:
-* Add-GroupMember
-* Close-ChangeRequest
-* Get-ChangeRequestComment
-* Get-GroupMember
-* Get-Milestone
-* New-Branch
-* New-IssueComment
-* Open-Issue
-* Remove-Branch
-* Remove-GroupMember
-* Remove-Repo
-* Update-ChangeRequest
+GitLab provider parity:
+* Get-Issue now supports -Labels, -Sort, -Direction
+* Get-ChangeRequest now supports -TargetBranch
+* New-Issue now supports -Assignees
+* New-ChangeRequest now supports -Draft
+* Get-Commit now supports -Author, -Since, -Until
+* Search-Repo now supports -Scope (code/commits/issues)
+* Update-ChangeRequest now supports -TargetBranch
+
+GitHub provider parity:
+* Get-ChangeRequest now supports -Author, -IsDraft, -Since
+* Update-ChangeRequest now supports -Draft, -MarkReady
 '@
         }
     }
