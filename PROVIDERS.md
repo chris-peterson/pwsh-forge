@@ -6,22 +6,22 @@ The mapping code lives inline in each command in
 
 ## Get-Issue
 
-| Common Param   | Github                | Gitlab                  |
-|----------------|-----------------------|-------------------------|
-| `-Id`          | `-IssueNumber`        | `-IssueId`              |
-| `-State open`  | `-State open`         | `-State opened`         |
-| `-State closed`| `-State closed`       | `-State closed`         |
-| `-State all`   | `-State all`          | (omits State param)     |
-| `-Mine`        | `-Mine`               | `-Mine`                 |
-| `-Group`       | `-Organization`       | `-GroupId`              |
-| `-Assignee`    | `-Assignee`           | `-AssigneeUsername`     |
-| `-Author`      | `-Creator`            | `-AuthorUsername`       |
-| `-Labels`      | `-Labels`             | not yet supported       |
-| `-Since`       | `-Since`              | `-CreatedAfter`         |
-| `-Sort`        | `-Sort`               | not yet supported       |
-| `-Direction`   | `-Direction`           | not yet supported       |
-| `-MaxPages`    | `-MaxPages`           | `-MaxPages`             |
-| `-All`         | `-All`                | `-All`                  |
+| Common Param   | Github                | Gitlab                                |
+|----------------|-----------------------|---------------------------------------|
+| `-Id`          | `-IssueNumber`        | `-IssueId`                            |
+| `-State open`  | `-State open`         | `-State opened`                       |
+| `-State closed`| `-State closed`       | `-State closed`                       |
+| `-State all`   | `-State all`          | (omits State param)                   |
+| `-Mine`        | `-Mine`               | `-Mine`                               |
+| `-Group`       | `-Organization`       | `-GroupId`                            |
+| `-Assignee`    | `-Assignee`           | `-AssigneeUsername`                   |
+| `-Author`      | `-Creator`            | `-AuthorUsername`                     |
+| `-Labels`      | `-Labels`             | `-Labels`                             |
+| `-Since`       | `-Since`              | `-CreatedAfter`                       |
+| `-Sort`        | `-Sort`               | `-OrderBy` (`comments` not supported) |
+| `-Direction`   | `-Direction`          | `-Sort`                               |
+| `-MaxPages`    | `-MaxPages`           | `-MaxPages`                           |
+| `-All`         | `-All`                | `-All`                                |
 
 ## Get-ChangeRequest
 
@@ -35,10 +35,10 @@ The mapping code lives inline in each command in
 | `-Mine`          | `-Mine`                 | `-Mine`                 |
 | `-Group`         | not yet supported       | `-GroupId`              |
 | `-SourceBranch`  | `-Head`                 | `-SourceBranch`         |
-| `-TargetBranch`  | `-Base`                 | not yet supported       |
-| `-Author`        | not yet supported       | `-Username`             |
-| `-IsDraft`       | not yet supported       | `-IsDraft`              |
-| `-Since`         | not yet supported       | `-CreatedAfter`         |
+| `-TargetBranch`  | `-Base`                 | `-TargetBranch`         |
+| `-Author`        | `-Author`               | `-Username`             |
+| `-IsDraft`       | `-IsDraft`              | `-IsDraft`              |
+| `-Since`         | `-Since`                | `-CreatedAfter`         |
 | `-MaxPages`      | `-MaxPages`             | `-MaxPages`             |
 | `-All`           | `-All`                  | `-All`                  |
 

@@ -92,9 +92,18 @@ function Get-Issue {
                     'all'    { $null }
                 }
             }
-            if ($Labels)    { Write-Warning "Get-Issue -Labels is not yet supported by the Gitlab provider" }
-            if ($Sort)      { Write-Warning "Get-Issue -Sort is not yet supported by the Gitlab provider" }
-            if ($Direction) { Write-Warning "Get-Issue -Direction is not yet supported by the Gitlab provider" }
+            if ($Labels)    { $Params.Labels  = $Labels }
+            if ($Sort) {
+                $Params.OrderBy = switch ($Sort) {
+                    'created'  { 'created_at' }
+                    'updated'  { 'updated_at' }
+                    'comments' { $null }
+                }
+                if ($Sort -eq 'comments') {
+                    Write-Warning "Get-Issue -Sort 'comments' is not supported by the Gitlab provider"
+                }
+            }
+            if ($Direction) { $Params.Sort = $Direction }
         }
     }
 
@@ -178,9 +187,9 @@ function Get-ChangeRequest {
             if ($TargetBranch) { $Params.Base            = $TargetBranch }
             if ($MaxPages)     { $Params.MaxPages        = $MaxPages }
             if ($All)          { $Params.All             = $true }
-            if ($Author)       { Write-Warning "Get-ChangeRequest -Author is not yet supported by the Github provider" }
-            if ($IsDraft)      { Write-Warning "Get-ChangeRequest -IsDraft is not yet supported by the Github provider" }
-            if ($Since)        { Write-Warning "Get-ChangeRequest -Since is not yet supported by the Github provider" }
+            if ($Author)       { $Params.Author          = $Author }
+            if ($IsDraft)      { $Params.IsDraft          = $true }
+            if ($Since)        { $Params.Since            = $Since }
         }
         'gitlab' {
             if ($Id)           { $Params.MergeRequestId = $Id }
@@ -200,7 +209,7 @@ function Get-ChangeRequest {
                     'merged' { 'merged' }
                 }
             }
-            if ($TargetBranch) { Write-Warning "Get-ChangeRequest -TargetBranch is not yet supported by the Gitlab provider" }
+            if ($TargetBranch) { $Params.TargetBranch = $TargetBranch }
         }
     }
 
@@ -429,7 +438,7 @@ function New-Issue {
         'gitlab' {
             $Params.Title = $Title
             if ($Description) { $Params.Description = $Description }
-            if ($Assignees)   { Write-Warning "New-Issue -Assignees is not yet supported by the Gitlab provider" }
+            if ($Assignees)   { $Params.Assignees   = $Assignees }
             if ($Labels)      { $Params.Labels      = $Labels -join ',' }
         }
     }
@@ -570,7 +579,7 @@ function New-ChangeRequest {
             $Params.SourceBranch = $SourceBranch
             if ($TargetBranch) { $Params.TargetBranch = $TargetBranch }
             if ($Description)  { $Params.Description  = $Description }
-            if ($Draft)        { Write-Warning "New-ChangeRequest -Draft is not yet supported by the Gitlab provider" }
+            if ($Draft)        { $Params.Draft        = $true }
         }
     }
 
@@ -719,9 +728,9 @@ function Get-Commit {
             if ($Branch)   { $Params.Ref      = $Branch }
             if ($MaxPages) { $Params.MaxPages = $MaxPages }
             if ($All)      { $Params.All      = $true }
-            if ($Author)   { Write-Warning "Get-Commit -Author is not yet supported by the Gitlab provider" }
-            if ($Since)    { Write-Warning "Get-Commit -Since is not yet supported by the Gitlab provider" }
-            if ($Until)    { Write-Warning "Get-Commit -Until is not yet supported by the Gitlab provider" }
+            if ($Author)   { $Params.Author = $Author }
+            if ($Since)    { $Params.Since  = $Since }
+            if ($Until)    { $Params.Until  = $Until }
         }
     }
 
@@ -768,7 +777,13 @@ function Search-Repo {
             $Params.Search = $Query
             if ($MaxPages) { $Params.MaxPages = $MaxPages }
             if ($All)      { $Params.All      = $true }
-            if ($Scope)    { Write-Warning "Search-Repo -Scope is not yet supported by the Gitlab provider" }
+            if ($Scope) {
+                $Params.Scope = switch ($Scope) {
+                    'code'    { 'blobs' }
+                    'commits' { 'commits' }
+                    'issues'  { 'issues' }
+                }
+            }
         }
     }
 
@@ -853,8 +868,8 @@ function Update-ChangeRequest {
             if ($Description)  { $Params.Description  = $Description }
             if ($State)        { $Params.State        = $State }
             if ($TargetBranch) { $Params.TargetBranch = $TargetBranch }
-            if ($Draft)        { Write-Warning "Update-ChangeRequest -Draft is not yet supported by the Github provider" }
-            if ($MarkReady)    { Write-Warning "Update-ChangeRequest -MarkReady is not yet supported by the Github provider" }
+            if ($Draft)        { $Params.Draft            = $true }
+            if ($MarkReady)    { $Params.MarkReady        = $true }
         }
         'gitlab' {
             $Params.MergeRequestId = $Id
@@ -868,7 +883,7 @@ function Update-ChangeRequest {
                     'closed' { $Params.Close  = $true }
                 }
             }
-            if ($TargetBranch) { Write-Warning "Update-ChangeRequest -TargetBranch is not yet supported by the Gitlab provider" }
+            if ($TargetBranch) { $Params.TargetBranch = $TargetBranch }
         }
     }
 

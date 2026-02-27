@@ -16,9 +16,9 @@ BeforeAll {
     function Open-GithubIssue { param($IssueId) }
     function Get-GithubIssueComment { param($IssueId, $Since, [uint]$MaxPages, [switch]$All) }
     function New-GithubIssueComment { param($IssueId, $Body) }
-    function Get-GithubPullRequest { param($PullRequestId, $State, [switch]$Mine, $Head, $Base, [uint]$MaxPages, [switch]$All) }
+    function Get-GithubPullRequest { param($PullRequestId, $State, [switch]$Mine, $Head, $Base, $Author, [switch]$IsDraft, $Since, $Sort, $Direction, [uint]$MaxPages, [switch]$All) }
     function New-GithubPullRequest { param($Title, $SourceBranch, $TargetBranch, $Description, [switch]$Draft) }
-    function Update-GithubPullRequest { param($PullRequestId, $Title, $Description, $State, $TargetBranch) }
+    function Update-GithubPullRequest { param($PullRequestId, $Title, $Description, $State, $TargetBranch, [switch]$Draft, [switch]$MarkReady) }
     function Close-GithubPullRequest { param($PullRequestId) }
     function Merge-GithubPullRequest { param($PullRequestId, $MergeMethod, [switch]$DeleteSourceBranch) }
     function Get-GithubPullRequestComment { param($PullRequestId) }
@@ -44,16 +44,16 @@ BeforeAll {
     function Get-GithubConfiguration { param() }
 
     # GitLab provider command stubs
-    function Get-GitlabIssue { param($IssueId, $State, [switch]$Mine, $GroupId, $AssigneeUsername, $AuthorUsername, $CreatedAfter, [uint]$MaxPages, [switch]$All) }
-    function New-GitlabIssue { param($Title, $Description, $Labels) }
+    function Get-GitlabIssue { param($IssueId, $State, [switch]$Mine, $GroupId, $AssigneeUsername, $AuthorUsername, $Labels, $OrderBy, $Sort, $CreatedAfter, [uint]$MaxPages, [switch]$All) }
+    function New-GitlabIssue { param($Title, $Description, [string[]]$Assignees, $Labels) }
     function Update-GitlabIssue { param($IssueId, $Title, $Description, $StateEvent) }
     function Close-GitlabIssue { param($IssueId) }
     function Open-GitlabIssue { param($IssueId) }
     function Get-GitlabIssueNote { param($IssueId) }
     function New-GitlabIssueNote { param($IssueId, $Note) }
-    function Get-GitlabMergeRequest { param($MergeRequestId, $State, [switch]$Mine, $GroupId, $SourceBranch, $Username, [switch]$IsDraft, $CreatedAfter, [uint]$MaxPages, [switch]$All) }
-    function New-GitlabMergeRequest { param($Title, $SourceBranch, $TargetBranch, $Description) }
-    function Update-GitlabMergeRequest { param($MergeRequestId, $Title, $Description, [switch]$Draft, [switch]$MarkReady, [switch]$Close, [switch]$Reopen) }
+    function Get-GitlabMergeRequest { param($MergeRequestId, $State, [switch]$Mine, $GroupId, $SourceBranch, $TargetBranch, $Username, [switch]$IsDraft, $CreatedAfter, [uint]$MaxPages, [switch]$All) }
+    function New-GitlabMergeRequest { param($Title, $SourceBranch, $TargetBranch, $Description, [switch]$Draft) }
+    function Update-GitlabMergeRequest { param($MergeRequestId, $Title, $Description, [switch]$Draft, [switch]$MarkReady, [switch]$Close, [switch]$Reopen, $TargetBranch) }
     function Close-GitlabMergeRequest { param($MergeRequestId) }
     function Merge-GitlabMergeRequest { param($MergeRequestId, [switch]$Squash, [switch]$ShouldRemoveSourceBranch) }
     function Get-GitlabMergeRequestNote { param($MergeRequestId) }
@@ -61,7 +61,7 @@ BeforeAll {
     function New-GitlabProject { param($Name, $Description, $Visibility) }
     function Update-GitlabProject { param($Name, $Visibility, $DefaultBranch) }
     function Remove-GitlabProject { param($ProjectId) }
-    function Search-GitlabProject { param($Search, [uint]$MaxPages, [switch]$All) }
+    function Search-GitlabProject { param($Search, $Scope, [uint]$MaxPages, [switch]$All) }
     function Search-Gitlab { param($Search, $Scope, [switch]$All) }
     function Get-GitlabGroup { param($GroupId, [uint]$MaxPages, [switch]$All) }
     function Get-GitlabGroupMember { param($GroupId, $UserId, [uint]$MaxPages, [switch]$All) }
@@ -72,7 +72,7 @@ BeforeAll {
     function Remove-GitlabBranch { param($Branch) }
     function Get-GitlabRelease { param($Tag, [uint]$MaxPages, [switch]$All) }
     function Get-GitlabUser { param($UserId, [switch]$Me, $Select) }
-    function Get-GitlabCommit { param($Sha, $Ref, [uint]$MaxPages, [switch]$All) }
+    function Get-GitlabCommit { param($Sha, $Ref, $Author, $Since, $Until, [uint]$MaxPages, [switch]$All) }
     function Get-GitlabMilestone { param($MilestoneId, $State) }
     function Invoke-GitlabApi { param($HttpMethod, $Path, [hashtable]$Query, [hashtable]$Body, [uint]$MaxPages) }
     function Get-GitlabConfiguration { param() }
@@ -154,20 +154,30 @@ Describe "Get-Issue" {
             Should -Invoke Get-GitlabIssue -ParameterFilter { $CreatedAfter -eq '2024-01-01' }
         }
 
-        It "Should warn about unsupported Labels" {
-            Get-Issue -Labels 'bug' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
-            $warnings[0] | Should -BeLike '*Labels*not*supported*Gitlab*'
+        It "Should pass Labels through" {
+            Get-Issue -Labels 'bug' -Provider gitlab
+            Should -Invoke Get-GitlabIssue -ParameterFilter { $Labels -eq 'bug' }
         }
 
-        It "Should warn about unsupported Sort" {
-            Get-Issue -Sort 'created' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should map Sort 'created' to OrderBy 'created_at'" {
+            Get-Issue -Sort 'created' -Provider gitlab
+            Should -Invoke Get-GitlabIssue -ParameterFilter { $OrderBy -eq 'created_at' }
         }
 
-        It "Should warn about unsupported Direction" {
-            Get-Issue -Direction 'asc' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
+        It "Should map Sort 'updated' to OrderBy 'updated_at'" {
+            Get-Issue -Sort 'updated' -Provider gitlab
+            Should -Invoke Get-GitlabIssue -ParameterFilter { $OrderBy -eq 'updated_at' }
+        }
+
+        It "Should warn about unsupported Sort 'comments'" {
+            Get-Issue -Sort 'comments' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
             $warnings | Should -Not -BeNullOrEmpty
+            $warnings[0] | Should -BeLike '*comments*not*supported*Gitlab*'
+        }
+
+        It "Should map Direction to Sort" {
+            Get-Issue -Direction 'asc' -Provider gitlab
+            Should -Invoke Get-GitlabIssue -ParameterFilter { $Sort -eq 'asc' }
         }
     }
 }
@@ -209,10 +219,9 @@ Describe "New-Issue" {
             Should -Invoke New-GitlabIssue -ParameterFilter { $Labels -eq 'bug,critical' }
         }
 
-        It "Should warn about unsupported Assignees" {
-            New-Issue -Title 'Bug' -Assignees @('alice') -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
-            $warnings[0] | Should -BeLike '*Assignees*not*supported*Gitlab*'
+        It "Should pass Assignees through" {
+            New-Issue -Title 'Bug' -Assignees @('alice', 'bob') -Provider gitlab
+            Should -Invoke New-GitlabIssue -ParameterFilter { $Assignees.Count -eq 2 }
         }
     }
 }
@@ -324,19 +333,19 @@ Describe "Get-ChangeRequest" {
             $warnings | Should -Not -BeNullOrEmpty
         }
 
-        It "Should warn about unsupported Author" {
-            Get-ChangeRequest -Author 'jdoe' -Provider github -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should map Author through" {
+            Get-ChangeRequest -Author 'jdoe' -Provider github
+            Should -Invoke Get-GithubPullRequest -ParameterFilter { $Author -eq 'jdoe' }
         }
 
-        It "Should warn about unsupported IsDraft" {
-            Get-ChangeRequest -IsDraft -Provider github -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should pass IsDraft switch" {
+            Get-ChangeRequest -IsDraft -Provider github
+            Should -Invoke Get-GithubPullRequest -ParameterFilter { $IsDraft -eq $true }
         }
 
-        It "Should warn about unsupported Since" {
-            Get-ChangeRequest -Since '2024-01-01' -Provider github -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should map Since through" {
+            Get-ChangeRequest -Since '2024-01-01' -Provider github
+            Should -Invoke Get-GithubPullRequest -ParameterFilter { $Since -eq '2024-01-01' }
         }
     }
 
@@ -377,9 +386,9 @@ Describe "Get-ChangeRequest" {
             Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $IsDraft -eq $true }
         }
 
-        It "Should warn about unsupported TargetBranch" {
-            Get-ChangeRequest -TargetBranch 'main' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should pass TargetBranch through" {
+            Get-ChangeRequest -TargetBranch 'main' -Provider gitlab
+            Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $TargetBranch -eq 'main' }
         }
     }
 }
@@ -425,10 +434,9 @@ Describe "New-ChangeRequest" {
             }
         }
 
-        It "Should warn about unsupported Draft" {
-            New-ChangeRequest -Title 'WIP' -SourceBranch 'feature' -Draft -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
-            $warnings[0] | Should -BeLike '*Draft*not*supported*Gitlab*'
+        It "Should pass Draft switch" {
+            New-ChangeRequest -Title 'WIP' -SourceBranch 'feature' -Draft -Provider gitlab
+            Should -Invoke New-GitlabMergeRequest -ParameterFilter { $Draft -eq $true }
         }
     }
 }
@@ -608,9 +616,19 @@ Describe "Search-Repo" {
             Should -Invoke Search-GitlabProject -ParameterFilter { $Search -eq 'forge' }
         }
 
-        It "Should warn about unsupported Scope" {
-            Search-Repo -Query 'forge' -Scope 'code' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should map Scope 'code' to 'blobs'" {
+            Search-Repo -Query 'forge' -Scope 'code' -Provider gitlab
+            Should -Invoke Search-GitlabProject -ParameterFilter { $Scope -eq 'blobs' }
+        }
+
+        It "Should pass Scope 'commits' through" {
+            Search-Repo -Query 'forge' -Scope 'commits' -Provider gitlab
+            Should -Invoke Search-GitlabProject -ParameterFilter { $Scope -eq 'commits' }
+        }
+
+        It "Should pass Scope 'issues' through" {
+            Search-Repo -Query 'forge' -Scope 'issues' -Provider gitlab
+            Should -Invoke Search-GitlabProject -ParameterFilter { $Scope -eq 'issues' }
         }
     }
 }
@@ -833,19 +851,19 @@ Describe "Get-Commit" {
             Should -Invoke Get-GitlabCommit -ParameterFilter { $Ref -eq 'main' }
         }
 
-        It "Should warn about unsupported Author" {
-            Get-Commit -Author 'jdoe' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should pass Author through" {
+            Get-Commit -Author 'jdoe' -Provider gitlab
+            Should -Invoke Get-GitlabCommit -ParameterFilter { $Author -eq 'jdoe' }
         }
 
-        It "Should warn about unsupported Since" {
-            Get-Commit -Since '2024-01-01' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should map Since through" {
+            Get-Commit -Since '2024-01-01' -Provider gitlab
+            Should -Invoke Get-GitlabCommit -ParameterFilter { $Since -eq '2024-01-01' }
         }
 
-        It "Should warn about unsupported Until" {
-            Get-Commit -Until '2024-12-31' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should map Until through" {
+            Get-Commit -Until '2024-12-31' -Provider gitlab
+            Should -Invoke Get-GitlabCommit -ParameterFilter { $Until -eq '2024-12-31' }
         }
     }
 }
@@ -919,14 +937,14 @@ Describe "Update-ChangeRequest" {
             Should -Invoke Update-GithubPullRequest -ParameterFilter { $TargetBranch -eq 'develop' }
         }
 
-        It "Should warn about unsupported Draft" {
-            Update-ChangeRequest -Id '99' -Draft -Provider github -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should pass Draft switch" {
+            Update-ChangeRequest -Id '99' -Draft -Provider github
+            Should -Invoke Update-GithubPullRequest -ParameterFilter { $Draft -eq $true }
         }
 
-        It "Should warn about unsupported MarkReady" {
-            Update-ChangeRequest -Id '99' -MarkReady -Provider github -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should pass MarkReady switch" {
+            Update-ChangeRequest -Id '99' -MarkReady -Provider github
+            Should -Invoke Update-GithubPullRequest -ParameterFilter { $MarkReady -eq $true }
         }
     }
 
@@ -962,9 +980,9 @@ Describe "Update-ChangeRequest" {
             Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $Reopen -eq $true }
         }
 
-        It "Should warn about unsupported TargetBranch" {
-            Update-ChangeRequest -Id '99' -TargetBranch 'develop' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should pass TargetBranch through" {
+            Update-ChangeRequest -Id '99' -TargetBranch 'develop' -Provider gitlab
+            Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $TargetBranch -eq 'develop' }
         }
     }
 }
