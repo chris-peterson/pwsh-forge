@@ -6,6 +6,7 @@ Potential unified commands that need provider gaps or naming decisions resolved 
 
 | Forge Command | GitHub | GitLab | Notes |
 |---|---|---|---|
+| `Get-ChangeRequest -ReviewedBy` | `Get-GithubPullRequest -ReviewedBy` | `Get-GitlabMergeRequest -Role reviewer` | **Gap**: pwsh-github lacks `-ReviewedBy`; forge `Get-ChangeRequest` has no `Role`/`ReviewedBy` param. GitLab already works via `-Role reviewer`. GitHub needs search query `reviewed-by:<user>` added to `Get-GithubPullRequest`. |
 | `New-ChangeRequestComment` | `New-GithubPullRequestComment` | `New-GitlabMergeRequestNote` | **Blocked**: `New-GitlabMergeRequestNote` does not exist in pwsh-gitlab |
 
 ## Issues
