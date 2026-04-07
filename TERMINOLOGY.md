@@ -19,6 +19,7 @@ map to the **common terms** used by `ForgeCli`.
 | **Milestone**      | Milestone          | Milestone          | Same on both platforms.                                             |
 | **Label**          | Label              | Label              | Same on both platforms.                                             |
 | **User**           | User               | User               | Same on both platforms.                                             |
+| **UserActivity**   | Event              | UserEvent          | User activity feed. GitHub filters client-side for dates/actions.   |
 | **Comment**        | Comment            | Note               | Attached to issues/CRs.                                             |
 
 ## Detailed Property Mappings
@@ -72,6 +73,24 @@ Maps to: `Github.PullRequest` / `Gitlab.MergeRequest`
 | Url                | `html_url`            | `web_url`                 |
 | CreatedAt          | `created_at`          | `created_at`              |
 | UpdatedAt          | `updated_at`          | `updated_at`              |
+
+### UserActivity
+
+Maps to: `Github.Event` / `Gitlab.Event`
+
+| Common Property    | Github                | Gitlab                    |
+|--------------------|-----------------------|---------------------------|
+| Id                 | `Id` (`EventId`)      | `Id`                      |
+| CreatedAt          | `CreatedAt`           | `CreatedAt`               |
+| Actor/Author       | `ActorName`           | `AuthorUsername`          |
+| Action             | `Type` (e.g. `PushEvent`) | `ActionName` (e.g. `pushed to`) |
+| Summary            | `Summary` (repo name) | `Summary` (branch/MR/issue title) |
+
+**Formatting gap:** GitLab's `ActionName` is human-readable (`pushed to`, `accepted`,
+`opened`) while GitHub's `Type` is a raw event class (`PushEvent`,
+`PullRequestEvent`). GitLab's `Summary` includes contextual detail (branch names,
+MR titles) while GitHub's is just the repo name. Improving GitHub's computed
+properties is tracked in the backlog.
 
 ## Naming Rationale
 
@@ -133,6 +152,7 @@ noun differs between providers (with a provider prefix added):
 | Release                | Release              | Release           |
 | Repo                   | Repository           | Project           |
 | User                   | User                 | User              |
+| UserActivity           | Event                | UserEvent         |
 
 For example, `Get-Repo` dispatches to `Get-GithubRepository` or
 `Get-GitlabProject`. The canonical mapping is maintained in
@@ -159,6 +179,7 @@ provider-specific command based on git remote context:
 | `Get-Release`              | `Get-GithubRelease`               | `Get-GitlabRelease`          |
 | `Get-Repo`                 | `Get-GithubRepository`            | `Get-GitlabProject`          |
 | `Get-User`                 | `Get-GithubUser`                  | `Get-GitlabUser`             |
+| `Get-UserActivity`         | `Get-GithubEvent`                 | `Get-GitlabUserEvent`        |
 | `Merge-ChangeRequest`      | `Merge-GithubPullRequest`         | `Merge-GitlabMergeRequest`   |
 | `New-Branch`               | `New-GithubBranch`                | `New-GitlabBranch`           |
 | `New-ChangeRequest`        | `New-GithubPullRequest`           | `New-GitlabMergeRequest`     |

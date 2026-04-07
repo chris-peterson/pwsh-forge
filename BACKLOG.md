@@ -29,6 +29,13 @@ Potential unified commands that need provider gaps or naming decisions resolved 
 | `Invoke-ForgeApi` | `Invoke-GithubApi` | `Invoke-GitlabApi` | Renamed from `Invoke-Api` to avoid ambiguity |
 | `Get-ForgeConfiguration` | `Get-GithubConfiguration` | `Get-GitlabConfiguration` | Renamed from `Get-Configuration` to avoid ambiguity |
 
+## User Activity
+
+| Feature | Provider | Notes |
+|---|---|---|
+| Richer `ActionName` computed property | pwsh-github | Map `Type` to human-readable labels (`PushEvent` → `pushed to`, `PullRequestEvent` + `payload.action` → `opened`/`merged`/`closed`). GitLab already has this via `ActionName`. |
+| Richer `Summary` computed property | pwsh-github | Include contextual detail (branch name, PR title, issue title) from `Payload` instead of just repo name. GitLab already does this via `PushData`/`TargetType`/`TargetTitle`. |
+
 ## Resource Enrichment
 
 | Feature | Description | Notes |

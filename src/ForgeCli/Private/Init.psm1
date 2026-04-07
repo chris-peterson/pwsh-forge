@@ -18,6 +18,7 @@ $global:ForgeProviders = @{
             'Release'              = 'Release'
             'Repo'                 = 'Repository'
             'User'                 = 'User'
+            'UserActivity'         = 'Event'
         }
     }
     'gitlab' = @{
@@ -37,6 +38,7 @@ $global:ForgeProviders = @{
             'Release'              = 'Release'
             'Repo'                 = 'Project'
             'User'                 = 'User'
+            'UserActivity'         = 'UserEvent'
         }
     }
 }
