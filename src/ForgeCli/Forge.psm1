@@ -1317,3 +1317,117 @@ function Get-Repo {
 
     & $Target.Command @Params
 }
+
+function Get-UserActivity {
+    [CmdletBinding()]
+    param(
+        [Parameter()]
+        [switch]
+        $Mine,
+
+        [Parameter()]
+        [string]
+        $Username,
+
+        [Parameter()]
+        [string]
+        $Since,
+
+        [Parameter()]
+        [string]
+        $Until,
+
+        [Parameter()]
+        [string]
+        $Action,
+
+        [Parameter()]
+        [string]
+        $TargetType,
+
+        [Parameter()]
+        [uint]
+        $MaxPages,
+
+        [switch]
+        [Parameter()]
+        $All,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-UserActivity' -Provider $Provider
+    $Params = @{}
+    $ClientFilters = @()
+
+    switch ($Target.Provider) {
+        'github' {
+            if ($Mine) {
+                $Me = Get-GithubUser -Me
+                $Params.Username = $Me.Login
+            }
+            if ($Username)  { $Params.Username  = $Username }
+            if ($MaxPages)  { $Params.MaxPages  = $MaxPages }
+            if ($All)       { $Params.All       = $true }
+            if ($Since) {
+                $SinceDate = [datetime]::Parse($Since)
+                $ClientFilters += { param($e) $e.CreatedAt -and $e.CreatedAt -ge $SinceDate }.GetNewClosure()
+            }
+            if ($Until) {
+                $UntilDate = [datetime]::Parse($Until)
+                $ClientFilters += { param($e) $e.CreatedAt -and $e.CreatedAt -le $UntilDate }.GetNewClosure()
+            }
+            if ($Action) {
+                $ActionTypeMap = @{
+                    'pushed'    = @('PushEvent')
+                    'created'   = @('IssuesEvent', 'PullRequestEvent')
+                    'merged'    = @('PullRequestEvent')
+                    'commented' = @('IssueCommentEvent', 'PullRequestReviewCommentEvent')
+                    'approved'  = @('PullRequestReviewEvent')
+                    'closed'    = @('IssuesEvent', 'PullRequestEvent')
+                    'reopened'  = @('IssuesEvent', 'PullRequestEvent')
+                }
+                $AllowedTypes = $ActionTypeMap[$Action]
+                if ($AllowedTypes) {
+                    $ClientFilters += { param($e) $e.Type -in $AllowedTypes }.GetNewClosure()
+                } else {
+                    Write-Warning "Get-UserActivity -Action '$Action' has no known GitHub event type mapping; returning unfiltered results"
+                }
+            }
+            if ($TargetType) {
+                $TargetTypeMap = @{
+                    'issue'         = @('IssuesEvent', 'IssueCommentEvent')
+                    'merge_request' = @('PullRequestEvent', 'PullRequestReviewEvent', 'PullRequestReviewCommentEvent')
+                    'note'          = @('IssueCommentEvent', 'PullRequestReviewCommentEvent')
+                }
+                $AllowedTypes = $TargetTypeMap[$TargetType]
+                if ($AllowedTypes) {
+                    $ClientFilters += { param($e) $e.Type -in $AllowedTypes }.GetNewClosure()
+                } else {
+                    Write-Warning "Get-UserActivity -TargetType '$TargetType' has no known GitHub event type mapping; returning unfiltered results"
+                }
+            }
+        }
+        'gitlab' {
+            if ($Mine)       { $Params.Me         = $true }
+            if ($Username)   { $Params.UserId     = $Username }
+            if ($Since)      { $Params.After      = $Since }
+            if ($Until)      { $Params.Before     = $Until }
+            if ($Action)     { $Params.Action     = $Action }
+            if ($TargetType) { $Params.TargetType = $TargetType }
+            if ($MaxPages)   { $Params.MaxPages   = $MaxPages }
+            if ($All)        { $Params.All        = $true }
+        }
+    }
+
+    $Results = & $Target.Command @Params
+
+    foreach ($Filter in $ClientFilters) {
+        $Results = @($Results | Where-Object { & $Filter $_ })
+    }
+
+    $Results
+}

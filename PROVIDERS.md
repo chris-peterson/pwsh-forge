@@ -81,6 +81,24 @@ The mapping code lives inline in each command in
 | `-Me`          | `-Me`                 | `-Me`                   |
 | `-Select`      | `-Select`             | `-Select`               |
 
+## Get-UserActivity
+
+| Common Param   | Github                              | Gitlab                  |
+|----------------|-------------------------------------|-------------------------|
+| `-Mine`        | `-Username` (resolved via `GET /user`) | `-Me`                |
+| `-Username`    | `-Username`                         | `-UserId`               |
+| `-Since`       | client-side filter on `created_at`  | `-After`                |
+| `-Until`       | client-side filter on `created_at`  | `-Before`               |
+| `-Action`      | client-side filter on event `type`  | `-Action`               |
+| `-TargetType`  | client-side filter on event `type`  | `-TargetType`           |
+| `-MaxPages`    | `-MaxPages`                         | `-MaxPages`             |
+| `-All`         | `-All`                              | `-All`                  |
+
+**GitHub limitation:** The Events API returns at most 300 events within a
+~90-day rolling window. `-Since`/`-Until` filter within that window but
+cannot reach further back. GitLab supports server-side date ranges with
+no such cap.
+
 ## Get-Group
 
 | Common Param   | Github                | Gitlab                  |

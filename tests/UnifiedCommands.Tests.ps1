@@ -41,6 +41,7 @@ BeforeAll {
     function Get-GithubCommit { param($Sha, $Branch, $Author, $Since, $Until, [uint]$MaxPages, [switch]$All) }
     function Get-GithubMilestone { param($MilestoneId, $State) }
     function Invoke-GithubApi { param($HttpMethod, $Path, [hashtable]$Query, [hashtable]$Body, [uint]$MaxPages) }
+    function Get-GithubEvent { param($RepositoryId, $Username, $Organization, [uint]$MaxPages, [switch]$All, $Select) }
     function Get-GithubConfiguration { param() }
 
     # GitLab provider command stubs
@@ -75,6 +76,7 @@ BeforeAll {
     function Get-GitlabCommit { param($Sha, $Ref, $Author, $Since, $Until, [uint]$MaxPages, [switch]$All) }
     function Get-GitlabMilestone { param($MilestoneId, $State) }
     function Invoke-GitlabApi { param($HttpMethod, $Path, [hashtable]$Query, [hashtable]$Body, [uint]$MaxPages) }
+    function Get-GitlabUserEvent { param($UserId, $EmailAddress, [switch]$Me, $Action, $TargetType, $Before, $After, $Sort, [uint]$MaxPages, [switch]$FetchProjects, $SiteUrl) }
     function Get-GitlabConfiguration { param() }
 }
 
@@ -1373,6 +1375,142 @@ Describe "Get-Milestone" {
         It "Should keep State 'closed' as 'closed'" {
             Get-Milestone -State 'closed' -Provider gitlab
             Should -Invoke Get-GitlabMilestone -ParameterFilter { $State -eq 'closed' }
+        }
+    }
+}
+
+Describe "Get-UserActivity" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Get-GithubEvent {}
+            Mock Get-GithubUser { [PSCustomObject]@{ Login = 'testuser' } }
+        }
+
+        It "Should resolve Mine to current username" {
+            Get-UserActivity -Mine -Provider github
+            Should -Invoke Get-GithubUser -ParameterFilter { $Me -eq $true }
+            Should -Invoke Get-GithubEvent -ParameterFilter { $Username -eq 'testuser' }
+        }
+
+        It "Should map Username to Username" {
+            Get-UserActivity -Username 'jdoe' -Provider github
+            Should -Invoke Get-GithubEvent -ParameterFilter { $Username -eq 'jdoe' }
+        }
+
+        It "Should pass MaxPages through" {
+            Get-UserActivity -Username 'jdoe' -MaxPages 5 -Provider github
+            Should -Invoke Get-GithubEvent -ParameterFilter { $MaxPages -eq 5 }
+        }
+
+        It "Should pass All switch" {
+            Get-UserActivity -Username 'jdoe' -All -Provider github
+            Should -Invoke Get-GithubEvent -ParameterFilter { $All -eq $true }
+        }
+
+        It "Should filter by Since client-side" {
+            Mock Get-GithubEvent {
+                @(
+                    [PSCustomObject]@{ Type = 'PushEvent'; CreatedAt = [datetime]'2024-06-15' }
+                    [PSCustomObject]@{ Type = 'PushEvent'; CreatedAt = [datetime]'2024-05-01' }
+                )
+            }
+            $result = Get-UserActivity -Username 'jdoe' -Since '2024-06-01' -Provider github
+            $result | Should -HaveCount 1
+            $result[0].CreatedAt | Should -Be ([datetime]'2024-06-15')
+        }
+
+        It "Should skip events with null CreatedAt when filtering by date" {
+            Mock Get-GithubEvent {
+                @(
+                    [PSCustomObject]@{ Type = 'PushEvent'; CreatedAt = [datetime]'2024-06-15' }
+                    [PSCustomObject]@{ Type = 'PushEvent'; CreatedAt = $null }
+                )
+            }
+            $result = Get-UserActivity -Username 'jdoe' -Since '2024-06-01' -Provider github
+            $result | Should -HaveCount 1
+            $result[0].CreatedAt | Should -Be ([datetime]'2024-06-15')
+        }
+
+        It "Should filter by Until client-side" {
+            Mock Get-GithubEvent {
+                @(
+                    [PSCustomObject]@{ Type = 'PushEvent'; CreatedAt = [datetime]'2024-06-15' }
+                    [PSCustomObject]@{ Type = 'PushEvent'; CreatedAt = [datetime]'2024-05-01' }
+                )
+            }
+            $result = Get-UserActivity -Username 'jdoe' -Until '2024-05-31' -Provider github
+            $result | Should -HaveCount 1
+            $result[0].CreatedAt | Should -Be ([datetime]'2024-05-01')
+        }
+
+        It "Should filter by Action client-side" {
+            Mock Get-GithubEvent {
+                @(
+                    [PSCustomObject]@{ Type = 'PushEvent'; CreatedAt = [datetime]'2024-06-15' }
+                    [PSCustomObject]@{ Type = 'IssuesEvent'; CreatedAt = [datetime]'2024-06-15' }
+                )
+            }
+            $result = Get-UserActivity -Username 'jdoe' -Action 'pushed' -Provider github
+            $result | Should -HaveCount 1
+            $result[0].Type | Should -Be 'PushEvent'
+        }
+
+        It "Should filter by TargetType client-side" {
+            Mock Get-GithubEvent {
+                @(
+                    [PSCustomObject]@{ Type = 'PullRequestEvent'; CreatedAt = [datetime]'2024-06-15' }
+                    [PSCustomObject]@{ Type = 'IssuesEvent'; CreatedAt = [datetime]'2024-06-15' }
+                )
+            }
+            $result = Get-UserActivity -Username 'jdoe' -TargetType 'issue' -Provider github
+            $result | Should -HaveCount 1
+            $result[0].Type | Should -Be 'IssuesEvent'
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Get-GitlabUserEvent {}
+        }
+
+        It "Should map Mine to Me" {
+            Get-UserActivity -Mine -Provider gitlab
+            Should -Invoke Get-GitlabUserEvent -ParameterFilter { $Me -eq $true }
+        }
+
+        It "Should map Username to UserId" {
+            Get-UserActivity -Username 'jdoe' -Provider gitlab
+            Should -Invoke Get-GitlabUserEvent -ParameterFilter { $UserId -eq 'jdoe' }
+        }
+
+        It "Should map Since to After" {
+            Get-UserActivity -Mine -Since '2024-06-01' -Provider gitlab
+            Should -Invoke Get-GitlabUserEvent -ParameterFilter { $After -eq '2024-06-01' }
+        }
+
+        It "Should map Until to Before" {
+            Get-UserActivity -Mine -Until '2024-06-30' -Provider gitlab
+            Should -Invoke Get-GitlabUserEvent -ParameterFilter { $Before -eq '2024-06-30' }
+        }
+
+        It "Should pass Action through" {
+            Get-UserActivity -Mine -Action 'pushed' -Provider gitlab
+            Should -Invoke Get-GitlabUserEvent -ParameterFilter { $Action -eq 'pushed' }
+        }
+
+        It "Should pass TargetType through" {
+            Get-UserActivity -Mine -TargetType 'merge_request' -Provider gitlab
+            Should -Invoke Get-GitlabUserEvent -ParameterFilter { $TargetType -eq 'merge_request' }
+        }
+
+        It "Should pass MaxPages through" {
+            Get-UserActivity -Mine -MaxPages 5 -Provider gitlab
+            Should -Invoke Get-GitlabUserEvent -ParameterFilter { $MaxPages -eq 5 }
         }
     }
 }

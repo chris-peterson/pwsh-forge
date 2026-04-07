@@ -66,6 +66,7 @@ WIP dashboard support:
         'Get-Release'
         'Get-Repo'
         'Get-User'
+        'Get-UserActivity'
         'Merge-ChangeRequest'
         'New-Branch'
         'New-ChangeRequest'
