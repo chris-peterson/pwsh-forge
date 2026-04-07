@@ -53,6 +53,10 @@ function Get-Issue {
         $All,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -64,6 +68,7 @@ function Get-Issue {
     switch ($Target.Provider) {
         'github' {
             if ($Id)        { $Params.IssueId      = $Id }
+            if ($Repo)      { $Params.RepositoryId = $Repo }
             if ($State)     { $Params.State         = $State }
             if ($Mine)      { $Params.Mine          = $true }
             if ($Group)     { $Params.Organization  = $Group }
@@ -78,6 +83,7 @@ function Get-Issue {
         }
         'gitlab' {
             if ($Id)        { $Params.IssueId          = $Id }
+            if ($Repo)      { $Params.ProjectId        = $Repo }
             if ($Mine)      { $Params.Mine             = $true }
             if ($Group)     { $Params.GroupId           = $Group }
             if ($Assignee)  { $Params.AssigneeUsername  = $Assignee }
@@ -168,6 +174,10 @@ function Get-ChangeRequest {
         $All,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -179,6 +189,7 @@ function Get-ChangeRequest {
     switch ($Target.Provider) {
         'github' {
             if ($Id)           { $Params.PullRequestId = $Id }
+            if ($Repo)         { $Params.RepositoryId  = $Repo }
             if ($State) {
                 $Params.State = switch ($State) {
                     'open'   { 'open' }
@@ -197,9 +208,17 @@ function Get-ChangeRequest {
             if ($Since)        { $Params.Since            = $Since }
             if ($Until)        { $Params.Until            = $Until }
             if ($Reviewer)     { $Params.ReviewedBy       = $Reviewer }
+            # Use cross-repo search when filters are present but no repo context
+            if (-not $Id -and -not $Mine -and -not $Repo -and ($Author -or $Reviewer -or $Since -or $Until)) {
+                $Context = Get-ForgeRemoteHost
+                if ($Context.Host -notmatch 'github') {
+                    $Params.Search = $true
+                }
+            }
         }
         'gitlab' {
             if ($Id)           { $Params.MergeRequestId = $Id }
+            if ($Repo)         { $Params.ProjectId      = $Repo }
             if ($Mine)         { $Params.Mine            = $true }
             if ($Group)        { $Params.GroupId          = $Group }
             if ($SourceBranch) { $Params.SourceBranch     = $SourceBranch }
@@ -249,6 +268,10 @@ function Get-Branch {
         $All,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -260,6 +283,7 @@ function Get-Branch {
     switch ($Target.Provider) {
         'github' {
             if ($Name)      { $Params.Name     = $Name }
+            if ($Repo)      { $Params.RepositoryId = $Repo }
             if ($Protected) { $Params.Protected = $true }
             if ($MaxPages)  { $Params.MaxPages  = $MaxPages }
             if ($All)       { $Params.All       = $true }
@@ -267,6 +291,7 @@ function Get-Branch {
         }
         'gitlab' {
             if ($Name)      { $Params.Ref      = $Name }
+            if ($Repo)      { $Params.ProjectId = $Repo }
             if ($Search)    { $Params.Search   = $Search }
             if ($MaxPages)  { $Params.MaxPages = $MaxPages }
             if ($All)       { $Params.All      = $true }
@@ -297,6 +322,10 @@ function Get-Release {
         $All,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -308,12 +337,14 @@ function Get-Release {
     switch ($Target.Provider) {
         'github' {
             if ($Tag)      { $Params.Tag      = $Tag }
+            if ($Repo)     { $Params.RepositoryId = $Repo }
             if ($Latest)   { $Params.Latest   = $true }
             if ($MaxPages) { $Params.MaxPages = $MaxPages }
             if ($All)      { $Params.All      = $true }
         }
         'gitlab' {
             if ($Tag)      { $Params.Tag      = $Tag }
+            if ($Repo)     { $Params.ProjectId = $Repo }
             if ($MaxPages) { $Params.MaxPages = $MaxPages }
             if ($All)      { $Params.All      = $true }
             if ($Latest)   { Write-Warning "Get-Release -Latest is not supported by the Gitlab provider" }
@@ -429,6 +460,10 @@ function New-Issue {
         $Labels,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -440,12 +475,14 @@ function New-Issue {
     switch ($Target.Provider) {
         'github' {
             $Params.Title = $Title
+            if ($Repo)        { $Params.RepositoryId = $Repo }
             if ($Description) { $Params.Description = $Description }
             if ($Assignees)   { $Params.Assignees   = $Assignees }
             if ($Labels)      { $Params.Labels      = $Labels }
         }
         'gitlab' {
             $Params.Title = $Title
+            if ($Repo)        { $Params.ProjectId   = $Repo }
             if ($Description) { $Params.Description = $Description }
             if ($Assignees)   { $Params.Assignees   = $Assignees }
             if ($Labels)      { $Params.Labels      = $Labels -join ',' }
@@ -478,6 +515,10 @@ function Update-Issue {
         $State,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -489,12 +530,14 @@ function Update-Issue {
     switch ($Target.Provider) {
         'github' {
             $Params.IssueId = $Id
+            if ($Repo)        { $Params.RepositoryId = $Repo }
             if ($Title)       { $Params.Title       = $Title }
             if ($Description) { $Params.Description = $Description }
             if ($State)       { $Params.State       = $State }
         }
         'gitlab' {
             $Params.IssueId = $Id
+            if ($Repo)        { $Params.ProjectId   = $Repo }
             if ($Title)       { $Params.Title       = $Title }
             if ($Description) { $Params.Description = $Description }
             if ($State) {
@@ -519,6 +562,10 @@ function Close-Issue {
         $Id,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -530,9 +577,11 @@ function Close-Issue {
     switch ($Target.Provider) {
         'github' {
             $Params.IssueId = $Id
+            if ($Repo) { $Params.RepositoryId = $Repo }
         }
         'gitlab' {
             $Params.IssueId = $Id
+            if ($Repo) { $Params.ProjectId = $Repo }
         }
     }
 
@@ -567,6 +616,10 @@ function New-ChangeRequest {
         $Draft,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -579,6 +632,7 @@ function New-ChangeRequest {
         'github' {
             $Params.Title        = $Title
             $Params.SourceBranch = $SourceBranch
+            if ($Repo)         { $Params.RepositoryId = $Repo }
             if ($TargetBranch) { $Params.TargetBranch = $TargetBranch }
             if ($Description)  { $Params.Description  = $Description }
             if ($Draft)        { $Params.Draft        = $true }
@@ -586,6 +640,7 @@ function New-ChangeRequest {
         'gitlab' {
             $Params.Title        = $Title
             $Params.SourceBranch = $SourceBranch
+            if ($Repo)         { $Params.ProjectId    = $Repo }
             if ($TargetBranch) { $Params.TargetBranch = $TargetBranch }
             if ($Description)  { $Params.Description  = $Description }
             if ($Draft)        { $Params.Draft        = $true }
@@ -613,6 +668,10 @@ function Merge-ChangeRequest {
         $DeleteSourceBranch,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -624,11 +683,13 @@ function Merge-ChangeRequest {
     switch ($Target.Provider) {
         'github' {
             $Params.PullRequestId = $Id
+            if ($Repo)               { $Params.RepositoryId      = $Repo }
             if ($Squash)             { $Params.MergeMethod        = 'squash' }
             if ($DeleteSourceBranch) { $Params.DeleteSourceBranch = $true }
         }
         'gitlab' {
             $Params.MergeRequestId = $Id
+            if ($Repo)               { $Params.ProjectId                = $Repo }
             if ($Squash)             { $Params.Squash                   = $true }
             if ($DeleteSourceBranch) { $Params.ShouldRemoveSourceBranch = $true }
         }
@@ -714,6 +775,10 @@ function Get-Commit {
         $All,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -725,6 +790,7 @@ function Get-Commit {
     switch ($Target.Provider) {
         'github' {
             if ($Ref)      { $Params.Sha      = $Ref }
+            if ($Repo)     { $Params.RepositoryId = $Repo }
             if ($Branch)   { $Params.Branch   = $Branch }
             if ($Author)   { $Params.Author   = $Author }
             if ($Since)    { $Params.Since    = $Since }
@@ -734,6 +800,7 @@ function Get-Commit {
         }
         'gitlab' {
             if ($Ref)      { $Params.Sha      = $Ref }
+            if ($Repo)     { $Params.ProjectId = $Repo }
             if ($Branch)   { $Params.Ref      = $Branch }
             if ($MaxPages) { $Params.MaxPages = $MaxPages }
             if ($All)      { $Params.All      = $true }
@@ -807,6 +874,10 @@ function Close-ChangeRequest {
         $Id,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -818,9 +889,11 @@ function Close-ChangeRequest {
     switch ($Target.Provider) {
         'github' {
             $Params.PullRequestId = $Id
+            if ($Repo) { $Params.RepositoryId = $Repo }
         }
         'gitlab' {
             $Params.MergeRequestId = $Id
+            if ($Repo) { $Params.ProjectId = $Repo }
         }
     }
 
@@ -862,6 +935,10 @@ function Update-ChangeRequest {
         $MarkReady,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -873,6 +950,7 @@ function Update-ChangeRequest {
     switch ($Target.Provider) {
         'github' {
             $Params.PullRequestId = $Id
+            if ($Repo)         { $Params.RepositoryId = $Repo }
             if ($Title)        { $Params.Title        = $Title }
             if ($Description)  { $Params.Description  = $Description }
             if ($State)        { $Params.State        = $State }
@@ -882,6 +960,7 @@ function Update-ChangeRequest {
         }
         'gitlab' {
             $Params.MergeRequestId = $Id
+            if ($Repo)         { $Params.ProjectId   = $Repo }
             if ($Title)        { $Params.Title       = $Title }
             if ($Description)  { $Params.Description = $Description }
             if ($Draft)        { $Params.Draft       = $true }
@@ -909,6 +988,10 @@ function Get-ChangeRequestComment {
         $Id,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -920,13 +1003,62 @@ function Get-ChangeRequestComment {
     switch ($Target.Provider) {
         'github' {
             $Params.PullRequestId = $Id
+            if ($Repo) { $Params.RepositoryId = $Repo }
         }
         'gitlab' {
             $Params.MergeRequestId = $Id
+            if ($Repo) { $Params.ProjectId = $Repo }
         }
     }
 
     & $Target.Command @Params
+}
+
+function Get-ChangeRequestApproval {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Id,
+
+        [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-ChangeRequestApproval' -Provider $Provider
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.PullRequestId = $Id
+            if ($Repo) { $Params.RepositoryId = $Repo }
+        }
+        'gitlab' {
+            $Params.MergeRequestId = $Id
+            if ($Repo) { $Params.ProjectId = $Repo }
+        }
+    }
+
+    $Result = & $Target.Command @Params
+
+    switch ($Target.Provider) {
+        'github' {
+            # Normalize GitHub reviews to ApprovedBy list
+            $Approved = $Result | Where-Object State -eq 'APPROVED'
+            [PSCustomObject]@{
+                ApprovedBy = @($Approved | ForEach-Object { $_.User.Login })
+            }
+        }
+        'gitlab' {
+            $Result
+        }
+    }
 }
 
 function Open-Issue {
@@ -935,6 +1067,10 @@ function Open-Issue {
         [Parameter(Mandatory, Position=0)]
         [string]
         $Id,
+
+        [Parameter()]
+        [string]
+        $Repo,
 
         [Parameter()]
         [ValidateSet([SupportedProvider])]
@@ -948,9 +1084,11 @@ function Open-Issue {
     switch ($Target.Provider) {
         'github' {
             $Params.IssueId = $Id
+            if ($Repo) { $Params.RepositoryId = $Repo }
         }
         'gitlab' {
             $Params.IssueId = $Id
+            if ($Repo) { $Params.ProjectId = $Repo }
         }
     }
 
@@ -969,6 +1107,10 @@ function New-IssueComment {
         $Body,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -980,10 +1122,12 @@ function New-IssueComment {
     switch ($Target.Provider) {
         'github' {
             $Params.IssueId = $Id
+            if ($Repo) { $Params.RepositoryId = $Repo }
             $Params.Body    = $Body
         }
         'gitlab' {
             $Params.IssueId = $Id
+            if ($Repo) { $Params.ProjectId = $Repo }
             $Params.Note    = $Body
         }
     }
@@ -1005,6 +1149,10 @@ function New-Branch {
         $Ref,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -1016,11 +1164,13 @@ function New-Branch {
     switch ($Target.Provider) {
         'github' {
             $Params.Name = $Name
-            if ($Ref) { $Params.Ref = $Ref }
+            if ($Repo) { $Params.RepositoryId = $Repo }
+            if ($Ref)  { $Params.Ref = $Ref }
         }
         'gitlab' {
             $Params.Branch = $Name
-            if ($Ref) { $Params.Ref = $Ref }
+            if ($Repo) { $Params.ProjectId = $Repo }
+            if ($Ref)  { $Params.Ref = $Ref }
         }
     }
 
@@ -1037,6 +1187,10 @@ function Remove-Branch {
         $Name,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -1048,9 +1202,11 @@ function Remove-Branch {
     switch ($Target.Provider) {
         'github' {
             $Params.BranchId = $Name
+            if ($Repo) { $Params.RepositoryId = $Repo }
         }
         'gitlab' {
             $Params.Branch = $Name
+            if ($Repo) { $Params.ProjectId = $Repo }
         }
     }
 
@@ -1226,6 +1382,10 @@ function Get-Milestone {
         $State,
 
         [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
         [ValidateSet([SupportedProvider])]
         [string]
         $Provider
@@ -1237,10 +1397,12 @@ function Get-Milestone {
     switch ($Target.Provider) {
         'github' {
             if ($Id)    { $Params.MilestoneId = $Id }
+            if ($Repo)  { $Params.RepositoryId = $Repo }
             if ($State) { $Params.State       = $State }
         }
         'gitlab' {
-            if ($Id) { $Params.MilestoneId = $Id }
+            if ($Id)   { $Params.MilestoneId = $Id }
+            if ($Repo) { $Params.ProjectId = $Repo }
             if ($State) {
                 $Params.State = switch ($State) {
                     'open'   { 'active' }

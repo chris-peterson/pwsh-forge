@@ -142,6 +142,7 @@ noun differs between providers (with a provider prefix added):
 |------------------------|----------------------|-------------------|
 | Branch                 | Branch               | Branch            |
 | ChangeRequest          | PullRequest          | MergeRequest      |
+| ChangeRequestApproval  | PullRequestReview    | MergeRequestApproval |
 | ChangeRequestComment   | PullRequestComment   | MergeRequestNote  |
 | Commit                 | Commit               | Commit            |
 | Group                  | Organization         | Group             |
@@ -163,36 +164,37 @@ For example, `Get-Repo` dispatches to `Get-GithubRepository` or
 `ForgeCli` uses the common terms for command names, dispatching to the
 provider-specific command based on git remote context:
 
-| ForgeCli Command           | Github Provider                   | Gitlab Provider              |
-|----------------------------|-----------------------------------|------------------------------|
-| `Add-GroupMember`          | `Add-GithubOrganizationMember`    | `Add-GitlabGroupMember`      |
-| `Close-ChangeRequest`      | `Close-GithubPullRequest`         | `Close-GitlabMergeRequest`   |
-| `Close-Issue`              | `Close-GithubIssue`               | `Close-GitlabIssue`          |
-| `Get-Branch`               | `Get-GithubBranch`                | `Get-GitlabBranch`           |
-| `Get-ChangeRequest`        | `Get-GithubPullRequest`           | `Get-GitlabMergeRequest`     |
-| `Get-ChangeRequestComment` | `Get-GithubPullRequestComment`    | `Get-GitlabMergeRequestNote` |
-| `Get-Commit`               | `Get-GithubCommit`                | `Get-GitlabCommit`           |
-| `Get-Group`                | `Get-GithubOrganization`          | `Get-GitlabGroup`            |
-| `Get-GroupMember`          | `Get-GithubOrganizationMember`    | `Get-GitlabGroupMember`      |
-| `Get-Issue`                | `Get-GithubIssue`                 | `Get-GitlabIssue`            |
-| `Get-Milestone`            | `Get-GithubMilestone`             | `Get-GitlabMilestone`        |
-| `Get-Release`              | `Get-GithubRelease`               | `Get-GitlabRelease`          |
-| `Get-Repo`                 | `Get-GithubRepository`            | `Get-GitlabProject`          |
-| `Get-User`                 | `Get-GithubUser`                  | `Get-GitlabUser`             |
-| `Get-UserActivity`         | `Get-GithubEvent`                 | `Get-GitlabUserEvent`        |
-| `Merge-ChangeRequest`      | `Merge-GithubPullRequest`         | `Merge-GitlabMergeRequest`   |
-| `New-Branch`               | `New-GithubBranch`                | `New-GitlabBranch`           |
-| `New-ChangeRequest`        | `New-GithubPullRequest`           | `New-GitlabMergeRequest`     |
-| `New-Issue`                | `New-GithubIssue`                 | `New-GitlabIssue`            |
-| `New-IssueComment`         | `New-GithubIssueComment`          | `New-GitlabIssueNote`        |
-| `New-Repo`                 | `New-GithubRepository`            | `New-GitlabProject`          |
-| `Open-Issue`               | `Open-GithubIssue`                | `Open-GitlabIssue`           |
-| `Remove-Branch`            | `Remove-GithubBranch`             | `Remove-GitlabBranch`        |
-| `Remove-GroupMember`       | `Remove-GithubOrganizationMember` | `Remove-GitlabGroupMember`   |
-| `Remove-Repo`              | `Remove-GithubRepository`         | `Remove-GitlabProject`       |
-| `Search-Repo`              | `Search-GithubRepository`         | `Search-GitlabProject`       |
-| `Update-ChangeRequest`     | `Update-GithubPullRequest`        | `Update-GitlabMergeRequest`  |
-| `Update-Issue`             | `Update-GithubIssue`              | `Update-GitlabIssue`         |
+| ForgeCli Command            | Github Provider                   | Gitlab Provider                  |
+|-----------------------------|-----------------------------------|----------------------------------|
+| `Add-GroupMember`           | `Add-GithubOrganizationMember`    | `Add-GitlabGroupMember`          |
+| `Close-ChangeRequest`       | `Close-GithubPullRequest`         | `Close-GitlabMergeRequest`       |
+| `Close-Issue`               | `Close-GithubIssue`               | `Close-GitlabIssue`              |
+| `Get-Branch`                | `Get-GithubBranch`                | `Get-GitlabBranch`               |
+| `Get-ChangeRequest`         | `Get-GithubPullRequest`           | `Get-GitlabMergeRequest`         |
+| `Get-ChangeRequestApproval` | `Get-GithubPullRequestReview`     | `Get-GitlabMergeRequestApproval` |
+| `Get-ChangeRequestComment`  | `Get-GithubPullRequestComment`    | `Get-GitlabMergeRequestNote`     |
+| `Get-Commit`                | `Get-GithubCommit`                | `Get-GitlabCommit`               |
+| `Get-Group`                 | `Get-GithubOrganization`          | `Get-GitlabGroup`                |
+| `Get-GroupMember`           | `Get-GithubOrganizationMember`    | `Get-GitlabGroupMember`          |
+| `Get-Issue`                 | `Get-GithubIssue`                 | `Get-GitlabIssue`                |
+| `Get-Milestone`             | `Get-GithubMilestone`             | `Get-GitlabMilestone`            |
+| `Get-Release`               | `Get-GithubRelease`               | `Get-GitlabRelease`              |
+| `Get-Repo`                  | `Get-GithubRepository`            | `Get-GitlabProject`              |
+| `Get-User`                  | `Get-GithubUser`                  | `Get-GitlabUser`                 |
+| `Get-UserActivity`          | `Get-GithubEvent`                 | `Get-GitlabUserEvent`            |
+| `Merge-ChangeRequest`       | `Merge-GithubPullRequest`         | `Merge-GitlabMergeRequest`       |
+| `New-Branch`                | `New-GithubBranch`                | `New-GitlabBranch`               |
+| `New-ChangeRequest`         | `New-GithubPullRequest`           | `New-GitlabMergeRequest`         |
+| `New-Issue`                 | `New-GithubIssue`                 | `New-GitlabIssue`                |
+| `New-IssueComment`          | `New-GithubIssueComment`          | `New-GitlabIssueNote`            |
+| `New-Repo`                  | `New-GithubRepository`            | `New-GitlabProject`              |
+| `Open-Issue`                | `Open-GithubIssue`                | `Open-GitlabIssue`               |
+| `Remove-Branch`             | `Remove-GithubBranch`             | `Remove-GitlabBranch`            |
+| `Remove-GroupMember`        | `Remove-GithubOrganizationMember` | `Remove-GitlabGroupMember`       |
+| `Remove-Repo`               | `Remove-GithubRepository`         | `Remove-GitlabProject`           |
+| `Search-Repo`               | `Search-GithubRepository`         | `Search-GitlabProject`           |
+| `Update-ChangeRequest`      | `Update-GithubPullRequest`        | `Update-GitlabMergeRequest`      |
+| `Update-Issue`              | `Update-GithubIssue`              | `Update-GitlabIssue`             |
 
 Provider detection reads the git remote to determine whether the current
 directory is a Github or Gitlab repo, then routes to the appropriate provider.

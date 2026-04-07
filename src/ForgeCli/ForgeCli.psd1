@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '0.7.0'
+    ModuleVersion = '0.8.0'
 
     PrivateData = @{
         PSData = @{
@@ -23,10 +23,9 @@
             ExternalModuleDependencies = @('GithubCli', 'GitlabCli')
             ReleaseNotes =
 @'
-WIP dashboard support:
-* Get-ChangeRequest now supports -Until for date range end filtering
-* Get-ChangeRequest now supports -Reviewer for reviewer filtering
-* Get-ChangeRequest -State merged now works on GitHub (uses search API with is:merged)
+Cross-repo search and approvals:
+* Add Get-ChangeRequestApproval for normalized approval lookups across GitHub and GitLab
+* Get-ChangeRequest auto-detects when to use cross-repo search (no GitHub repo context)
 '@
         }
     }
@@ -57,6 +56,7 @@ WIP dashboard support:
         'Close-Issue'
         'Get-Branch'
         'Get-ChangeRequest'
+        'Get-ChangeRequestApproval'
         'Get-ChangeRequestComment'
         'Get-Commit'
         'Get-Group'
