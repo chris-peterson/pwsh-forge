@@ -152,6 +152,14 @@ function Get-ChangeRequest {
         $Since,
 
         [Parameter()]
+        [string]
+        $Until,
+
+        [Parameter()]
+        [string]
+        $Reviewer,
+
+        [Parameter()]
         [uint]
         $MaxPages,
 
@@ -176,10 +184,7 @@ function Get-ChangeRequest {
                     'open'   { 'open' }
                     'closed' { 'closed' }
                     'all'    { 'all' }
-                    'merged' { 'closed' }
-                }
-                if ($State -eq 'merged') {
-                    Write-Warning "Github does not have a 'merged' state filter; using 'closed' instead"
+                    'merged' { 'merged' }
                 }
             }
             if ($Mine)         { $Params.Mine          = $true }
@@ -190,6 +195,8 @@ function Get-ChangeRequest {
             if ($Author)       { $Params.Author          = $Author }
             if ($IsDraft)      { $Params.IsDraft          = $true }
             if ($Since)        { $Params.Since            = $Since }
+            if ($Until)        { $Params.Until            = $Until }
+            if ($Reviewer)     { $Params.ReviewedBy       = $Reviewer }
         }
         'gitlab' {
             if ($Id)           { $Params.MergeRequestId = $Id }
@@ -199,6 +206,8 @@ function Get-ChangeRequest {
             if ($Author)       { $Params.Username         = $Author }
             if ($IsDraft)      { $Params.IsDraft          = $true }
             if ($Since)        { $Params.CreatedAfter     = $Since }
+            if ($Until)        { $Params.CreatedBefore    = $Until }
+            if ($Reviewer)     { $Params.ReviewerUsername  = $Reviewer }
             if ($MaxPages)     { $Params.MaxPages         = $MaxPages }
             if ($All)          { $Params.All              = $true }
             if ($State) {

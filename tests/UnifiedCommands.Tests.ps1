@@ -327,10 +327,9 @@ Describe "Get-ChangeRequest" {
             Should -Invoke Get-GithubPullRequest -ParameterFilter { $Base -eq 'main' }
         }
 
-        It "Should map State 'merged' to 'closed' with warning" {
-            Get-ChangeRequest -State 'merged' -Provider github -WarningVariable warnings -WarningAction SilentlyContinue
-            Should -Invoke Get-GithubPullRequest -ParameterFilter { $State -eq 'closed' }
-            $warnings | Should -Not -BeNullOrEmpty
+        It "Should pass State 'merged' through to GitHub" {
+            Get-ChangeRequest -State 'merged' -Provider github
+            Should -Invoke Get-GithubPullRequest -ParameterFilter { $State -eq 'merged' }
         }
 
         It "Should map Author through" {

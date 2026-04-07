@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '0.6.0'
+    ModuleVersion = '0.7.0'
 
     PrivateData = @{
         PSData = @{
@@ -23,18 +23,10 @@
             ExternalModuleDependencies = @('GithubCli', 'GitlabCli')
             ReleaseNotes =
 @'
-GitLab provider parity:
-* Get-Issue now supports -Labels, -Sort, -Direction
-* Get-ChangeRequest now supports -TargetBranch
-* New-Issue now supports -Assignees
-* New-ChangeRequest now supports -Draft
-* Get-Commit now supports -Author, -Since, -Until
-* Search-Repo now supports -Scope (code/commits/issues)
-* Update-ChangeRequest now supports -TargetBranch
-
-GitHub provider parity:
-* Get-ChangeRequest now supports -Author, -IsDraft, -Since
-* Update-ChangeRequest now supports -Draft, -MarkReady
+WIP dashboard support:
+* Get-ChangeRequest now supports -Until for date range end filtering
+* Get-ChangeRequest now supports -Reviewer for reviewer filtering
+* Get-ChangeRequest -State merged now works on GitHub (uses search API with is:merged)
 '@
         }
     }
