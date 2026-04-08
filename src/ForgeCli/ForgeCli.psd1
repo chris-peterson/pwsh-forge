@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '0.9.0'
+    ModuleVersion = '0.10.0'
 
     PrivateData = @{
         PSData = @{
@@ -23,9 +23,8 @@
             ExternalModuleDependencies = @('GithubCli', 'GitlabCli')
             ReleaseNotes =
 @'
-Activity filtering:
-* Add -Branch parameter to Get-UserActivity for ref-level filtering (e.g. main only)
-* Add -ExcludeMerges switch to Get-UserActivity to skip merge commits
+GitLab project path resolution:
+* GitLab user activity events now include ProjectPath with the full namespace path (e.g. "dotnet/docs")
 '@
         }
     }
