@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '0.8.0'
+    ModuleVersion = '0.9.0'
 
     PrivateData = @{
         PSData = @{
@@ -23,9 +23,9 @@
             ExternalModuleDependencies = @('GithubCli', 'GitlabCli')
             ReleaseNotes =
 @'
-Cross-repo search and approvals:
-* Add Get-ChangeRequestApproval for normalized approval lookups across GitHub and GitLab
-* Get-ChangeRequest auto-detects when to use cross-repo search (no GitHub repo context)
+Activity filtering:
+* Add -Branch parameter to Get-UserActivity for ref-level filtering (e.g. main only)
+* Add -ExcludeMerges switch to Get-UserActivity to skip merge commits
 '@
         }
     }
