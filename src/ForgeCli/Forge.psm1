@@ -1508,6 +1508,14 @@ function Get-UserActivity {
         $TargetType,
 
         [Parameter()]
+        [string]
+        $Branch,
+
+        [Parameter()]
+        [switch]
+        $ExcludeMerges,
+
+        [Parameter()]
         [uint]
         $MaxPages,
 
@@ -1583,6 +1591,33 @@ function Get-UserActivity {
             if ($MaxPages)   { $Params.MaxPages   = $MaxPages }
             if ($All)        { $Params.All        = $true }
         }
+    }
+
+    if ($Branch) {
+        $BranchName = $Branch
+        $ClientFilters += {
+            param($e)
+            if ($e.Type -eq 'PushEvent') {
+                # GitHub: refs/heads/main
+                ($e.Payload.ref -replace '^refs/heads/', '') -eq $BranchName
+            } elseif ($e.PushData) {
+                # GitLab: ref = main
+                $e.PushData.ref -eq $BranchName
+            } else {
+                $true
+            }
+        }.GetNewClosure()
+    }
+    if ($ExcludeMerges) {
+        $ClientFilters += {
+            param($e)
+            $title = if ($e.Type -eq 'PushEvent') {
+                ($e.Payload.commits | Select-Object -First 1).message
+            } elseif ($e.PushData) {
+                $e.PushData.commit_title
+            } else { $null }
+            -not ($title -match '^Merge branch ')
+        }.GetNewClosure()
     }
 
     $Results = & $Target.Command @Params
