@@ -1590,6 +1590,7 @@ function Get-UserActivity {
             if ($TargetType) { $Params.TargetType = $TargetType }
             if ($MaxPages)   { $Params.MaxPages   = $MaxPages }
             if ($All)        { $Params.All        = $true }
+            $Params.FetchProjects = $true
         }
     }
 
@@ -1621,6 +1622,12 @@ function Get-UserActivity {
     }
 
     $Results = & $Target.Command @Params
+
+    if ($Target.Provider -eq 'gitlab') {
+        $Results = @($Results | ForEach-Object {
+            $_ | Add-Member -NotePropertyName 'ProjectPath' -NotePropertyValue $_.Project.PathWithNamespace -PassThru
+        })
+    }
 
     foreach ($Filter in $ClientFilters) {
         $Results = @($Results | Where-Object { & $Filter $_ })
