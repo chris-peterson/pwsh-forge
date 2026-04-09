@@ -94,27 +94,27 @@ Describe "Get-Issue" {
         }
 
         It "Should map Id to IssueId" {
-            Get-Issue -Id '42' -Provider github
+            Get-Issue -Id '42' -Forge github
             Should -Invoke Get-GithubIssue -ParameterFilter { $IssueId -eq '42' }
         }
 
         It "Should map Group to Organization" {
-            Get-Issue -Group 'my-org' -Provider github
+            Get-Issue -Group 'my-org' -Forge github
             Should -Invoke Get-GithubIssue -ParameterFilter { $Organization -eq 'my-org' }
         }
 
         It "Should map Author to Creator" {
-            Get-Issue -Author 'jdoe' -Provider github
+            Get-Issue -Author 'jdoe' -Forge github
             Should -Invoke Get-GithubIssue -ParameterFilter { $Creator -eq 'jdoe' }
         }
 
         It "Should pass State through unchanged" {
-            Get-Issue -State 'closed' -Provider github
+            Get-Issue -State 'closed' -Forge github
             Should -Invoke Get-GithubIssue -ParameterFilter { $State -eq 'closed' }
         }
 
         It "Should pass Mine switch" {
-            Get-Issue -Mine -Provider github
+            Get-Issue -Mine -Forge github
             Should -Invoke Get-GithubIssue -ParameterFilter { $Mine -eq $true }
         }
     }
@@ -127,58 +127,58 @@ Describe "Get-Issue" {
         }
 
         It "Should map State 'open' to 'opened'" {
-            Get-Issue -State 'open' -Provider gitlab
+            Get-Issue -State 'open' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $State -eq 'opened' }
         }
 
         It "Should keep State 'closed' as 'closed'" {
-            Get-Issue -State 'closed' -Provider gitlab
+            Get-Issue -State 'closed' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $State -eq 'closed' }
         }
 
         It "Should map Group to GroupId" {
-            Get-Issue -Group 'my-group' -Provider gitlab
+            Get-Issue -Group 'my-group' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $GroupId -eq 'my-group' }
         }
 
         It "Should map Assignee to AssigneeUsername" {
-            Get-Issue -Assignee 'jdoe' -Provider gitlab
+            Get-Issue -Assignee 'jdoe' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $AssigneeUsername -eq 'jdoe' }
         }
 
         It "Should map Author to AuthorUsername" {
-            Get-Issue -Author 'jdoe' -Provider gitlab
+            Get-Issue -Author 'jdoe' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $AuthorUsername -eq 'jdoe' }
         }
 
         It "Should map Since to CreatedAfter" {
-            Get-Issue -Since '2024-01-01' -Provider gitlab
+            Get-Issue -Since '2024-01-01' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $CreatedAfter -eq '2024-01-01' }
         }
 
         It "Should pass Labels through" {
-            Get-Issue -Labels 'bug' -Provider gitlab
+            Get-Issue -Labels 'bug' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $Labels -eq 'bug' }
         }
 
         It "Should map Sort 'created' to OrderBy 'created_at'" {
-            Get-Issue -Sort 'created' -Provider gitlab
+            Get-Issue -Sort 'created' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $OrderBy -eq 'created_at' }
         }
 
         It "Should map Sort 'updated' to OrderBy 'updated_at'" {
-            Get-Issue -Sort 'updated' -Provider gitlab
+            Get-Issue -Sort 'updated' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $OrderBy -eq 'updated_at' }
         }
 
         It "Should warn about unsupported Sort 'comments'" {
-            Get-Issue -Sort 'comments' -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
+            Get-Issue -Sort 'comments' -Forge gitlab -WarningVariable warnings -WarningAction SilentlyContinue
             $warnings | Should -Not -BeNullOrEmpty
             $warnings[0] | Should -BeLike '*comments*not*supported*Gitlab*'
         }
 
         It "Should map Direction to Sort" {
-            Get-Issue -Direction 'asc' -Provider gitlab
+            Get-Issue -Direction 'asc' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $Sort -eq 'asc' }
         }
     }
@@ -194,17 +194,17 @@ Describe "New-Issue" {
         }
 
         It "Should pass Title" {
-            New-Issue -Title 'Bug report' -Provider github
+            New-Issue -Title 'Bug report' -Forge github
             Should -Invoke New-GithubIssue -ParameterFilter { $Title -eq 'Bug report' }
         }
 
         It "Should pass Assignees as array" {
-            New-Issue -Title 'Bug' -Assignees @('alice', 'bob') -Provider github
+            New-Issue -Title 'Bug' -Assignees @('alice', 'bob') -Forge github
             Should -Invoke New-GithubIssue -ParameterFilter { $Assignees.Count -eq 2 }
         }
 
         It "Should not call provider command with -WhatIf" {
-            New-Issue -Title 'Test' -Provider github -WhatIf
+            New-Issue -Title 'Test' -Forge github -WhatIf
             Should -Invoke New-GithubIssue -Times 0
         }
     }
@@ -217,12 +217,12 @@ Describe "New-Issue" {
         }
 
         It "Should join Labels with comma" {
-            New-Issue -Title 'Bug' -Labels @('bug', 'critical') -Provider gitlab
+            New-Issue -Title 'Bug' -Labels @('bug', 'critical') -Forge gitlab
             Should -Invoke New-GitlabIssue -ParameterFilter { $Labels -eq 'bug,critical' }
         }
 
         It "Should pass Assignees through" {
-            New-Issue -Title 'Bug' -Assignees @('alice', 'bob') -Provider gitlab
+            New-Issue -Title 'Bug' -Assignees @('alice', 'bob') -Forge gitlab
             Should -Invoke New-GitlabIssue -ParameterFilter { $Assignees.Count -eq 2 }
         }
     }
@@ -238,12 +238,12 @@ Describe "Update-Issue" {
         }
 
         It "Should map Id to IssueId" {
-            Update-Issue -Id '42' -Title 'Updated' -Provider github
+            Update-Issue -Id '42' -Title 'Updated' -Forge github
             Should -Invoke Update-GithubIssue -ParameterFilter { $IssueId -eq '42' }
         }
 
         It "Should pass State through unchanged" {
-            Update-Issue -Id '42' -State 'closed' -Provider github
+            Update-Issue -Id '42' -State 'closed' -Forge github
             Should -Invoke Update-GithubIssue -ParameterFilter { $State -eq 'closed' }
         }
     }
@@ -256,12 +256,12 @@ Describe "Update-Issue" {
         }
 
         It "Should map State 'open' to StateEvent 'reopen'" {
-            Update-Issue -Id '42' -State 'open' -Provider gitlab
+            Update-Issue -Id '42' -State 'open' -Forge gitlab
             Should -Invoke Update-GitlabIssue -ParameterFilter { $StateEvent -eq 'reopen' }
         }
 
         It "Should map State 'closed' to StateEvent 'close'" {
-            Update-Issue -Id '42' -State 'closed' -Provider gitlab
+            Update-Issue -Id '42' -State 'closed' -Forge gitlab
             Should -Invoke Update-GitlabIssue -ParameterFilter { $StateEvent -eq 'close' }
         }
     }
@@ -277,12 +277,12 @@ Describe "Close-Issue" {
         }
 
         It "Should map Id to IssueId" {
-            Close-Issue -Id '42' -Provider github
+            Close-Issue -Id '42' -Forge github
             Should -Invoke Close-GithubIssue -ParameterFilter { $IssueId -eq '42' }
         }
 
         It "Should not call provider command with -WhatIf" {
-            Close-Issue -Id '42' -Provider github -WhatIf
+            Close-Issue -Id '42' -Forge github -WhatIf
             Should -Invoke Close-GithubIssue -Times 0
         }
     }
@@ -295,7 +295,7 @@ Describe "Close-Issue" {
         }
 
         It "Should map Id to IssueId" {
-            Close-Issue -Id '42' -Provider gitlab
+            Close-Issue -Id '42' -Forge gitlab
             Should -Invoke Close-GitlabIssue -ParameterFilter { $IssueId -eq '42' }
         }
     }
@@ -315,37 +315,37 @@ Describe "Get-ChangeRequest" {
         }
 
         It "Should map Id to PullRequestId" {
-            Get-ChangeRequest -Id '99' -Provider github
+            Get-ChangeRequest -Id '99' -Forge github
             Should -Invoke Get-GithubPullRequest -ParameterFilter { $PullRequestId -eq '99' }
         }
 
         It "Should map SourceBranch to Head" {
-            Get-ChangeRequest -SourceBranch 'feature' -Provider github
+            Get-ChangeRequest -SourceBranch 'feature' -Forge github
             Should -Invoke Get-GithubPullRequest -ParameterFilter { $Head -eq 'feature' }
         }
 
         It "Should map TargetBranch to Base" {
-            Get-ChangeRequest -TargetBranch 'main' -Provider github
+            Get-ChangeRequest -TargetBranch 'main' -Forge github
             Should -Invoke Get-GithubPullRequest -ParameterFilter { $Base -eq 'main' }
         }
 
         It "Should pass State 'merged' through to GitHub" {
-            Get-ChangeRequest -State 'merged' -Provider github
+            Get-ChangeRequest -State 'merged' -Forge github
             Should -Invoke Get-GithubPullRequest -ParameterFilter { $State -eq 'merged' }
         }
 
         It "Should map Author through" {
-            Get-ChangeRequest -Author 'jdoe' -Provider github
+            Get-ChangeRequest -Author 'jdoe' -Forge github
             Should -Invoke Get-GithubPullRequest -ParameterFilter { $Author -eq 'jdoe' }
         }
 
         It "Should pass IsDraft switch" {
-            Get-ChangeRequest -IsDraft -Provider github
+            Get-ChangeRequest -IsDraft -Forge github
             Should -Invoke Get-GithubPullRequest -ParameterFilter { $IsDraft -eq $true }
         }
 
         It "Should map Since through" {
-            Get-ChangeRequest -Since '2024-01-01' -Provider github
+            Get-ChangeRequest -Since '2024-01-01' -Forge github
             Should -Invoke Get-GithubPullRequest -ParameterFilter { $Since -eq '2024-01-01' }
         }
     }
@@ -358,37 +358,37 @@ Describe "Get-ChangeRequest" {
         }
 
         It "Should map Id to MergeRequestId" {
-            Get-ChangeRequest -Id '99' -Provider gitlab
+            Get-ChangeRequest -Id '99' -Forge gitlab
             Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $MergeRequestId -eq '99' }
         }
 
         It "Should map State 'open' to 'opened'" {
-            Get-ChangeRequest -State 'open' -Provider gitlab
+            Get-ChangeRequest -State 'open' -Forge gitlab
             Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $State -eq 'opened' }
         }
 
         It "Should pass State 'merged' through" {
-            Get-ChangeRequest -State 'merged' -Provider gitlab
+            Get-ChangeRequest -State 'merged' -Forge gitlab
             Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $State -eq 'merged' }
         }
 
         It "Should map Author to Username" {
-            Get-ChangeRequest -Author 'jdoe' -Provider gitlab
+            Get-ChangeRequest -Author 'jdoe' -Forge gitlab
             Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $Username -eq 'jdoe' }
         }
 
         It "Should map Since to CreatedAfter" {
-            Get-ChangeRequest -Since '2024-01-01' -Provider gitlab
+            Get-ChangeRequest -Since '2024-01-01' -Forge gitlab
             Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $CreatedAfter -eq '2024-01-01' }
         }
 
         It "Should pass IsDraft switch" {
-            Get-ChangeRequest -IsDraft -Provider gitlab
+            Get-ChangeRequest -IsDraft -Forge gitlab
             Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $IsDraft -eq $true }
         }
 
         It "Should pass TargetBranch through" {
-            Get-ChangeRequest -TargetBranch 'main' -Provider gitlab
+            Get-ChangeRequest -TargetBranch 'main' -Forge gitlab
             Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $TargetBranch -eq 'main' }
         }
     }
@@ -404,19 +404,19 @@ Describe "New-ChangeRequest" {
         }
 
         It "Should pass Title and SourceBranch" {
-            New-ChangeRequest -Title 'Add feature' -SourceBranch 'feature' -Provider github
+            New-ChangeRequest -Title 'Add feature' -SourceBranch 'feature' -Forge github
             Should -Invoke New-GithubPullRequest -ParameterFilter {
                 $Title -eq 'Add feature' -and $SourceBranch -eq 'feature'
             }
         }
 
         It "Should pass Draft switch" {
-            New-ChangeRequest -Title 'WIP' -SourceBranch 'feature' -Draft -Provider github
+            New-ChangeRequest -Title 'WIP' -SourceBranch 'feature' -Draft -Forge github
             Should -Invoke New-GithubPullRequest -ParameterFilter { $Draft -eq $true }
         }
 
         It "Should not call provider command with -WhatIf" {
-            New-ChangeRequest -Title 'Test' -SourceBranch 'feature' -Provider github -WhatIf
+            New-ChangeRequest -Title 'Test' -SourceBranch 'feature' -Forge github -WhatIf
             Should -Invoke New-GithubPullRequest -Times 0
         }
     }
@@ -429,14 +429,14 @@ Describe "New-ChangeRequest" {
         }
 
         It "Should pass Title and SourceBranch" {
-            New-ChangeRequest -Title 'Add feature' -SourceBranch 'feature' -Provider gitlab
+            New-ChangeRequest -Title 'Add feature' -SourceBranch 'feature' -Forge gitlab
             Should -Invoke New-GitlabMergeRequest -ParameterFilter {
                 $Title -eq 'Add feature' -and $SourceBranch -eq 'feature'
             }
         }
 
         It "Should pass Draft switch" {
-            New-ChangeRequest -Title 'WIP' -SourceBranch 'feature' -Draft -Provider gitlab
+            New-ChangeRequest -Title 'WIP' -SourceBranch 'feature' -Draft -Forge gitlab
             Should -Invoke New-GitlabMergeRequest -ParameterFilter { $Draft -eq $true }
         }
     }
@@ -452,22 +452,22 @@ Describe "Merge-ChangeRequest" {
         }
 
         It "Should map Id to PullRequestId" {
-            Merge-ChangeRequest -Id '99' -Provider github
+            Merge-ChangeRequest -Id '99' -Forge github
             Should -Invoke Merge-GithubPullRequest -ParameterFilter { $PullRequestId -eq '99' }
         }
 
         It "Should map Squash to MergeMethod 'squash'" {
-            Merge-ChangeRequest -Id '99' -Squash -Provider github
+            Merge-ChangeRequest -Id '99' -Squash -Forge github
             Should -Invoke Merge-GithubPullRequest -ParameterFilter { $MergeMethod -eq 'squash' }
         }
 
         It "Should pass DeleteSourceBranch" {
-            Merge-ChangeRequest -Id '99' -DeleteSourceBranch -Provider github
+            Merge-ChangeRequest -Id '99' -DeleteSourceBranch -Forge github
             Should -Invoke Merge-GithubPullRequest -ParameterFilter { $DeleteSourceBranch -eq $true }
         }
 
         It "Should not call provider command with -WhatIf" {
-            Merge-ChangeRequest -Id '99' -Provider github -WhatIf
+            Merge-ChangeRequest -Id '99' -Forge github -WhatIf
             Should -Invoke Merge-GithubPullRequest -Times 0
         }
     }
@@ -480,17 +480,17 @@ Describe "Merge-ChangeRequest" {
         }
 
         It "Should map Id to MergeRequestId" {
-            Merge-ChangeRequest -Id '99' -Provider gitlab
+            Merge-ChangeRequest -Id '99' -Forge gitlab
             Should -Invoke Merge-GitlabMergeRequest -ParameterFilter { $MergeRequestId -eq '99' }
         }
 
         It "Should pass Squash switch directly" {
-            Merge-ChangeRequest -Id '99' -Squash -Provider gitlab
+            Merge-ChangeRequest -Id '99' -Squash -Forge gitlab
             Should -Invoke Merge-GitlabMergeRequest -ParameterFilter { $Squash -eq $true }
         }
 
         It "Should map DeleteSourceBranch to ShouldRemoveSourceBranch" {
-            Merge-ChangeRequest -Id '99' -DeleteSourceBranch -Provider gitlab
+            Merge-ChangeRequest -Id '99' -DeleteSourceBranch -Forge gitlab
             Should -Invoke Merge-GitlabMergeRequest -ParameterFilter { $ShouldRemoveSourceBranch -eq $true }
         }
     }
@@ -510,17 +510,17 @@ Describe "Get-Repo" {
         }
 
         It "Should map Id to RepositoryId" {
-            Get-Repo -Id 'my-repo' -Provider github
+            Get-Repo -Id 'my-repo' -Forge github
             Should -Invoke Get-GithubRepository -ParameterFilter { $RepositoryId -eq 'my-repo' }
         }
 
         It "Should map Group to Organization" {
-            Get-Repo -Group 'my-org' -Provider github
+            Get-Repo -Group 'my-org' -Forge github
             Should -Invoke Get-GithubRepository -ParameterFilter { $Organization -eq 'my-org' }
         }
 
         It "Should warn about IncludeArchived" {
-            Get-Repo -IncludeArchived -Provider github -WarningVariable warnings -WarningAction SilentlyContinue
+            Get-Repo -IncludeArchived -Forge github -WarningVariable warnings -WarningAction SilentlyContinue
             $warnings | Should -Not -BeNullOrEmpty
             $warnings[0] | Should -BeLike '*IncludeArchived*not*applicable*Github*'
         }
@@ -534,17 +534,17 @@ Describe "Get-Repo" {
         }
 
         It "Should map Id to ProjectId" {
-            Get-Repo -Id 'my-project' -Provider gitlab
+            Get-Repo -Id 'my-project' -Forge gitlab
             Should -Invoke Get-GitlabProject -ParameterFilter { $ProjectId -eq 'my-project' }
         }
 
         It "Should map Group to GroupId" {
-            Get-Repo -Group 'my-group' -Provider gitlab
+            Get-Repo -Group 'my-group' -Forge gitlab
             Should -Invoke Get-GitlabProject -ParameterFilter { $GroupId -eq 'my-group' }
         }
 
         It "Should pass IncludeArchived" {
-            Get-Repo -IncludeArchived -Provider gitlab
+            Get-Repo -IncludeArchived -Forge gitlab
             Should -Invoke Get-GitlabProject -ParameterFilter { $IncludeArchived -eq $true }
         }
     }
@@ -560,14 +560,14 @@ Describe "New-Repo" {
         }
 
         It "Should pass Name, Description, and Visibility" {
-            New-Repo -Name 'my-repo' -Description 'A repo' -Visibility 'public' -Provider github
+            New-Repo -Name 'my-repo' -Description 'A repo' -Visibility 'public' -Forge github
             Should -Invoke New-GithubRepository -ParameterFilter {
                 $Name -eq 'my-repo' -and $Description -eq 'A repo' -and $Visibility -eq 'public'
             }
         }
 
         It "Should not call provider command with -WhatIf" {
-            New-Repo -Name 'my-repo' -Provider github -WhatIf
+            New-Repo -Name 'my-repo' -Forge github -WhatIf
             Should -Invoke New-GithubRepository -Times 0
         }
     }
@@ -580,7 +580,7 @@ Describe "New-Repo" {
         }
 
         It "Should pass Name and Visibility" {
-            New-Repo -Name 'my-project' -Visibility 'private' -Provider gitlab
+            New-Repo -Name 'my-project' -Visibility 'private' -Forge gitlab
             Should -Invoke New-GitlabProject -ParameterFilter {
                 $Name -eq 'my-project' -and $Visibility -eq 'private'
             }
@@ -598,7 +598,7 @@ Describe "Search-Repo" {
         }
 
         It "Should pass Query and Scope" {
-            Search-Repo -Query 'forge' -Scope 'code' -Provider github
+            Search-Repo -Query 'forge' -Scope 'code' -Forge github
             Should -Invoke Search-GithubRepository -ParameterFilter {
                 $Query -eq 'forge' -and $Scope -eq 'code'
             }
@@ -613,22 +613,22 @@ Describe "Search-Repo" {
         }
 
         It "Should map Query to Search" {
-            Search-Repo -Query 'forge' -Provider gitlab
+            Search-Repo -Query 'forge' -Forge gitlab
             Should -Invoke Search-GitlabProject -ParameterFilter { $Search -eq 'forge' }
         }
 
         It "Should map Scope 'code' to 'blobs'" {
-            Search-Repo -Query 'forge' -Scope 'code' -Provider gitlab
+            Search-Repo -Query 'forge' -Scope 'code' -Forge gitlab
             Should -Invoke Search-GitlabProject -ParameterFilter { $Scope -eq 'blobs' }
         }
 
         It "Should pass Scope 'commits' through" {
-            Search-Repo -Query 'forge' -Scope 'commits' -Provider gitlab
+            Search-Repo -Query 'forge' -Scope 'commits' -Forge gitlab
             Should -Invoke Search-GitlabProject -ParameterFilter { $Scope -eq 'commits' }
         }
 
         It "Should pass Scope 'issues' through" {
-            Search-Repo -Query 'forge' -Scope 'issues' -Provider gitlab
+            Search-Repo -Query 'forge' -Scope 'issues' -Forge gitlab
             Should -Invoke Search-GitlabProject -ParameterFilter { $Scope -eq 'issues' }
         }
     }
@@ -644,12 +644,12 @@ Describe "Get-Group" {
         }
 
         It "Should pass Name" {
-            Get-Group -Name 'my-org' -Provider github
+            Get-Group -Name 'my-org' -Forge github
             Should -Invoke Get-GithubOrganization -ParameterFilter { $Name -eq 'my-org' }
         }
 
         It "Should pass Mine switch" {
-            Get-Group -Mine -Provider github
+            Get-Group -Mine -Forge github
             Should -Invoke Get-GithubOrganization -ParameterFilter { $Mine -eq $true }
         }
     }
@@ -662,12 +662,12 @@ Describe "Get-Group" {
         }
 
         It "Should map Name to GroupId" {
-            Get-Group -Name 'my-group' -Provider gitlab
+            Get-Group -Name 'my-group' -Forge gitlab
             Should -Invoke Get-GitlabGroup -ParameterFilter { $GroupId -eq 'my-group' }
         }
 
         It "Should warn about unsupported Mine" {
-            Get-Group -Mine -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
+            Get-Group -Mine -Forge gitlab -WarningVariable warnings -WarningAction SilentlyContinue
             $warnings | Should -Not -BeNullOrEmpty
         }
     }
@@ -687,17 +687,17 @@ Describe "Get-Branch" {
         }
 
         It "Should pass Name" {
-            Get-Branch -Name 'main' -Provider github
+            Get-Branch -Name 'main' -Forge github
             Should -Invoke Get-GithubBranch -ParameterFilter { $Name -eq 'main' }
         }
 
         It "Should pass Protected switch" {
-            Get-Branch -Protected -Provider github
+            Get-Branch -Protected -Forge github
             Should -Invoke Get-GithubBranch -ParameterFilter { $Protected -eq $true }
         }
 
         It "Should warn about unsupported Search" {
-            Get-Branch -Search 'feat' -Provider github -WarningVariable warnings -WarningAction SilentlyContinue
+            Get-Branch -Search 'feat' -Forge github -WarningVariable warnings -WarningAction SilentlyContinue
             $warnings | Should -Not -BeNullOrEmpty
             $warnings[0] | Should -BeLike '*Search*not*supported*Github*'
         }
@@ -711,17 +711,17 @@ Describe "Get-Branch" {
         }
 
         It "Should map Name to Ref" {
-            Get-Branch -Name 'main' -Provider gitlab
+            Get-Branch -Name 'main' -Forge gitlab
             Should -Invoke Get-GitlabBranch -ParameterFilter { $Ref -eq 'main' }
         }
 
         It "Should pass Search" {
-            Get-Branch -Search 'feat' -Provider gitlab
+            Get-Branch -Search 'feat' -Forge gitlab
             Should -Invoke Get-GitlabBranch -ParameterFilter { $Search -eq 'feat' }
         }
 
         It "Should warn about unsupported Protected" {
-            Get-Branch -Protected -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
+            Get-Branch -Protected -Forge gitlab -WarningVariable warnings -WarningAction SilentlyContinue
             $warnings | Should -Not -BeNullOrEmpty
             $warnings[0] | Should -BeLike '*Protected*not*supported*Gitlab*'
         }
@@ -742,12 +742,12 @@ Describe "Get-Release" {
         }
 
         It "Should pass Tag" {
-            Get-Release -Tag 'v1.0' -Provider github
+            Get-Release -Tag 'v1.0' -Forge github
             Should -Invoke Get-GithubRelease -ParameterFilter { $Tag -eq 'v1.0' }
         }
 
         It "Should pass Latest switch" {
-            Get-Release -Latest -Provider github
+            Get-Release -Latest -Forge github
             Should -Invoke Get-GithubRelease -ParameterFilter { $Latest -eq $true }
         }
     }
@@ -760,12 +760,12 @@ Describe "Get-Release" {
         }
 
         It "Should pass Tag" {
-            Get-Release -Tag 'v1.0' -Provider gitlab
+            Get-Release -Tag 'v1.0' -Forge gitlab
             Should -Invoke Get-GitlabRelease -ParameterFilter { $Tag -eq 'v1.0' }
         }
 
         It "Should warn about unsupported Latest" {
-            Get-Release -Latest -Provider gitlab -WarningVariable warnings -WarningAction SilentlyContinue
+            Get-Release -Latest -Forge gitlab -WarningVariable warnings -WarningAction SilentlyContinue
             $warnings | Should -Not -BeNullOrEmpty
         }
     }
@@ -785,12 +785,12 @@ Describe "Get-User" {
         }
 
         It "Should pass Username" {
-            Get-User -Username 'jdoe' -Provider github
+            Get-User -Username 'jdoe' -Forge github
             Should -Invoke Get-GithubUser -ParameterFilter { $Username -eq 'jdoe' }
         }
 
         It "Should pass Me switch" {
-            Get-User -Me -Provider github
+            Get-User -Me -Forge github
             Should -Invoke Get-GithubUser -ParameterFilter { $Me -eq $true }
         }
     }
@@ -803,7 +803,7 @@ Describe "Get-User" {
         }
 
         It "Should map Username to UserId" {
-            Get-User -Username 'jdoe' -Provider gitlab
+            Get-User -Username 'jdoe' -Forge gitlab
             Should -Invoke Get-GitlabUser -ParameterFilter { $UserId -eq 'jdoe' }
         }
     }
@@ -823,12 +823,12 @@ Describe "Get-Commit" {
         }
 
         It "Should map Ref to Sha" {
-            Get-Commit -Ref 'abc123' -Provider github
+            Get-Commit -Ref 'abc123' -Forge github
             Should -Invoke Get-GithubCommit -ParameterFilter { $Sha -eq 'abc123' }
         }
 
         It "Should pass Branch, Author, Since, Until" {
-            Get-Commit -Branch 'main' -Author 'jdoe' -Since '2024-01-01' -Until '2024-12-31' -Provider github
+            Get-Commit -Branch 'main' -Author 'jdoe' -Since '2024-01-01' -Until '2024-12-31' -Forge github
             Should -Invoke Get-GithubCommit -ParameterFilter {
                 $Branch -eq 'main' -and $Author -eq 'jdoe' -and $Since -eq '2024-01-01' -and $Until -eq '2024-12-31'
             }
@@ -843,27 +843,27 @@ Describe "Get-Commit" {
         }
 
         It "Should map Ref to Sha" {
-            Get-Commit -Ref 'abc123' -Provider gitlab
+            Get-Commit -Ref 'abc123' -Forge gitlab
             Should -Invoke Get-GitlabCommit -ParameterFilter { $Sha -eq 'abc123' }
         }
 
         It "Should map Branch to Ref" {
-            Get-Commit -Branch 'main' -Provider gitlab
+            Get-Commit -Branch 'main' -Forge gitlab
             Should -Invoke Get-GitlabCommit -ParameterFilter { $Ref -eq 'main' }
         }
 
         It "Should pass Author through" {
-            Get-Commit -Author 'jdoe' -Provider gitlab
+            Get-Commit -Author 'jdoe' -Forge gitlab
             Should -Invoke Get-GitlabCommit -ParameterFilter { $Author -eq 'jdoe' }
         }
 
         It "Should map Since through" {
-            Get-Commit -Since '2024-01-01' -Provider gitlab
+            Get-Commit -Since '2024-01-01' -Forge gitlab
             Should -Invoke Get-GitlabCommit -ParameterFilter { $Since -eq '2024-01-01' }
         }
 
         It "Should map Until through" {
-            Get-Commit -Until '2024-12-31' -Provider gitlab
+            Get-Commit -Until '2024-12-31' -Forge gitlab
             Should -Invoke Get-GitlabCommit -ParameterFilter { $Until -eq '2024-12-31' }
         }
     }
@@ -883,12 +883,12 @@ Describe "Close-ChangeRequest" {
         }
 
         It "Should map Id to PullRequestId" {
-            Close-ChangeRequest -Id '99' -Provider github
+            Close-ChangeRequest -Id '99' -Forge github
             Should -Invoke Close-GithubPullRequest -ParameterFilter { $PullRequestId -eq '99' }
         }
 
         It "Should not call provider command with -WhatIf" {
-            Close-ChangeRequest -Id '99' -Provider github -WhatIf
+            Close-ChangeRequest -Id '99' -Forge github -WhatIf
             Should -Invoke Close-GithubPullRequest -Times 0
         }
     }
@@ -901,7 +901,7 @@ Describe "Close-ChangeRequest" {
         }
 
         It "Should map Id to MergeRequestId" {
-            Close-ChangeRequest -Id '99' -Provider gitlab
+            Close-ChangeRequest -Id '99' -Forge gitlab
             Should -Invoke Close-GitlabMergeRequest -ParameterFilter { $MergeRequestId -eq '99' }
         }
     }
@@ -917,34 +917,34 @@ Describe "Update-ChangeRequest" {
         }
 
         It "Should map Id to PullRequestId" {
-            Update-ChangeRequest -Id '99' -Title 'Updated' -Provider github
+            Update-ChangeRequest -Id '99' -Title 'Updated' -Forge github
             Should -Invoke Update-GithubPullRequest -ParameterFilter { $PullRequestId -eq '99' }
         }
 
         It "Should pass Title and Description" {
-            Update-ChangeRequest -Id '99' -Title 'New title' -Description 'New desc' -Provider github
+            Update-ChangeRequest -Id '99' -Title 'New title' -Description 'New desc' -Forge github
             Should -Invoke Update-GithubPullRequest -ParameterFilter {
                 $Title -eq 'New title' -and $Description -eq 'New desc'
             }
         }
 
         It "Should pass State through unchanged" {
-            Update-ChangeRequest -Id '99' -State 'closed' -Provider github
+            Update-ChangeRequest -Id '99' -State 'closed' -Forge github
             Should -Invoke Update-GithubPullRequest -ParameterFilter { $State -eq 'closed' }
         }
 
         It "Should pass TargetBranch" {
-            Update-ChangeRequest -Id '99' -TargetBranch 'develop' -Provider github
+            Update-ChangeRequest -Id '99' -TargetBranch 'develop' -Forge github
             Should -Invoke Update-GithubPullRequest -ParameterFilter { $TargetBranch -eq 'develop' }
         }
 
         It "Should pass Draft switch" {
-            Update-ChangeRequest -Id '99' -Draft -Provider github
+            Update-ChangeRequest -Id '99' -Draft -Forge github
             Should -Invoke Update-GithubPullRequest -ParameterFilter { $Draft -eq $true }
         }
 
         It "Should pass MarkReady switch" {
-            Update-ChangeRequest -Id '99' -MarkReady -Provider github
+            Update-ChangeRequest -Id '99' -MarkReady -Forge github
             Should -Invoke Update-GithubPullRequest -ParameterFilter { $MarkReady -eq $true }
         }
     }
@@ -957,32 +957,32 @@ Describe "Update-ChangeRequest" {
         }
 
         It "Should map Id to MergeRequestId" {
-            Update-ChangeRequest -Id '99' -Title 'Updated' -Provider gitlab
+            Update-ChangeRequest -Id '99' -Title 'Updated' -Forge gitlab
             Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $MergeRequestId -eq '99' }
         }
 
         It "Should pass Draft switch" {
-            Update-ChangeRequest -Id '99' -Draft -Provider gitlab
+            Update-ChangeRequest -Id '99' -Draft -Forge gitlab
             Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $Draft -eq $true }
         }
 
         It "Should pass MarkReady switch" {
-            Update-ChangeRequest -Id '99' -MarkReady -Provider gitlab
+            Update-ChangeRequest -Id '99' -MarkReady -Forge gitlab
             Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $MarkReady -eq $true }
         }
 
         It "Should map State 'closed' to Close switch" {
-            Update-ChangeRequest -Id '99' -State 'closed' -Provider gitlab
+            Update-ChangeRequest -Id '99' -State 'closed' -Forge gitlab
             Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $Close -eq $true }
         }
 
         It "Should map State 'open' to Reopen switch" {
-            Update-ChangeRequest -Id '99' -State 'open' -Provider gitlab
+            Update-ChangeRequest -Id '99' -State 'open' -Forge gitlab
             Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $Reopen -eq $true }
         }
 
         It "Should pass TargetBranch through" {
-            Update-ChangeRequest -Id '99' -TargetBranch 'develop' -Provider gitlab
+            Update-ChangeRequest -Id '99' -TargetBranch 'develop' -Forge gitlab
             Should -Invoke Update-GitlabMergeRequest -ParameterFilter { $TargetBranch -eq 'develop' }
         }
     }
@@ -1002,7 +1002,7 @@ Describe "Get-ChangeRequestComment" {
         }
 
         It "Should map Id to PullRequestId" {
-            Get-ChangeRequestComment -Id '99' -Provider github
+            Get-ChangeRequestComment -Id '99' -Forge github
             Should -Invoke Get-GithubPullRequestComment -ParameterFilter { $PullRequestId -eq '99' }
         }
     }
@@ -1015,7 +1015,7 @@ Describe "Get-ChangeRequestComment" {
         }
 
         It "Should map Id to MergeRequestId" {
-            Get-ChangeRequestComment -Id '99' -Provider gitlab
+            Get-ChangeRequestComment -Id '99' -Forge gitlab
             Should -Invoke Get-GitlabMergeRequestNote -ParameterFilter { $MergeRequestId -eq '99' }
         }
     }
@@ -1035,7 +1035,7 @@ Describe "Open-Issue" {
         }
 
         It "Should map Id to IssueId" {
-            Open-Issue -Id '42' -Provider github
+            Open-Issue -Id '42' -Forge github
             Should -Invoke Open-GithubIssue -ParameterFilter { $IssueId -eq '42' }
         }
     }
@@ -1048,7 +1048,7 @@ Describe "Open-Issue" {
         }
 
         It "Should map Id to IssueId" {
-            Open-Issue -Id '42' -Provider gitlab
+            Open-Issue -Id '42' -Forge gitlab
             Should -Invoke Open-GitlabIssue -ParameterFilter { $IssueId -eq '42' }
         }
     }
@@ -1064,14 +1064,14 @@ Describe "New-IssueComment" {
         }
 
         It "Should map Id to IssueId and pass Body" {
-            New-IssueComment -Id '42' -Body 'Fixed' -Provider github
+            New-IssueComment -Id '42' -Body 'Fixed' -Forge github
             Should -Invoke New-GithubIssueComment -ParameterFilter {
                 $IssueId -eq '42' -and $Body -eq 'Fixed'
             }
         }
 
         It "Should not call provider command with -WhatIf" {
-            New-IssueComment -Id '42' -Body 'Fixed' -Provider github -WhatIf
+            New-IssueComment -Id '42' -Body 'Fixed' -Forge github -WhatIf
             Should -Invoke New-GithubIssueComment -Times 0
         }
     }
@@ -1084,7 +1084,7 @@ Describe "New-IssueComment" {
         }
 
         It "Should map Id to IssueId and Body to Note" {
-            New-IssueComment -Id '42' -Body 'Fixed' -Provider gitlab
+            New-IssueComment -Id '42' -Body 'Fixed' -Forge gitlab
             Should -Invoke New-GitlabIssueNote -ParameterFilter {
                 $IssueId -eq '42' -and $Note -eq 'Fixed'
             }
@@ -1106,17 +1106,17 @@ Describe "New-Branch" {
         }
 
         It "Should pass Name" {
-            New-Branch -Name 'feature/x' -Provider github
+            New-Branch -Name 'feature/x' -Forge github
             Should -Invoke New-GithubBranch -ParameterFilter { $Name -eq 'feature/x' }
         }
 
         It "Should pass Ref" {
-            New-Branch -Name 'feature/x' -Ref 'develop' -Provider github
+            New-Branch -Name 'feature/x' -Ref 'develop' -Forge github
             Should -Invoke New-GithubBranch -ParameterFilter { $Ref -eq 'develop' }
         }
 
         It "Should not call provider command with -WhatIf" {
-            New-Branch -Name 'feature/x' -Provider github -WhatIf
+            New-Branch -Name 'feature/x' -Forge github -WhatIf
             Should -Invoke New-GithubBranch -Times 0
         }
     }
@@ -1129,12 +1129,12 @@ Describe "New-Branch" {
         }
 
         It "Should map Name to Branch" {
-            New-Branch -Name 'feature/x' -Provider gitlab
+            New-Branch -Name 'feature/x' -Forge gitlab
             Should -Invoke New-GitlabBranch -ParameterFilter { $Branch -eq 'feature/x' }
         }
 
         It "Should pass Ref" {
-            New-Branch -Name 'feature/x' -Ref 'develop' -Provider gitlab
+            New-Branch -Name 'feature/x' -Ref 'develop' -Forge gitlab
             Should -Invoke New-GitlabBranch -ParameterFilter { $Ref -eq 'develop' }
         }
     }
@@ -1150,12 +1150,12 @@ Describe "Remove-Branch" {
         }
 
         It "Should map Name to BranchId" {
-            Remove-Branch -Name 'feature/x' -Provider github
+            Remove-Branch -Name 'feature/x' -Forge github
             Should -Invoke Remove-GithubBranch -ParameterFilter { $BranchId -eq 'feature/x' }
         }
 
         It "Should not call provider command with -WhatIf" {
-            Remove-Branch -Name 'feature/x' -Provider github -WhatIf
+            Remove-Branch -Name 'feature/x' -Forge github -WhatIf
             Should -Invoke Remove-GithubBranch -Times 0
         }
     }
@@ -1168,7 +1168,7 @@ Describe "Remove-Branch" {
         }
 
         It "Should map Name to Branch" {
-            Remove-Branch -Name 'feature/x' -Provider gitlab
+            Remove-Branch -Name 'feature/x' -Forge gitlab
             Should -Invoke Remove-GitlabBranch -ParameterFilter { $Branch -eq 'feature/x' }
         }
     }
@@ -1188,7 +1188,7 @@ Describe "Remove-Repo" {
         }
 
         It "Should map Id to RepositoryId" {
-            Remove-Repo -Id 'my-repo' -Provider github -Confirm:$false
+            Remove-Repo -Id 'my-repo' -Forge github -Confirm:$false
             Should -Invoke Remove-GithubRepository -ParameterFilter { $RepositoryId -eq 'my-repo' }
         }
     }
@@ -1201,7 +1201,7 @@ Describe "Remove-Repo" {
         }
 
         It "Should map Id to ProjectId" {
-            Remove-Repo -Id 'my-project' -Provider gitlab -Confirm:$false
+            Remove-Repo -Id 'my-project' -Forge gitlab -Confirm:$false
             Should -Invoke Remove-GitlabProject -ParameterFilter { $ProjectId -eq 'my-project' }
         }
     }
@@ -1221,12 +1221,12 @@ Describe "Get-GroupMember" {
         }
 
         It "Should map Group to Organization" {
-            Get-GroupMember -Group 'my-org' -Provider github
+            Get-GroupMember -Group 'my-org' -Forge github
             Should -Invoke Get-GithubOrganizationMember -ParameterFilter { $Organization -eq 'my-org' }
         }
 
         It "Should pass Username" {
-            Get-GroupMember -Group 'my-org' -Username 'jdoe' -Provider github
+            Get-GroupMember -Group 'my-org' -Username 'jdoe' -Forge github
             Should -Invoke Get-GithubOrganizationMember -ParameterFilter { $Username -eq 'jdoe' }
         }
     }
@@ -1239,12 +1239,12 @@ Describe "Get-GroupMember" {
         }
 
         It "Should map Group to GroupId" {
-            Get-GroupMember -Group 'my-group' -Provider gitlab
+            Get-GroupMember -Group 'my-group' -Forge gitlab
             Should -Invoke Get-GitlabGroupMember -ParameterFilter { $GroupId -eq 'my-group' }
         }
 
         It "Should map Username to UserId" {
-            Get-GroupMember -Group 'my-group' -Username 'jdoe' -Provider gitlab
+            Get-GroupMember -Group 'my-group' -Username 'jdoe' -Forge gitlab
             Should -Invoke Get-GitlabGroupMember -ParameterFilter { $UserId -eq 'jdoe' }
         }
     }
@@ -1260,14 +1260,14 @@ Describe "Add-GroupMember" {
         }
 
         It "Should map Group to Organization and pass Username" {
-            Add-GroupMember -Group 'my-org' -Username 'jdoe' -Provider github
+            Add-GroupMember -Group 'my-org' -Username 'jdoe' -Forge github
             Should -Invoke Add-GithubOrganizationMember -ParameterFilter {
                 $Organization -eq 'my-org' -and $Username -eq 'jdoe'
             }
         }
 
         It "Should pass Role" {
-            Add-GroupMember -Group 'my-org' -Username 'jdoe' -Role 'admin' -Provider github
+            Add-GroupMember -Group 'my-org' -Username 'jdoe' -Role 'admin' -Forge github
             Should -Invoke Add-GithubOrganizationMember -ParameterFilter { $Role -eq 'admin' }
         }
     }
@@ -1280,14 +1280,14 @@ Describe "Add-GroupMember" {
         }
 
         It "Should map Group to GroupId and Username to UserId" {
-            Add-GroupMember -Group 'my-group' -Username 'jdoe' -Provider gitlab
+            Add-GroupMember -Group 'my-group' -Username 'jdoe' -Forge gitlab
             Should -Invoke Add-GitlabGroupMember -ParameterFilter {
                 $GroupId -eq 'my-group' -and $UserId -eq 'jdoe'
             }
         }
 
         It "Should map Role to AccessLevel" {
-            Add-GroupMember -Group 'my-group' -Username 'jdoe' -Role 'developer' -Provider gitlab
+            Add-GroupMember -Group 'my-group' -Username 'jdoe' -Role 'developer' -Forge gitlab
             Should -Invoke Add-GitlabGroupMember -ParameterFilter { $AccessLevel -eq 'developer' }
         }
     }
@@ -1303,14 +1303,14 @@ Describe "Remove-GroupMember" {
         }
 
         It "Should map Group to Organization and pass Username" {
-            Remove-GroupMember -Group 'my-org' -Username 'jdoe' -Provider github
+            Remove-GroupMember -Group 'my-org' -Username 'jdoe' -Forge github
             Should -Invoke Remove-GithubOrganizationMember -ParameterFilter {
                 $Organization -eq 'my-org' -and $Username -eq 'jdoe'
             }
         }
 
         It "Should not call provider command with -WhatIf" {
-            Remove-GroupMember -Group 'my-org' -Username 'jdoe' -Provider github -WhatIf
+            Remove-GroupMember -Group 'my-org' -Username 'jdoe' -Forge github -WhatIf
             Should -Invoke Remove-GithubOrganizationMember -Times 0
         }
     }
@@ -1323,7 +1323,7 @@ Describe "Remove-GroupMember" {
         }
 
         It "Should map Group to GroupId and Username to UserId" {
-            Remove-GroupMember -Group 'my-group' -Username 'jdoe' -Provider gitlab
+            Remove-GroupMember -Group 'my-group' -Username 'jdoe' -Forge gitlab
             Should -Invoke Remove-GitlabGroupMember -ParameterFilter {
                 $GroupId -eq 'my-group' -and $UserId -eq 'jdoe'
             }
@@ -1345,12 +1345,12 @@ Describe "Get-Milestone" {
         }
 
         It "Should map Id to MilestoneId" {
-            Get-Milestone -Id '1' -Provider github
+            Get-Milestone -Id '1' -Forge github
             Should -Invoke Get-GithubMilestone -ParameterFilter { $MilestoneId -eq '1' }
         }
 
         It "Should pass State through unchanged" {
-            Get-Milestone -State 'closed' -Provider github
+            Get-Milestone -State 'closed' -Forge github
             Should -Invoke Get-GithubMilestone -ParameterFilter { $State -eq 'closed' }
         }
     }
@@ -1363,17 +1363,17 @@ Describe "Get-Milestone" {
         }
 
         It "Should map Id to MilestoneId" {
-            Get-Milestone -Id '1' -Provider gitlab
+            Get-Milestone -Id '1' -Forge gitlab
             Should -Invoke Get-GitlabMilestone -ParameterFilter { $MilestoneId -eq '1' }
         }
 
         It "Should map State 'open' to 'active'" {
-            Get-Milestone -State 'open' -Provider gitlab
+            Get-Milestone -State 'open' -Forge gitlab
             Should -Invoke Get-GitlabMilestone -ParameterFilter { $State -eq 'active' }
         }
 
         It "Should keep State 'closed' as 'closed'" {
-            Get-Milestone -State 'closed' -Provider gitlab
+            Get-Milestone -State 'closed' -Forge gitlab
             Should -Invoke Get-GitlabMilestone -ParameterFilter { $State -eq 'closed' }
         }
     }
@@ -1390,23 +1390,23 @@ Describe "Get-UserActivity" {
         }
 
         It "Should resolve Mine to current username" {
-            Get-UserActivity -Mine -Provider github
+            Get-UserActivity -Mine -Forge github
             Should -Invoke Get-GithubUser -ParameterFilter { $Me -eq $true }
             Should -Invoke Get-GithubEvent -ParameterFilter { $Username -eq 'testuser' }
         }
 
         It "Should map Username to Username" {
-            Get-UserActivity -Username 'jdoe' -Provider github
+            Get-UserActivity -Username 'jdoe' -Forge github
             Should -Invoke Get-GithubEvent -ParameterFilter { $Username -eq 'jdoe' }
         }
 
         It "Should pass MaxPages through" {
-            Get-UserActivity -Username 'jdoe' -MaxPages 5 -Provider github
+            Get-UserActivity -Username 'jdoe' -MaxPages 5 -Forge github
             Should -Invoke Get-GithubEvent -ParameterFilter { $MaxPages -eq 5 }
         }
 
         It "Should pass All switch" {
-            Get-UserActivity -Username 'jdoe' -All -Provider github
+            Get-UserActivity -Username 'jdoe' -All -Forge github
             Should -Invoke Get-GithubEvent -ParameterFilter { $All -eq $true }
         }
 
@@ -1417,7 +1417,7 @@ Describe "Get-UserActivity" {
                     [PSCustomObject]@{ Type = 'PushEvent'; CreatedAt = [datetime]'2024-05-01' }
                 )
             }
-            $result = Get-UserActivity -Username 'jdoe' -Since '2024-06-01' -Provider github
+            $result = Get-UserActivity -Username 'jdoe' -Since '2024-06-01' -Forge github
             $result | Should -HaveCount 1
             $result[0].CreatedAt | Should -Be ([datetime]'2024-06-15')
         }
@@ -1429,7 +1429,7 @@ Describe "Get-UserActivity" {
                     [PSCustomObject]@{ Type = 'PushEvent'; CreatedAt = $null }
                 )
             }
-            $result = Get-UserActivity -Username 'jdoe' -Since '2024-06-01' -Provider github
+            $result = Get-UserActivity -Username 'jdoe' -Since '2024-06-01' -Forge github
             $result | Should -HaveCount 1
             $result[0].CreatedAt | Should -Be ([datetime]'2024-06-15')
         }
@@ -1441,7 +1441,7 @@ Describe "Get-UserActivity" {
                     [PSCustomObject]@{ Type = 'PushEvent'; CreatedAt = [datetime]'2024-05-01' }
                 )
             }
-            $result = Get-UserActivity -Username 'jdoe' -Until '2024-05-31' -Provider github
+            $result = Get-UserActivity -Username 'jdoe' -Until '2024-05-31' -Forge github
             $result | Should -HaveCount 1
             $result[0].CreatedAt | Should -Be ([datetime]'2024-05-01')
         }
@@ -1453,7 +1453,7 @@ Describe "Get-UserActivity" {
                     [PSCustomObject]@{ Type = 'IssuesEvent'; CreatedAt = [datetime]'2024-06-15' }
                 )
             }
-            $result = Get-UserActivity -Username 'jdoe' -Action 'pushed' -Provider github
+            $result = Get-UserActivity -Username 'jdoe' -Action 'pushed' -Forge github
             $result | Should -HaveCount 1
             $result[0].Type | Should -Be 'PushEvent'
         }
@@ -1465,7 +1465,7 @@ Describe "Get-UserActivity" {
                     [PSCustomObject]@{ Type = 'IssuesEvent'; CreatedAt = [datetime]'2024-06-15' }
                 )
             }
-            $result = Get-UserActivity -Username 'jdoe' -TargetType 'issue' -Provider github
+            $result = Get-UserActivity -Username 'jdoe' -TargetType 'issue' -Forge github
             $result | Should -HaveCount 1
             $result[0].Type | Should -Be 'IssuesEvent'
         }
@@ -1479,37 +1479,37 @@ Describe "Get-UserActivity" {
         }
 
         It "Should map Mine to Me" {
-            Get-UserActivity -Mine -Provider gitlab
+            Get-UserActivity -Mine -Forge gitlab
             Should -Invoke Get-GitlabUserEvent -ParameterFilter { $Me -eq $true }
         }
 
         It "Should map Username to UserId" {
-            Get-UserActivity -Username 'jdoe' -Provider gitlab
+            Get-UserActivity -Username 'jdoe' -Forge gitlab
             Should -Invoke Get-GitlabUserEvent -ParameterFilter { $UserId -eq 'jdoe' }
         }
 
         It "Should map Since to After" {
-            Get-UserActivity -Mine -Since '2024-06-01' -Provider gitlab
+            Get-UserActivity -Mine -Since '2024-06-01' -Forge gitlab
             Should -Invoke Get-GitlabUserEvent -ParameterFilter { $After -eq '2024-06-01' }
         }
 
         It "Should map Until to Before" {
-            Get-UserActivity -Mine -Until '2024-06-30' -Provider gitlab
+            Get-UserActivity -Mine -Until '2024-06-30' -Forge gitlab
             Should -Invoke Get-GitlabUserEvent -ParameterFilter { $Before -eq '2024-06-30' }
         }
 
         It "Should pass Action through" {
-            Get-UserActivity -Mine -Action 'pushed' -Provider gitlab
+            Get-UserActivity -Mine -Action 'pushed' -Forge gitlab
             Should -Invoke Get-GitlabUserEvent -ParameterFilter { $Action -eq 'pushed' }
         }
 
         It "Should pass TargetType through" {
-            Get-UserActivity -Mine -TargetType 'merge_request' -Provider gitlab
+            Get-UserActivity -Mine -TargetType 'merge_request' -Forge gitlab
             Should -Invoke Get-GitlabUserEvent -ParameterFilter { $TargetType -eq 'merge_request' }
         }
 
         It "Should pass MaxPages through" {
-            Get-UserActivity -Mine -MaxPages 5 -Provider gitlab
+            Get-UserActivity -Mine -MaxPages 5 -Forge gitlab
             Should -Invoke Get-GitlabUserEvent -ParameterFilter { $MaxPages -eq 5 }
         }
     }

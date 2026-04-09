@@ -57,12 +57,13 @@ function Get-Issue {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-Issue' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Issue' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -178,12 +179,13 @@ function Get-ChangeRequest {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-ChangeRequest' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-ChangeRequest' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -272,12 +274,13 @@ function Get-Branch {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-Branch' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Branch' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -326,12 +329,13 @@ function Get-Release {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-Release' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Release' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -370,12 +374,13 @@ function Get-User {
         $Select,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-User' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-User' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -414,12 +419,13 @@ function Get-Group {
         $All,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-Group' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Group' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -464,12 +470,13 @@ function New-Issue {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'New-Issue' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'New-Issue' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -519,12 +526,13 @@ function Update-Issue {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Update-Issue' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Update-Issue' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -566,12 +574,13 @@ function Close-Issue {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Close-Issue' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Close-Issue' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -620,12 +629,13 @@ function New-ChangeRequest {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'New-ChangeRequest' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'New-ChangeRequest' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -672,12 +682,13 @@ function Merge-ChangeRequest {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Merge-ChangeRequest' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Merge-ChangeRequest' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -717,12 +728,13 @@ function New-Repo {
         $Visibility,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'New-Repo' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'New-Repo' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -779,12 +791,13 @@ function Get-Commit {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-Commit' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Commit' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -834,12 +847,13 @@ function Search-Repo {
         $All,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Search-Repo' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Search-Repo' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -878,12 +892,13 @@ function Close-ChangeRequest {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Close-ChangeRequest' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Close-ChangeRequest' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -939,12 +954,13 @@ function Update-ChangeRequest {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Update-ChangeRequest' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Update-ChangeRequest' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -992,12 +1008,13 @@ function Get-ChangeRequestComment {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-ChangeRequestComment' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-ChangeRequestComment' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1026,12 +1043,13 @@ function Get-ChangeRequestApproval {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-ChangeRequestApproval' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-ChangeRequestApproval' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1073,12 +1091,13 @@ function Open-Issue {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Open-Issue' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Open-Issue' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1111,12 +1130,13 @@ function New-IssueComment {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'New-IssueComment' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'New-IssueComment' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1153,12 +1173,13 @@ function New-Branch {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'New-Branch' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'New-Branch' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1191,12 +1212,13 @@ function Remove-Branch {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Remove-Branch' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Remove-Branch' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1223,12 +1245,13 @@ function Remove-Repo {
         $Id,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Remove-Repo' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Remove-Repo' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1265,12 +1288,13 @@ function Get-GroupMember {
         $All,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-GroupMember' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-GroupMember' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1307,12 +1331,13 @@ function Add-GroupMember {
         $Role,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Add-GroupMember' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Add-GroupMember' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1345,12 +1370,13 @@ function Remove-GroupMember {
         $Username,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Remove-GroupMember' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Remove-GroupMember' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1386,12 +1412,13 @@ function Get-Milestone {
         $Repo,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-Milestone' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Milestone' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1448,12 +1475,13 @@ function Get-Repo {
         $All,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-Repo' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Repo' -Provider $Forge
     $Params = @{}
 
     switch ($Target.Provider) {
@@ -1524,12 +1552,13 @@ function Get-UserActivity {
         $All,
 
         [Parameter()]
+        [Alias('Provider')]
         [ValidateSet([SupportedProvider])]
         [string]
-        $Provider
+        $Forge
     )
 
-    $Target = Resolve-ForgeCommand -CommandName 'Get-UserActivity' -Provider $Provider
+    $Target = Resolve-ForgeCommand -CommandName 'Get-UserActivity' -Provider $Forge
     $Params = @{}
     $ClientFilters = @()
 

@@ -3,13 +3,93 @@
 <head>
   <meta charset="UTF-8">
   <title>pwsh-forge</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta name="description" content="Unified PowerShell interface for GitHub and GitLab">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    .sidebar-nav li>a[href^="/"]:not([href*="?id="]):only-child,
+    .sidebar-nav li>a[href^="#/"]:not([href*="?id="]):only-child {
+      background: none !important;
+    }
+  </style>
 </head>
 <body>
   <div id="app">Loading...</div>
+  <script>
+    window.$docsify = {
+      subMaxLevel: 0,
+      sidebarDisplayLevel: 0,
+      alias: {
+        '/.*/_sidebar.md': '/_sidebar.md',
+        '/([A-Za-z]+)/$': '/$1/README.md'
+      }
+    }
+  </script>
+  <script>
+    window.$docsify.plugins = (window.$docsify.plugins || []).concat(function(hook) {
+      hook.beforeEach(function(content) {
+        content = content.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, '');
+        content = content.replace(/### __AllParameterSets/g, '### Default');
+        content = content.replace(/## ALIASES\s*\n+(?=##|$)/g, '');
+        content = content.replace(/## INPUTS\s*\n+(?=##|$)/g, '');
+        content = content.replace(/## NOTES\s*\n+(?=##|$)/g, '');
+        content = content.replace(/### [^\n]+\s*\n+HIDE_ME\s*\n+/g, '');
+
+        content = content.replace(/(```yaml\n)([\s\S]*?)(```)/g, function(match, before, yaml, after) {
+          var lines = yaml.split('\n');
+          var cleanLines = [];
+          for (var i = 0; i < lines.length; i++) {
+            var trimmed = lines[i].trim();
+            if (trimmed === "DefaultValue: ''" ||
+                trimmed === "SupportsWildcards: false" ||
+                trimmed === "Aliases: []" ||
+                trimmed === "DontShow: false" ||
+                trimmed === "AcceptedValues: []" ||
+                trimmed === "HelpMessage: ''" ||
+                trimmed === "Position: Named" ||
+                trimmed === "IsRequired: false" ||
+                trimmed === "ValueFromPipeline: false" ||
+                trimmed === "ValueFromPipelineByPropertyName: false" ||
+                trimmed === "ValueFromRemainingArguments: false") {
+              continue;
+            }
+            cleanLines.push(lines[i]);
+          }
+          return before + cleanLines.join('\n') + after;
+        });
+
+        content = content.replace(/(### (?:Default|\w+)\s*\n\n```\n)([\s\S]*?)(```)/g, function(match, before, syntax, after) {
+          var normalized = syntax.replace(/\s+/g, ' ').trim();
+          var lines = syntax.trim().split('\n');
+          if (lines.length > 1 && /^[A-Z][a-zA-Z]+-[a-zA-Z]+$/.test(lines[0])) {
+            return match;
+          }
+          var cmdletMatch = normalized.match(/^([A-Z][a-zA-Z]+-[a-zA-Z]+)\s+(.*)$/);
+          if (cmdletMatch) {
+            var cmdlet = cmdletMatch[1];
+            var params = cmdletMatch[2];
+            var paramList = params.split(/\]\s+\[/).map(function(p) {
+              p = p.trim();
+              if (!p.startsWith('[')) p = '[' + p;
+              if (!p.endsWith(']')) p = p + ']';
+              return '    ' + p;
+            });
+            return before + cmdlet + '\n' + paramList.join('\n') + '\n' + after;
+          }
+          return match;
+        });
+
+        return content;
+      });
+
+      hook.doneEach(function() {
+        var pageTitle = document.title;
+        document.title = 'pwsh-forge: ' + pageTitle;
+      });
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-sidebar-collapse/dist/docsify-sidebar-collapse.min.js"></script>
   <script src="https://chris-peterson.github.io/js/docsify-shared.js"></script>
   <script>
     initProject({

@@ -67,8 +67,8 @@ Get-Issue -Mine
 Get-ChangeRequest -Mine
 
 # Bypass auto-detection
-Get-Issue -Provider github
-Get-ChangeRequest -Provider gitlab
+Get-Issue -Forge github
+Get-ChangeRequest -Forge gitlab
 ```
 
 ## Error Messages
@@ -78,8 +78,8 @@ Get-ChangeRequest -Provider gitlab
 ```text
 Could not detect a forge provider from the current directory.
 Either cd into a git repository, or specify a provider:
-  Get-Issue -Provider github
-  Get-Issue -Provider gitlab
+  Get-Issue -Forge github
+  Get-Issue -Forge gitlab
 ```
 
 **Unrecognized forge:**

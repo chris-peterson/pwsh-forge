@@ -62,9 +62,24 @@ Get-Issue -Mine
 Get-ChangeRequest -Mine
 
 # Bypass auto-detection
-Get-Issue -Provider github
-Get-ChangeRequest -Provider gitlab
+Get-Issue -Forge github
+Get-ChangeRequest -Forge gitlab
 ```
+
+## Cmdlet Categories
+
+Browse the sidebar to find cmdlets organized by category:
+
+- [Branches](/Branches/) - Create, list, and delete branches
+- [ChangeRequests](/ChangeRequests/) - Manage pull requests and merge requests
+- [Commits](/Commits/) - View commit information
+- [Groups](/Groups/) - Manage organizations and groups
+- [Issues](/Issues/) - Create, update, and close issues
+- [Milestones](/Milestones/) - Track milestones
+- [Releases](/Releases/) - View releases
+- [Repos](/Repos/) - Manage repositories and projects
+- [Search](/Search/) - Search across forges
+- [Users](/Users/) - User information and activity
 
 ## Ecosystem
 

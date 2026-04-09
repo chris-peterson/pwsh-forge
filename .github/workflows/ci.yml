@@ -126,9 +126,38 @@ jobs:
           name: security-results
           path: SecurityResults.json
 
+  docs:
+    name: Validate Docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install PowerShell modules
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Microsoft.PowerShell.PlatyPS -Force -Scope CurrentUser
+          Install-Module -Name GitHubCli -Force -Scope CurrentUser
+          Install-Module -Name GitlabCli -Force -Scope CurrentUser
+
+      - name: Validate markdown help
+        shell: pwsh
+        run: |
+          ./docs/.support/scripts/Update-Help.ps1 -ThrowOnChanges
+
+          Import-Module Microsoft.PowerShell.PlatyPS
+          $DocsFolder = "./docs"
+          $MdFiles = Measure-PlatyPSMarkdown -Path (Join-Path $DocsFolder '*/*.md') -ErrorAction SilentlyContinue
+          $Documented = ($MdFiles | Where-Object Filetype -match 'CommandHelp').Count
+
+          $Summary = "## Documentation`n`n"
+          $Summary += "Documented cmdlets: **$Documented**`n"
+          $Summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
   release-gate:
     name: Release Gate
-    needs: [test, security]
+    needs: [test, security, docs]
     if: github.event.repository.fork == false && github.ref_name == 'main'
     runs-on: ubuntu-latest
     outputs:
@@ -155,6 +184,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+
+      - name: Install PowerShell modules
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Microsoft.PowerShell.PlatyPS -Force -Scope CurrentUser
+          Install-Module -Name GitHubCli -Force -Scope CurrentUser
+          Install-Module -Name GitlabCli -Force -Scope CurrentUser
+
+      - name: Export help
+        shell: pwsh
+        run: ./docs/.support/scripts/Export-Help.ps1
 
       - name: Publish PowerShell Module
         uses: chris-peterson/publish-powershell@v1

@@ -61,8 +61,8 @@ function Resolve-ForgeProvider {
             throw @"
 Could not detect a forge provider from the current directory.
 Either cd into a git repository, or specify a provider:
-  $CommandName -Provider github
-  $CommandName -Provider gitlab
+  $CommandName -Forge github
+  $CommandName -Forge gitlab
 "@
         }
 
