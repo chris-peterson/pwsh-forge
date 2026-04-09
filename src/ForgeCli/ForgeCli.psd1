@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '0.10.0'
+    ModuleVersion = '0.11.0'
 
     PrivateData = @{
         PSData = @{
@@ -23,8 +23,11 @@
             ExternalModuleDependencies = @('GithubCli', 'GitlabCli')
             ReleaseNotes =
 @'
-GitLab project path resolution:
-* GitLab user activity events now include ProjectPath with the full namespace path (e.g. "dotnet/docs")
+Parameter standardization and help generation:
+* Public parameter standardized to -Forge (-Provider still works via alias)
+* Get-Help support for all 29 cmdlets via PlatyPS MAML XML
+* Documentation site with categorized cmdlet reference
+* CI validates documentation sync on every push
 '@
         }
     }
