@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '0.11.0'
+    ModuleVersion = '0.12.0'
 
     PrivateData = @{
         PSData = @{
@@ -23,11 +23,11 @@
             ExternalModuleDependencies = @('GithubCli', 'GitlabCli')
             ReleaseNotes =
 @'
-Parameter standardization and help generation:
-* Public parameter standardized to -Forge (-Provider still works via alias)
-* Get-Help support for all 29 cmdlets via PlatyPS MAML XML
-* Documentation site with categorized cmdlet reference
-* CI validates documentation sync on every push
+### Breaking Changes
+* `Get-ChangeRequest` parameters `-Since` / `-Until` are renamed to `-CreatedAfter` / `-CreatedBefore`. No aliases; update call sites directly.
+
+### Features
+* `Get-ChangeRequest` gains `-MergedAfter` / `-MergedBefore` for filtering by merge date independent of `-State`. Threads through to pwsh-github 0.9.0+ and pwsh-gitlab 1.171.0+.
 '@
         }
     }
