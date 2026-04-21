@@ -156,11 +156,19 @@ function Get-ChangeRequest {
 
         [Parameter()]
         [string]
-        $Since,
+        $CreatedAfter,
 
         [Parameter()]
         [string]
-        $Until,
+        $CreatedBefore,
+
+        [Parameter()]
+        [string]
+        $MergedAfter,
+
+        [Parameter()]
+        [string]
+        $MergedBefore,
 
         [Parameter()]
         [string]
@@ -205,13 +213,15 @@ function Get-ChangeRequest {
             if ($TargetBranch) { $Params.Base            = $TargetBranch }
             if ($MaxPages)     { $Params.MaxPages        = $MaxPages }
             if ($All)          { $Params.All             = $true }
-            if ($Author)       { $Params.Author          = $Author }
-            if ($IsDraft)      { $Params.IsDraft          = $true }
-            if ($Since)        { $Params.Since            = $Since }
-            if ($Until)        { $Params.Until            = $Until }
-            if ($Reviewer)     { $Params.ReviewedBy       = $Reviewer }
+            if ($Author)        { $Params.Author          = $Author }
+            if ($IsDraft)       { $Params.IsDraft          = $true }
+            if ($CreatedAfter)  { $Params.CreatedAfter     = $CreatedAfter }
+            if ($CreatedBefore) { $Params.CreatedBefore    = $CreatedBefore }
+            if ($MergedAfter)   { $Params.MergedAfter      = $MergedAfter }
+            if ($MergedBefore)  { $Params.MergedBefore     = $MergedBefore }
+            if ($Reviewer)      { $Params.ReviewedBy       = $Reviewer }
             # Use cross-repo search when filters are present but no repo context
-            if (-not $Id -and -not $Mine -and -not $Repo -and ($Author -or $Reviewer -or $Since -or $Until)) {
+            if (-not $Id -and -not $Mine -and -not $Repo -and ($Author -or $Reviewer -or $CreatedAfter -or $CreatedBefore -or $MergedAfter -or $MergedBefore)) {
                 $Context = Get-ForgeRemoteHost
                 if ($Context.Host -notmatch 'github') {
                     $Params.Search = $true
@@ -219,18 +229,20 @@ function Get-ChangeRequest {
             }
         }
         'gitlab' {
-            if ($Id)           { $Params.MergeRequestId = $Id }
-            if ($Repo)         { $Params.ProjectId      = $Repo }
-            if ($Mine)         { $Params.Mine            = $true }
-            if ($Group)        { $Params.GroupId          = $Group }
-            if ($SourceBranch) { $Params.SourceBranch     = $SourceBranch }
-            if ($Author)       { $Params.Username         = $Author }
-            if ($IsDraft)      { $Params.IsDraft          = $true }
-            if ($Since)        { $Params.CreatedAfter     = $Since }
-            if ($Until)        { $Params.CreatedBefore    = $Until }
-            if ($Reviewer)     { $Params.ReviewerUsername  = $Reviewer }
-            if ($MaxPages)     { $Params.MaxPages         = $MaxPages }
-            if ($All)          { $Params.All              = $true }
+            if ($Id)            { $Params.MergeRequestId   = $Id }
+            if ($Repo)          { $Params.ProjectId        = $Repo }
+            if ($Mine)          { $Params.Mine             = $true }
+            if ($Group)         { $Params.GroupId          = $Group }
+            if ($SourceBranch)  { $Params.SourceBranch     = $SourceBranch }
+            if ($Author)        { $Params.Username         = $Author }
+            if ($IsDraft)       { $Params.IsDraft          = $true }
+            if ($CreatedAfter)  { $Params.CreatedAfter     = $CreatedAfter }
+            if ($CreatedBefore) { $Params.CreatedBefore    = $CreatedBefore }
+            if ($MergedAfter)   { $Params.MergedAfter      = $MergedAfter }
+            if ($MergedBefore)  { $Params.MergedBefore     = $MergedBefore }
+            if ($Reviewer)      { $Params.ReviewerUsername = $Reviewer }
+            if ($MaxPages)      { $Params.MaxPages         = $MaxPages }
+            if ($All)           { $Params.All              = $true }
             if ($State) {
                 $Params.State = switch ($State) {
                     'open'   { 'opened' }

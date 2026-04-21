@@ -16,7 +16,7 @@ BeforeAll {
     function Open-GithubIssue { param($IssueId) }
     function Get-GithubIssueComment { param($IssueId, $Since, [uint]$MaxPages, [switch]$All) }
     function New-GithubIssueComment { param($IssueId, $Body) }
-    function Get-GithubPullRequest { param($PullRequestId, $State, [switch]$Mine, $Head, $Base, $Author, [switch]$IsDraft, $Since, $Sort, $Direction, [uint]$MaxPages, [switch]$All) }
+    function Get-GithubPullRequest { param($PullRequestId, $State, [switch]$Mine, $Head, $Base, $Author, [switch]$IsDraft, $CreatedAfter, $CreatedBefore, $MergedAfter, $MergedBefore, $Sort, $Direction, [uint]$MaxPages, [switch]$All) }
     function New-GithubPullRequest { param($Title, $SourceBranch, $TargetBranch, $Description, [switch]$Draft) }
     function Update-GithubPullRequest { param($PullRequestId, $Title, $Description, $State, $TargetBranch, [switch]$Draft, [switch]$MarkReady) }
     function Close-GithubPullRequest { param($PullRequestId) }
@@ -52,7 +52,7 @@ BeforeAll {
     function Open-GitlabIssue { param($IssueId) }
     function Get-GitlabIssueNote { param($IssueId) }
     function New-GitlabIssueNote { param($IssueId, $Note) }
-    function Get-GitlabMergeRequest { param($MergeRequestId, $State, [switch]$Mine, $GroupId, $SourceBranch, $TargetBranch, $Username, [switch]$IsDraft, $CreatedAfter, [uint]$MaxPages, [switch]$All) }
+    function Get-GitlabMergeRequest { param($MergeRequestId, $State, [switch]$Mine, $GroupId, $SourceBranch, $TargetBranch, $Username, $ReviewerUsername, [switch]$IsDraft, $CreatedAfter, $CreatedBefore, $MergedAfter, $MergedBefore, [uint]$MaxPages, [switch]$All) }
     function New-GitlabMergeRequest { param($Title, $SourceBranch, $TargetBranch, $Description, [switch]$Draft) }
     function Update-GitlabMergeRequest { param($MergeRequestId, $Title, $Description, [switch]$Draft, [switch]$MarkReady, [switch]$Close, [switch]$Reopen, $TargetBranch) }
     function Close-GitlabMergeRequest { param($MergeRequestId) }
@@ -344,9 +344,24 @@ Describe "Get-ChangeRequest" {
             Should -Invoke Get-GithubPullRequest -ParameterFilter { $IsDraft -eq $true }
         }
 
-        It "Should map Since through" {
-            Get-ChangeRequest -Since '2024-01-01' -Forge github
-            Should -Invoke Get-GithubPullRequest -ParameterFilter { $Since -eq '2024-01-01' }
+        It "Should map CreatedAfter through" {
+            Get-ChangeRequest -CreatedAfter '2024-01-01' -Forge github
+            Should -Invoke Get-GithubPullRequest -ParameterFilter { $CreatedAfter -eq '2024-01-01' }
+        }
+
+        It "Should map CreatedBefore through" {
+            Get-ChangeRequest -CreatedBefore '2024-12-31' -Forge github
+            Should -Invoke Get-GithubPullRequest -ParameterFilter { $CreatedBefore -eq '2024-12-31' }
+        }
+
+        It "Should map MergedAfter through" {
+            Get-ChangeRequest -MergedAfter '2024-01-01' -Forge github
+            Should -Invoke Get-GithubPullRequest -ParameterFilter { $MergedAfter -eq '2024-01-01' }
+        }
+
+        It "Should map MergedBefore through" {
+            Get-ChangeRequest -MergedBefore '2024-12-31' -Forge github
+            Should -Invoke Get-GithubPullRequest -ParameterFilter { $MergedBefore -eq '2024-12-31' }
         }
     }
 
@@ -377,9 +392,24 @@ Describe "Get-ChangeRequest" {
             Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $Username -eq 'jdoe' }
         }
 
-        It "Should map Since to CreatedAfter" {
-            Get-ChangeRequest -Since '2024-01-01' -Forge gitlab
+        It "Should pass CreatedAfter through to GitLab" {
+            Get-ChangeRequest -CreatedAfter '2024-01-01' -Forge gitlab
             Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $CreatedAfter -eq '2024-01-01' }
+        }
+
+        It "Should pass CreatedBefore through to GitLab" {
+            Get-ChangeRequest -CreatedBefore '2024-12-31' -Forge gitlab
+            Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $CreatedBefore -eq '2024-12-31' }
+        }
+
+        It "Should pass MergedAfter through to GitLab" {
+            Get-ChangeRequest -MergedAfter '2024-01-01' -Forge gitlab
+            Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $MergedAfter -eq '2024-01-01' }
+        }
+
+        It "Should pass MergedBefore through to GitLab" {
+            Get-ChangeRequest -MergedBefore '2024-12-31' -Forge gitlab
+            Should -Invoke Get-GitlabMergeRequest -ParameterFilter { $MergedBefore -eq '2024-12-31' }
         }
 
         It "Should pass IsDraft switch" {
