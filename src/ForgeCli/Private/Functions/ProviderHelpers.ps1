@@ -29,6 +29,47 @@ function Resolve-ForgeCommand {
     }
 }
 
+function Add-GithubChangeRequestBranch {
+    <#
+    .SYNOPSIS
+    Adds the SourceBranch / TargetBranch contract properties to a Github change
+    request.
+
+    .DESCRIPTION
+    TERMINOLOGY.md maps SourceBranch/TargetBranch to head.ref/base.ref, but a
+    Github.PullRequest arrives in one of two shapes under the same type name:
+    the pulls API supplies Head/Base, while the issues-search path behind -Mine
+    does not. Resolving the missing refs costs one API call per pull request, so
+    it happens on first read rather than for every result.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [psobject]
+        $ChangeRequest
+    )
+
+    process {
+        foreach ($Pair in @(
+            @{ Name = 'SourceBranch'; Ref = 'Head' },
+            @{ Name = 'TargetBranch'; Ref = 'Base' }
+        )) {
+            $RefName = $Pair.Ref
+            $ChangeRequest | Add-Member -MemberType ScriptProperty -Name $Pair.Name -Force -Value ([scriptblock]::Create(@"
+                if (`$this.$RefName) { return `$this.$RefName.Ref }
+                if (-not `$this.PSObject.Properties['__ForgeDetail']) {
+                    `$Detail = if (`$this.ProjectPath -and `$this.Number) {
+                        Get-GithubPullRequest -RepositoryId `$this.ProjectPath -PullRequestId `$this.Number
+                    }
+                    `$this | Add-Member -MemberType NoteProperty -Name '__ForgeDetail' -Value `$Detail -Force
+                }
+                `$this.__ForgeDetail.$RefName.Ref
+"@))
+        }
+        $ChangeRequest
+    }
+}
+
 function Resolve-ForgeProvider {
     [CmdletBinding()]
     param(

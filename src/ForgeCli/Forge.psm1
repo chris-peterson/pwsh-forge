@@ -255,7 +255,12 @@ function Get-ChangeRequest {
         }
     }
 
-    & $Target.Command @Params
+    $Results = & $Target.Command @Params
+    if ($Target.Provider -eq 'github') {
+        $Results | Add-GithubChangeRequestBranch
+    } else {
+        $Results
+    }
 }
 
 function Get-Branch {
