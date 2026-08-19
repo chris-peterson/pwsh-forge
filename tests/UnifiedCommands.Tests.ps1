@@ -1545,3 +1545,73 @@ Describe "Get-UserActivity" {
     }
 }
 
+
+Describe "Change request branch contract" {
+
+    BeforeEach {
+        $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+    }
+
+    It "Should stream results rather than buffering every page" {
+        $script:Order = [System.Collections.Generic.List[string]]::new()
+        Mock Get-GithubPullRequest {
+            1..3 | ForEach-Object {
+                $script:Order.Add("produced-$_")
+                [PSCustomObject]@{
+                    Number = $_
+                    Head   = [PSCustomObject]@{ Ref = "f$_" }
+                    Base   = [PSCustomObject]@{ Ref = 'main' }
+                }
+            }
+        }
+
+        Get-ChangeRequest -Forge github | ForEach-Object { $script:Order.Add("consumed-$($_.Number)") }
+
+        $script:Order -join ',' |
+            Should -Be 'produced-1,consumed-1,produced-2,consumed-2,produced-3,consumed-3'
+    }
+
+    It "Should apply the contract to a newly created change request" {
+        Mock New-GithubPullRequest {
+            [PSCustomObject]@{ Head = [PSCustomObject]@{ Ref = 'feature' }; Base = [PSCustomObject]@{ Ref = 'main' } }
+        }
+
+        $Cr = New-ChangeRequest -Title 'Add feature' -SourceBranch 'feature' -Forge github
+
+        $Cr.SourceBranch | Should -Be 'feature'
+        $Cr.TargetBranch | Should -Be 'main'
+    }
+
+    It "Should apply the contract to an updated change request" {
+        Mock Update-GithubPullRequest {
+            [PSCustomObject]@{ Head = [PSCustomObject]@{ Ref = 'feature' }; Base = [PSCustomObject]@{ Ref = 'main' } }
+        }
+
+        $Cr = Update-ChangeRequest -Id '99' -Title 'Renamed' -Forge github
+
+        $Cr.SourceBranch | Should -Be 'feature'
+        $Cr.TargetBranch | Should -Be 'main'
+    }
+
+    It "Should apply the contract to a merged change request" {
+        Mock Merge-GithubPullRequest {
+            [PSCustomObject]@{ Head = [PSCustomObject]@{ Ref = 'feature' }; Base = [PSCustomObject]@{ Ref = 'main' } }
+        }
+
+        $Cr = Merge-ChangeRequest -Id '99' -Forge github
+
+        $Cr.SourceBranch | Should -Be 'feature'
+        $Cr.TargetBranch | Should -Be 'main'
+    }
+
+    It "Should apply the contract to a closed change request" {
+        Mock Close-GithubPullRequest {
+            [PSCustomObject]@{ Head = [PSCustomObject]@{ Ref = 'feature' }; Base = [PSCustomObject]@{ Ref = 'main' } }
+        }
+
+        $Cr = Close-ChangeRequest -Id '99' -Forge github
+
+        $Cr.SourceBranch | Should -Be 'feature'
+        $Cr.TargetBranch | Should -Be 'main'
+    }
+}

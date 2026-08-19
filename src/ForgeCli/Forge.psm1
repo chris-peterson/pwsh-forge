@@ -255,12 +255,7 @@ function Get-ChangeRequest {
         }
     }
 
-    $Results = & $Target.Command @Params
-    if ($Target.Provider -eq 'github') {
-        $Results | Add-GithubChangeRequestBranch
-    } else {
-        $Results
-    }
+    & $Target.Command @Params | Add-ChangeRequestBranchContract -Provider $Target.Provider
 }
 
 function Get-Branch {
@@ -675,7 +670,7 @@ function New-ChangeRequest {
     }
 
     if ($PSCmdlet.ShouldProcess("$SourceBranch -> $TargetBranch", 'Create Change Request')) {
-        & $Target.Command @Params
+        & $Target.Command @Params | Add-ChangeRequestBranchContract -Provider $Target.Provider
     }
 }
 
@@ -724,7 +719,7 @@ function Merge-ChangeRequest {
     }
 
     if ($PSCmdlet.ShouldProcess("Change Request #$Id", 'Merge')) {
-        & $Target.Command @Params
+        & $Target.Command @Params | Add-ChangeRequestBranchContract -Provider $Target.Provider
     }
 }
 
@@ -930,7 +925,7 @@ function Close-ChangeRequest {
     }
 
     if ($PSCmdlet.ShouldProcess("Change Request #$Id", 'Close')) {
-        & $Target.Command @Params
+        & $Target.Command @Params | Add-ChangeRequestBranchContract -Provider $Target.Provider
     }
 }
 
@@ -1009,7 +1004,7 @@ function Update-ChangeRequest {
     }
 
     if ($PSCmdlet.ShouldProcess("Change Request #$Id", 'Update')) {
-        & $Target.Command @Params
+        & $Target.Command @Params | Add-ChangeRequestBranchContract -Provider $Target.Provider
     }
 }
 

@@ -29,6 +29,39 @@ function Resolve-ForgeCommand {
     }
 }
 
+function Add-ChangeRequestBranchContract {
+    <#
+    .SYNOPSIS
+    Applies the SourceBranch / TargetBranch contract to a change request from the
+    named provider.
+
+    .DESCRIPTION
+    Gitlab merge requests already carry both properties, so this is a
+    pass-through for every provider but Github.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [psobject]
+        $ChangeRequest,
+
+        [Parameter(Mandatory)]
+        [string]
+        $Provider
+    )
+
+    process {
+        if ($Provider -eq 'github') {
+            $ChangeRequest | Add-GithubChangeRequestBranch
+        } else {
+            $ChangeRequest
+        }
+    }
+}
+
+# Weak keys, so an entry is collected along with the change request it describes.
+$script:ForgeChangeRequestDetail = [System.Runtime.CompilerServices.ConditionalWeakTable[psobject, hashtable]]::new()
+
 function Add-GithubChangeRequestBranch {
     <#
     .SYNOPSIS
@@ -37,10 +70,21 @@ function Add-GithubChangeRequestBranch {
 
     .DESCRIPTION
     TERMINOLOGY.md maps SourceBranch/TargetBranch to head.ref/base.ref, but a
-    Github.PullRequest arrives in one of two shapes under the same type name:
-    the pulls API supplies Head/Base, while the issues-search path behind -Mine
-    does not. Resolving the missing refs costs one API call per pull request, so
-    it happens on first read rather than for every result.
+    Github.PullRequest arrives in one of two shapes under the same type name. The
+    pulls API supplies Head/Base; the search/issues API does not, and GithubCli
+    switches to search for -Mine, for the cross-repo -Search set, and for the
+    -Author, -IsDraft, -CreatedAfter/Before, -MergedAfter/Before, -ReviewedBy and
+    -State merged filters. Resolving the missing refs costs one API call per pull
+    request, so it happens on first read rather than for every result. The default
+    table view does not read these properties, but Format-List, Select-Object *
+    and ConvertTo-Json read both, and pay one serial call per request.
+
+    The resolved detail is held in $script:ForgeChangeRequestDetail rather than on
+    the change request itself, so it stays out of ConvertTo-Json and Export-Csv
+    output. A refusal is recorded there too and reported as a warning: PowerShell
+    discards an exception thrown from a ScriptProperty getter, so a failed resolve
+    would otherwise be indistinguishable from a request with no branch, and would
+    be retried on every read.
     #>
     [CmdletBinding()]
     param(
@@ -57,13 +101,22 @@ function Add-GithubChangeRequestBranch {
             $RefName = $Pair.Ref
             $ChangeRequest | Add-Member -MemberType ScriptProperty -Name $Pair.Name -Force -Value ([scriptblock]::Create(@"
                 if (`$this.$RefName) { return `$this.$RefName.Ref }
-                if (-not `$this.PSObject.Properties['__ForgeDetail']) {
-                    `$Detail = if (`$this.ProjectPath -and `$this.Number) {
-                        Get-GithubPullRequest -RepositoryId `$this.ProjectPath -PullRequestId `$this.Number
+                `$Entry = `$script:ForgeChangeRequestDetail.GetValue(`$this, { @{ Resolved = `$false; Detail = `$null; Failure = `$null } })
+                if (-not `$Entry.Resolved) {
+                    `$Entry.Resolved = `$true
+                    if (`$this.ProjectPath -and `$this.Number) {
+                        try {
+                            `$Entry.Detail = Get-GithubPullRequest -RepositoryId `$this.ProjectPath -PullRequestId `$this.Number -ErrorAction Stop
+                        } catch {
+                            `$Entry.Failure = "Could not resolve branch refs for `$(`$this.ProjectPath)#`$(`$this.Number): `$(`$_.Exception.Message)"
+                        }
                     }
-                    `$this | Add-Member -MemberType NoteProperty -Name '__ForgeDetail' -Value `$Detail -Force
                 }
-                `$this.__ForgeDetail.$RefName.Ref
+                if (`$Entry.Failure) {
+                    Write-Warning `$Entry.Failure
+                    return
+                }
+                `$Entry.Detail.$RefName.Ref
 "@))
         }
         $ChangeRequest
