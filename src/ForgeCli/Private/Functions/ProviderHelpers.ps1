@@ -90,3 +90,34 @@ Currently supported: $SupportedList
     $Resolved.Name = $Key
     return $Resolved
 }
+
+function Resolve-ForgeLabelId {
+    <#
+    .SYNOPSIS
+    Resolves a label name to the numeric id a provider's write commands require.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $Name,
+
+        [Parameter(Mandatory)]
+        [hashtable]
+        $Scope,
+
+        [Parameter()]
+        [string]
+        $Provider
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Label' -Provider $Provider
+    $Label = & $Target.Command -Name $Name @Scope | Select-Object -First 1
+
+    if (-not $Label) {
+        $ScopeText = ($Scope.GetEnumerator() | ForEach-Object { "$($_.Key) '$($_.Value)'" }) -join ', '
+        throw "No label named '$Name' in $ScopeText"
+    }
+
+    $Label.Id
+}

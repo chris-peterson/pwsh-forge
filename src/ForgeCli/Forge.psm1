@@ -1676,3 +1676,237 @@ function Get-UserActivity {
 
     $Results
 }
+
+function Get-Label {
+    [CmdletBinding()]
+    param(
+        [Parameter(Position=0)]
+        [string]
+        $Name,
+
+        [Parameter()]
+        [string]
+        $Group,
+
+        [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
+        [Alias('Provider')]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Forge
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-Label' -Provider $Forge
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            if ($Group) { Write-Warning "Get-Label -Group is not supported by the Github provider; Github labels are repository-scoped" }
+            if ($Name) { $Params.Name = $Name }
+            if ($Repo) { $Params.RepositoryId = $Repo }
+        }
+        'gitlab' {
+            if ($Name)  { $Params.Name = $Name }
+            if ($Group) {
+                if ($Repo) { Write-Warning "Get-Label -Group and -Repo are separate scopes on the Gitlab provider; using -Group" }
+                $Params.GroupId = $Group
+            } else {
+                $Params.ProjectId = if ($Repo) { $Repo } else { '.' }
+            }
+        }
+    }
+
+    & $Target.Command @Params
+}
+
+function New-Label {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Name,
+
+        [Parameter(Mandatory)]
+        [string]
+        $Color,
+
+        [Parameter()]
+        [string]
+        $Description,
+
+        [Parameter()]
+        [int]
+        $Priority,
+
+        [Parameter()]
+        [string]
+        $Group,
+
+        [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
+        [Alias('Provider')]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Forge
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'New-Label' -Provider $Forge
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            if ($Group)    { Write-Warning "New-Label -Group is not supported by the Github provider; Github labels are repository-scoped" }
+            if ($PSBoundParameters.ContainsKey('Priority')) { Write-Warning "New-Label -Priority is not supported by the Github provider" }
+            $Params.Name  = $Name
+            $Params.Color = $Color
+            if ($Description) { $Params.Description = $Description }
+            if ($Repo)        { $Params.RepositoryId = $Repo }
+        }
+        'gitlab' {
+            $Params.Name  = $Name
+            $Params.Color = $Color
+            if ($Description) { $Params.Description = $Description }
+            if ($PSBoundParameters.ContainsKey('Priority')) { $Params.Priority = $Priority }
+            if ($Group) {
+                if ($Repo) { Write-Warning "New-Label -Group and -Repo are separate scopes on the Gitlab provider; using -Group" }
+                $Params.GroupId = $Group
+            } else {
+                $Params.ProjectId = if ($Repo) { $Repo } else { '.' }
+            }
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess($Name, 'Create Label')) {
+        & $Target.Command @Params
+    }
+}
+
+function Update-Label {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Name,
+
+        [Parameter()]
+        [string]
+        $NewName,
+
+        [Parameter()]
+        [string]
+        $Color,
+
+        [Parameter()]
+        [string]
+        $Description,
+
+        [Parameter()]
+        [int]
+        $Priority,
+
+        [Parameter()]
+        [string]
+        $Group,
+
+        [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
+        [Alias('Provider')]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Forge
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Update-Label' -Provider $Forge
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            if ($Group)    { Write-Warning "Update-Label -Group is not supported by the Github provider; Github labels are repository-scoped" }
+            if ($PSBoundParameters.ContainsKey('Priority')) { Write-Warning "Update-Label -Priority is not supported by the Github provider" }
+            $Params.Name = $Name
+            if ($NewName)     { $Params.NewName     = $NewName }
+            if ($Color)       { $Params.Color       = $Color }
+            if ($Description) { $Params.Description = $Description }
+            if ($Repo)        { $Params.RepositoryId = $Repo }
+        }
+        'gitlab' {
+            $Scope = @{}
+            if ($Group) {
+                if ($Repo) { Write-Warning "Update-Label -Group and -Repo are separate scopes on the Gitlab provider; using -Group" }
+                $Scope.GroupId = $Group
+            } else {
+                $Scope.ProjectId = if ($Repo) { $Repo } else { '.' }
+            }
+
+            $Params.LabelId = Resolve-ForgeLabelId -Name $Name -Scope $Scope -Provider $Target.Provider
+            if ($NewName)     { $Params.NewName     = $NewName }
+            if ($Color)       { $Params.Color       = $Color }
+            if ($Description) { $Params.Description = $Description }
+            if ($PSBoundParameters.ContainsKey('Priority')) { $Params.Priority = $Priority }
+            $Params += $Scope
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess($Name, 'Update Label')) {
+        & $Target.Command @Params
+    }
+}
+
+function Remove-Label {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Name,
+
+        [Parameter()]
+        [string]
+        $Group,
+
+        [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
+        [Alias('Provider')]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Forge
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Remove-Label' -Provider $Forge
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            if ($Group) { Write-Warning "Remove-Label -Group is not supported by the Github provider; Github labels are repository-scoped" }
+            $Params.Name = $Name
+            if ($Repo)  { $Params.RepositoryId = $Repo }
+        }
+        'gitlab' {
+            $Scope = @{}
+            if ($Group) {
+                if ($Repo) { Write-Warning "Remove-Label -Group and -Repo are separate scopes on the Gitlab provider; using -Group" }
+                $Scope.GroupId = $Group
+            } else {
+                $Scope.ProjectId = if ($Repo) { $Repo } else { '.' }
+            }
+
+            $Params.LabelId = Resolve-ForgeLabelId -Name $Name -Scope $Scope -Provider $Target.Provider
+            $Params += $Scope
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess($Name, 'Delete Label')) {
+        & $Target.Command @Params
+    }
+}

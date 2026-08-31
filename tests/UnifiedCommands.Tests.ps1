@@ -40,6 +40,10 @@ BeforeAll {
     function Get-GithubUser { param($Username, [switch]$Me, $Select) }
     function Get-GithubCommit { param($Sha, $Branch, $Author, $Since, $Until, [uint]$MaxPages, [switch]$All) }
     function Get-GithubMilestone { param($MilestoneId, $State) }
+    function Get-GithubLabel { param($RepositoryId, $Name, [uint]$MaxPages, [switch]$All, $Select) }
+    function New-GithubLabel { param($RepositoryId, $Name, $Color, $Description) }
+    function Update-GithubLabel { param($RepositoryId, $Name, $NewName, $Color, $Description) }
+    function Remove-GithubLabel { param($RepositoryId, $Name) }
     function Invoke-GithubApi { param($HttpMethod, $Path, [hashtable]$Query, [hashtable]$Body, [uint]$MaxPages) }
     function Get-GithubEvent { param($RepositoryId, $Username, $Organization, [uint]$MaxPages, [switch]$All, $Select) }
     function Get-GithubConfiguration { param() }
@@ -75,6 +79,10 @@ BeforeAll {
     function Get-GitlabUser { param($UserId, [switch]$Me, $Select) }
     function Get-GitlabCommit { param($Sha, $Ref, $Author, $Since, $Until, [uint]$MaxPages, [switch]$All) }
     function Get-GitlabMilestone { param($MilestoneId, $State) }
+    function Get-GitlabLabel { param($ProjectId, $GroupId, $LabelId, $Name, $Search, [switch]$IncludeAncestorGroups, [uint]$MaxPages, [switch]$All) }
+    function New-GitlabLabel { param($ProjectId, $GroupId, $Name, $Color, $Description, [int]$Priority) }
+    function Update-GitlabLabel { param($ProjectId, $GroupId, [int]$LabelId, $NewName, $Color, $Description, $Priority) }
+    function Remove-GitlabLabel { param($ProjectId, $GroupId, [int]$LabelId) }
     function Invoke-GitlabApi { param($HttpMethod, $Path, [hashtable]$Query, [hashtable]$Body, [uint]$MaxPages) }
     function Get-GitlabUserEvent { param($UserId, $EmailAddress, [switch]$Me, $Action, $TargetType, $Before, $After, $Sort, [uint]$MaxPages, [switch]$FetchProjects, $SiteUrl) }
     function Get-GitlabConfiguration { param() }
@@ -1545,3 +1553,204 @@ Describe "Get-UserActivity" {
     }
 }
 
+
+# =============================================================================
+# Labels
+# =============================================================================
+
+Describe "Get-Label" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Get-GithubLabel {}
+        }
+
+        It "Should map Name to Name" {
+            Get-Label -Name 'bug' -Forge github
+            Should -Invoke Get-GithubLabel -ParameterFilter { $Name -eq 'bug' }
+        }
+
+        It "Should map Repo to RepositoryId" {
+            Get-Label -Repo 'owner/repo' -Forge github
+            Should -Invoke Get-GithubLabel -ParameterFilter { $RepositoryId -eq 'owner/repo' }
+        }
+
+        It "Should warn that Group is unsupported" {
+            Get-Label -Group 'my-group' -Forge github -WarningVariable Warnings -WarningAction SilentlyContinue
+            $Warnings | Should -Match 'Get-Label -Group'
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Get-GitlabLabel {}
+        }
+
+        It "Should map Name to Name" {
+            Get-Label -Name 'bug' -Repo 'group/project' -Forge gitlab
+            Should -Invoke Get-GitlabLabel -ParameterFilter { $Name -eq 'bug' }
+        }
+
+        It "Should map Repo to ProjectId" {
+            Get-Label -Repo 'group/project' -Forge gitlab
+            Should -Invoke Get-GitlabLabel -ParameterFilter { $ProjectId -eq 'group/project' }
+        }
+
+        It "Should map Group to GroupId" {
+            Get-Label -Group 'my-group' -Forge gitlab
+            Should -Invoke Get-GitlabLabel -ParameterFilter { $GroupId -eq 'my-group' }
+        }
+
+        It "Should scope to the current repository when neither Repo nor Group is given" {
+            Get-Label -Forge gitlab
+            Should -Invoke Get-GitlabLabel -ParameterFilter { $ProjectId -eq '.' }
+        }
+
+        It "Should prefer Group over Repo, and say so" {
+            Get-Label -Group 'my-group' -Repo 'group/project' -Forge gitlab -WarningVariable Warnings -WarningAction SilentlyContinue
+            Should -Invoke Get-GitlabLabel -ParameterFilter { $GroupId -eq 'my-group' -and -not $ProjectId }
+            $Warnings | Should -Match 'Get-Label -Group and -Repo'
+        }
+    }
+}
+
+Describe "New-Label" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock New-GithubLabel {}
+        }
+
+        It "Should pass Name and Color through" {
+            New-Label -Name 'bug' -Color 'd73a4a' -Forge github
+            Should -Invoke New-GithubLabel -ParameterFilter { $Name -eq 'bug' -and $Color -eq 'd73a4a' }
+        }
+
+        It "Should map Repo to RepositoryId" {
+            New-Label -Name 'bug' -Color 'd73a4a' -Repo 'owner/repo' -Forge github
+            Should -Invoke New-GithubLabel -ParameterFilter { $RepositoryId -eq 'owner/repo' }
+        }
+
+        It "Should warn that Priority is unsupported" {
+            New-Label -Name 'bug' -Color 'd73a4a' -Priority 1 -Forge github -WarningVariable Warnings -WarningAction SilentlyContinue
+            $Warnings | Should -Match 'New-Label -Priority'
+        }
+
+        It "Should not forward Description when unset" {
+            New-Label -Name 'bug' -Color 'd73a4a' -Forge github
+            Should -Invoke New-GithubLabel -ParameterFilter { -not $PesterBoundParameters.ContainsKey('Description') }
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock New-GitlabLabel {}
+        }
+
+        It "Should pass Name and Color through" {
+            New-Label -Name 'bug' -Color 'd73a4a' -Repo 'group/project' -Forge gitlab
+            Should -Invoke New-GitlabLabel -ParameterFilter { $Name -eq 'bug' -and $Color -eq 'd73a4a' }
+        }
+
+        It "Should map Group to GroupId" {
+            New-Label -Name 'bug' -Color 'd73a4a' -Group 'my-group' -Forge gitlab
+            Should -Invoke New-GitlabLabel -ParameterFilter { $GroupId -eq 'my-group' }
+        }
+
+        It "Should pass Priority through" {
+            New-Label -Name 'bug' -Color 'd73a4a' -Priority 3 -Repo 'group/project' -Forge gitlab
+            Should -Invoke New-GitlabLabel -ParameterFilter { $Priority -eq 3 }
+        }
+    }
+}
+
+Describe "Update-Label" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Update-GithubLabel {}
+        }
+
+        It "Should identify the label by Name" {
+            Update-Label -Name 'bug' -Color 'ff0000' -Forge github
+            Should -Invoke Update-GithubLabel -ParameterFilter { $Name -eq 'bug' -and $Color -eq 'ff0000' }
+        }
+
+        It "Should pass NewName through" {
+            Update-Label -Name 'bug' -NewName 'defect' -Forge github
+            Should -Invoke Update-GithubLabel -ParameterFilter { $NewName -eq 'defect' }
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Update-GitlabLabel {}
+            Mock Get-GitlabLabel { [PSCustomObject]@{ Id = 42; Name = 'bug' } }
+        }
+
+        It "Should resolve Name to LabelId" {
+            Update-Label -Name 'bug' -Color 'ff0000' -Repo 'group/project' -Forge gitlab
+            Should -Invoke Get-GitlabLabel -ParameterFilter { $Name -eq 'bug' -and $ProjectId -eq 'group/project' }
+            Should -Invoke Update-GitlabLabel -ParameterFilter { $LabelId -eq 42 -and $ProjectId -eq 'group/project' }
+        }
+
+        It "Should resolve against the group when Group is given" {
+            Update-Label -Name 'bug' -NewName 'defect' -Group 'my-group' -Forge gitlab
+            Should -Invoke Get-GitlabLabel -ParameterFilter { $GroupId -eq 'my-group' }
+            Should -Invoke Update-GitlabLabel -ParameterFilter { $LabelId -eq 42 -and $GroupId -eq 'my-group' }
+        }
+
+        It "Should throw when the label does not exist" {
+            Mock Get-GitlabLabel {}
+            { Update-Label -Name 'nope' -Color 'ff0000' -Repo 'group/project' -Forge gitlab } |
+                Should -Throw "*No label named 'nope'*"
+        }
+    }
+}
+
+Describe "Remove-Label" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Remove-GithubLabel {}
+        }
+
+        It "Should identify the label by Name" {
+            Remove-Label -Name 'bug' -Forge github -Confirm:$false
+            Should -Invoke Remove-GithubLabel -ParameterFilter { $Name -eq 'bug' }
+        }
+
+        It "Should not call the provider with -WhatIf" {
+            Remove-Label -Name 'bug' -Forge github -WhatIf
+            Should -Invoke Remove-GithubLabel -Times 0
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Remove-GitlabLabel {}
+            Mock Get-GitlabLabel { [PSCustomObject]@{ Id = 42; Name = 'bug' } }
+        }
+
+        It "Should resolve Name to LabelId" {
+            Remove-Label -Name 'bug' -Repo 'group/project' -Forge gitlab -Confirm:$false
+            Should -Invoke Remove-GitlabLabel -ParameterFilter { $LabelId -eq 42 -and $ProjectId -eq 'group/project' }
+        }
+    }
+}

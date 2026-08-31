@@ -92,6 +92,7 @@ $CategoryDescriptions = @{
     'Commits'        = 'View commit information'
     'Groups'         = 'Manage organizations and groups'
     'Issues'         = 'Create, update, and close issues'
+    'Labels'         = 'Manage labels'
     'Members'        = 'Manage group and organization members'
     'Milestones'     = 'Track milestones'
     'Releases'       = 'View releases'

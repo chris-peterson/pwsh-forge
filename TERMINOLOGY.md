@@ -177,6 +177,7 @@ provider-specific command based on git remote context:
 | `Get-Group`                 | `Get-GithubOrganization`          | `Get-GitlabGroup`                |
 | `Get-GroupMember`           | `Get-GithubOrganizationMember`    | `Get-GitlabGroupMember`          |
 | `Get-Issue`                 | `Get-GithubIssue`                 | `Get-GitlabIssue`                |
+| `Get-Label`                 | `Get-GithubLabel`                 | `Get-GitlabLabel`                |
 | `Get-Milestone`             | `Get-GithubMilestone`             | `Get-GitlabMilestone`            |
 | `Get-Release`               | `Get-GithubRelease`               | `Get-GitlabRelease`              |
 | `Get-Repo`                  | `Get-GithubRepository`            | `Get-GitlabProject`              |
@@ -187,14 +188,17 @@ provider-specific command based on git remote context:
 | `New-ChangeRequest`         | `New-GithubPullRequest`           | `New-GitlabMergeRequest`         |
 | `New-Issue`                 | `New-GithubIssue`                 | `New-GitlabIssue`                |
 | `New-IssueComment`          | `New-GithubIssueComment`          | `New-GitlabIssueNote`            |
+| `New-Label`                 | `New-GithubLabel`                 | `New-GitlabLabel`                |
 | `New-Repo`                  | `New-GithubRepository`            | `New-GitlabProject`              |
 | `Open-Issue`                | `Open-GithubIssue`                | `Open-GitlabIssue`               |
 | `Remove-Branch`             | `Remove-GithubBranch`             | `Remove-GitlabBranch`            |
 | `Remove-GroupMember`        | `Remove-GithubOrganizationMember` | `Remove-GitlabGroupMember`       |
+| `Remove-Label`              | `Remove-GithubLabel`              | `Remove-GitlabLabel`             |
 | `Remove-Repo`               | `Remove-GithubRepository`         | `Remove-GitlabProject`           |
 | `Search-Repo`               | `Search-GithubRepository`         | `Search-GitlabProject`           |
 | `Update-ChangeRequest`      | `Update-GithubPullRequest`        | `Update-GitlabMergeRequest`      |
 | `Update-Issue`              | `Update-GithubIssue`              | `Update-GitlabIssue`             |
+| `Update-Label`              | `Update-GithubLabel`              | `Update-GitlabLabel`             |
 
 Provider detection reads the git remote to determine whether the current
 directory is a Github or Gitlab repo, then routes to the appropriate provider.
