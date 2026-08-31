@@ -189,16 +189,19 @@ provider-specific command based on git remote context:
 | `New-Issue`                 | `New-GithubIssue`                 | `New-GitlabIssue`                |
 | `New-IssueComment`          | `New-GithubIssueComment`          | `New-GitlabIssueNote`            |
 | `New-Label`                 | `New-GithubLabel`                 | `New-GitlabLabel`                |
+| `New-Milestone`             | `New-GithubMilestone`             | `New-GitlabMilestone`            |
 | `New-Repo`                  | `New-GithubRepository`            | `New-GitlabProject`              |
 | `Open-Issue`                | `Open-GithubIssue`                | `Open-GitlabIssue`               |
 | `Remove-Branch`             | `Remove-GithubBranch`             | `Remove-GitlabBranch`            |
 | `Remove-GroupMember`        | `Remove-GithubOrganizationMember` | `Remove-GitlabGroupMember`       |
 | `Remove-Label`              | `Remove-GithubLabel`              | `Remove-GitlabLabel`             |
+| `Remove-Milestone`          | `Remove-GithubMilestone`          | `Remove-GitlabMilestone`         |
 | `Remove-Repo`               | `Remove-GithubRepository`         | `Remove-GitlabProject`           |
 | `Search-Repo`               | `Search-GithubRepository`         | `Search-GitlabProject`           |
 | `Update-ChangeRequest`      | `Update-GithubPullRequest`        | `Update-GitlabMergeRequest`      |
 | `Update-Issue`              | `Update-GithubIssue`              | `Update-GitlabIssue`             |
 | `Update-Label`              | `Update-GithubLabel`              | `Update-GitlabLabel`             |
+| `Update-Milestone`          | `Update-GithubMilestone`          | `Update-GitlabMilestone`         |
 
 Provider detection reads the git remote to determine whether the current
 directory is a Github or Gitlab repo, then routes to the appropriate provider.

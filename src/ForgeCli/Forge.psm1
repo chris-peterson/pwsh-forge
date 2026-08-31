@@ -1910,3 +1910,206 @@ function Remove-Label {
         & $Target.Command @Params
     }
 }
+
+
+function New-Milestone {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Title,
+
+        [Parameter()]
+        [string]
+        $Description,
+
+        [Parameter()]
+        [string]
+        $DueDate,
+
+        [Parameter()]
+        [string]
+        $StartDate,
+
+        [Parameter()]
+        [ValidateSet('open', 'closed')]
+        [string]
+        $State,
+
+        [Parameter()]
+        [string]
+        $Group,
+
+        [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
+        [Alias('Provider')]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Forge
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'New-Milestone' -Provider $Forge
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            if ($Group)     { Write-Warning "New-Milestone -Group is not supported by the Github provider; Github milestones are repository-scoped" }
+            if ($StartDate) { Write-Warning "New-Milestone -StartDate is not supported by the Github provider" }
+            $Params.Title = $Title
+            if ($Description) { $Params.Description = $Description }
+            if ($DueDate)     { $Params.DueOn       = $DueDate }
+            if ($State)       { $Params.State       = $State }
+            if ($Repo)        { $Params.RepositoryId = $Repo }
+        }
+        'gitlab' {
+            if ($State) { Write-Warning "New-Milestone -State is not supported by the Gitlab provider; use Update-Milestone -State after creating" }
+            $Params.Title = $Title
+            if ($Description) { $Params.Description = $Description }
+            if ($DueDate)     { $Params.DueDate     = $DueDate }
+            if ($StartDate)   { $Params.StartDate   = $StartDate }
+            if ($Group) {
+                if ($Repo) { Write-Warning "New-Milestone -Group and -Repo are separate scopes on the Gitlab provider; using -Group" }
+                $Params.GroupId = $Group
+            } else {
+                $Params.ProjectId = if ($Repo) { $Repo } else { '.' }
+            }
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess($Title, 'Create Milestone')) {
+        & $Target.Command @Params
+    }
+}
+
+function Update-Milestone {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Id,
+
+        [Parameter()]
+        [string]
+        $Title,
+
+        [Parameter()]
+        [string]
+        $Description,
+
+        [Parameter()]
+        [string]
+        $DueDate,
+
+        [Parameter()]
+        [string]
+        $StartDate,
+
+        [Parameter()]
+        [ValidateSet('open', 'closed')]
+        [string]
+        $State,
+
+        [Parameter()]
+        [string]
+        $Group,
+
+        [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
+        [Alias('Provider')]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Forge
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Update-Milestone' -Provider $Forge
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            if ($Group)     { Write-Warning "Update-Milestone -Group is not supported by the Github provider; Github milestones are repository-scoped" }
+            if ($StartDate) { Write-Warning "Update-Milestone -StartDate is not supported by the Github provider" }
+            $Params.MilestoneId = $Id
+            if ($Title)       { $Params.Title       = $Title }
+            if ($Description) { $Params.Description = $Description }
+            if ($DueDate)     { $Params.DueOn       = $DueDate }
+            if ($State)       { $Params.State       = $State }
+            if ($Repo)        { $Params.RepositoryId = $Repo }
+        }
+        'gitlab' {
+            $Params.MilestoneId = $Id
+            if ($Title)       { $Params.Title       = $Title }
+            if ($Description) { $Params.Description = $Description }
+            if ($DueDate)     { $Params.DueDate     = $DueDate }
+            if ($StartDate)   { $Params.StartDate   = $StartDate }
+            if ($State) {
+                $Params.StateEvent = switch ($State) {
+                    'open'   { 'activate' }
+                    'closed' { 'close' }
+                }
+            }
+            if ($Group) {
+                if ($Repo) { Write-Warning "Update-Milestone -Group and -Repo are separate scopes on the Gitlab provider; using -Group" }
+                $Params.GroupId = $Group
+            } else {
+                $Params.ProjectId = if ($Repo) { $Repo } else { '.' }
+            }
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess("Milestone #$Id", 'Update Milestone')) {
+        & $Target.Command @Params
+    }
+}
+
+function Remove-Milestone {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Id,
+
+        [Parameter()]
+        [string]
+        $Group,
+
+        [Parameter()]
+        [string]
+        $Repo,
+
+        [Parameter()]
+        [Alias('Provider')]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Forge
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Remove-Milestone' -Provider $Forge
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            if ($Group) { Write-Warning "Remove-Milestone -Group is not supported by the Github provider; Github milestones are repository-scoped" }
+            $Params.MilestoneId = $Id
+            if ($Repo) { $Params.RepositoryId = $Repo }
+        }
+        'gitlab' {
+            $Params.MilestoneId = $Id
+            if ($Group) {
+                if ($Repo) { Write-Warning "Remove-Milestone -Group and -Repo are separate scopes on the Gitlab provider; using -Group" }
+                $Params.GroupId = $Group
+            } else {
+                $Params.ProjectId = if ($Repo) { $Repo } else { '.' }
+            }
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess("Milestone #$Id", 'Delete Milestone')) {
+        & $Target.Command @Params
+    }
+}
