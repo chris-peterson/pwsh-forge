@@ -34,6 +34,12 @@
   * [Open-Issue](/Issues/Open-Issue.md)
   * [Update-Issue](/Issues/Update-Issue.md)
 
+* [Labels](/Labels/)
+  * [Get-Label](/Labels/Get-Label.md)
+  * [New-Label](/Labels/New-Label.md)
+  * [Remove-Label](/Labels/Remove-Label.md)
+  * [Update-Label](/Labels/Update-Label.md)
+
 * [Milestones](/Milestones/)
   * [Get-Milestone](/Milestones/Get-Milestone.md)
 

@@ -108,6 +108,65 @@ no such cap.
 | `-MaxPages`    | `-MaxPages`           | `-MaxPages`             |
 | `-All`         | `-All`                | `-All`                  |
 
+## Get-Label
+
+| Common Param   | Github                | Gitlab                  |
+|----------------|-----------------------|-------------------------|
+| `-Name`        | `-Name`               | `-Name`                 |
+| `-Repo`        | `-RepositoryId`       | `-ProjectId`            |
+| `-Group`       | not supported         | `-GroupId`              |
+
+**Scope defaults to the current repository.** Github's `-RepositoryId`
+defaults to `.`; the Gitlab branch passes `.` explicitly so both providers
+resolve the repository from the working directory.
+
+**Name lookup differs in request count.** Github fetches the named label
+directly. Gitlab lists the labels and matches on name, so the result is the
+same and the request count is not.
+
+**`-Group` and `-Repo` are separate scopes.** A Gitlab label lives on a project
+or on a group, not both, so supplying `-Group` selects the group scope and
+warns that `-Repo` went unused.
+
+## New-Label
+
+| Common Param   | Github                | Gitlab                  |
+|----------------|-----------------------|-------------------------|
+| `-Name`        | `-Name`               | `-Name`                 |
+| `-Color`       | `-Color`              | `-Color`                |
+| `-Description` | `-Description`        | `-Description`          |
+| `-Priority`    | not supported         | `-Priority`             |
+| `-Repo`        | `-RepositoryId`       | `-ProjectId`            |
+| `-Group`       | not supported         | `-GroupId`              |
+
+**Color format is provider-specific.** Both providers assign `-Color`
+straight into the request body, so a leading `#`, three-digit shorthand, or a
+named color reaches the forge unaltered.
+
+## Update-Label
+
+| Common Param   | Github                | Gitlab                             |
+|----------------|-----------------------|------------------------------------|
+| `-Name`        | `-Name`               | resolved to `-LabelId`             |
+| `-NewName`     | `-NewName`            | `-NewName`                         |
+| `-Color`       | `-Color`              | `-Color`                           |
+| `-Description` | `-Description`        | `-Description`                     |
+| `-Priority`    | not supported         | `-Priority`                        |
+| `-Repo`        | `-RepositoryId`       | `-ProjectId`                       |
+| `-Group`       | not supported         | `-GroupId`                         |
+
+## Remove-Label
+
+| Common Param   | Github                | Gitlab                             |
+|----------------|-----------------------|------------------------------------|
+| `-Name`        | `-Name`               | resolved to `-LabelId`             |
+| `-Repo`        | `-RepositoryId`       | `-ProjectId`                       |
+| `-Group`       | not supported         | `-GroupId`                         |
+
+**Gitlab keys writes on a numeric id.** `Update-GitlabLabel` and
+`Remove-GitlabLabel` accept only `-LabelId`, so the Gitlab branch resolves
+`-Name` through `Get-Label` before dispatching.
+
 ## Adding Support
 
 When a cell says "not supported", the forge command will emit a

@@ -75,6 +75,7 @@ Browse the sidebar to find cmdlets organized by category:
 - [Commits](/Commits/) - View commit information
 - [Groups](/Groups/) - Manage organizations and groups
 - [Issues](/Issues/) - Create, update, and close issues
+- [Labels](/Labels/) - Manage labels
 - [Milestones](/Milestones/) - Track milestones
 - [Releases](/Releases/) - View releases
 - [Repos](/Repos/) - Manage repositories and projects

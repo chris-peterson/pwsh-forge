@@ -64,6 +64,7 @@
         'Get-Group'
         'Get-GroupMember'
         'Get-Issue'
+        'Get-Label'
         'Get-Milestone'
         'Get-Release'
         'Get-Repo'
@@ -74,14 +75,17 @@
         'New-ChangeRequest'
         'New-Issue'
         'New-IssueComment'
+        'New-Label'
         'New-Repo'
         'Open-Issue'
         'Remove-Branch'
         'Remove-GroupMember'
+        'Remove-Label'
         'Remove-Repo'
         'Search-Repo'
         'Update-ChangeRequest'
         'Update-Issue'
+        'Update-Label'
     )
 
     AliasesToExport = @()
