@@ -76,16 +76,19 @@
         'New-Issue'
         'New-IssueComment'
         'New-Label'
+        'New-Milestone'
         'New-Repo'
         'Open-Issue'
         'Remove-Branch'
         'Remove-GroupMember'
         'Remove-Label'
+        'Remove-Milestone'
         'Remove-Repo'
         'Search-Repo'
         'Update-ChangeRequest'
         'Update-Issue'
         'Update-Label'
+        'Update-Milestone'
     )
 
     AliasesToExport = @()

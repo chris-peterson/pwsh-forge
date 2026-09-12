@@ -166,6 +166,54 @@ named color reaches the forge unaltered.
 **Gitlab keys writes on a numeric id.** `Update-GitlabLabel` and
 `Remove-GitlabLabel` accept only `-LabelId`, so the Gitlab branch resolves
 `-Name` through `Get-Label` before dispatching.
+## New-Milestone
+
+| Common Param   | Github                | Gitlab                  |
+|----------------|-----------------------|-------------------------|
+| `-Title`       | `-Title`              | `-Title`                |
+| `-Description` | `-Description`        | `-Description`          |
+| `-DueDate`     | `-DueOn`              | `-DueDate`              |
+| `-StartDate`   | not supported         | `-StartDate`            |
+| `-State`       | `-State`              | not supported           |
+| `-Repo`        | `-RepositoryId`       | `-ProjectId`            |
+| `-Group`       | not supported         | `-GroupId`              |
+
+**Gitlab has no state on create.** A milestone created there starts open;
+`Update-Milestone -State closed` closes it.
+
+**`-Group` and `-Repo` are separate scopes.** A Gitlab milestone lives on a
+project or on a group, not both, so supplying `-Group` selects the group scope
+and warns that `-Repo` went unused.
+
+## Update-Milestone
+
+| Common Param    | Github                | Gitlab                       |
+|-----------------|-----------------------|------------------------------|
+| `-Id`           | `-MilestoneId`        | `-MilestoneId`               |
+| `-Title`        | `-Title`              | `-Title`                     |
+| `-Description`  | `-Description`        | `-Description`               |
+| `-DueDate`      | `-DueOn`              | `-DueDate`                   |
+| `-StartDate`    | not supported         | `-StartDate`                 |
+| `-State open`   | `-State open`         | `-StateEvent activate`       |
+| `-State closed` | `-State closed`       | `-StateEvent close`          |
+| `-Repo`         | `-RepositoryId`       | `-ProjectId`                 |
+| `-Group`        | not supported         | `-GroupId`                   |
+
+**State is a target on Github and an event on Gitlab.** Github takes the
+state the milestone should end up in; Gitlab takes the transition to apply,
+so the value is translated rather than passed through.
+
+## Remove-Milestone
+
+| Common Param   | Github                | Gitlab                  |
+|----------------|-----------------------|-------------------------|
+| `-Id`          | `-MilestoneId`        | `-MilestoneId`          |
+| `-Repo`        | `-RepositoryId`       | `-ProjectId`            |
+| `-Group`       | not supported         | `-GroupId`              |
+
+**Milestone identity is per-container.** Github's id is the milestone number
+within the repository; Gitlab's is the `iid`. Both are integers scoped to
+their container, and neither is globally unique.
 
 ## Adding Support
 

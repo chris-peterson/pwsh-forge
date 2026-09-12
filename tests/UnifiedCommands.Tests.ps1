@@ -40,6 +40,9 @@ BeforeAll {
     function Get-GithubUser { param($Username, [switch]$Me, $Select) }
     function Get-GithubCommit { param($Sha, $Branch, $Author, $Since, $Until, [uint]$MaxPages, [switch]$All) }
     function Get-GithubMilestone { param($MilestoneId, $State) }
+    function New-GithubMilestone { param($RepositoryId, $Title, $Description, $DueOn, $State) }
+    function Update-GithubMilestone { param($RepositoryId, $MilestoneId, $Title, $Description, $DueOn, $State) }
+    function Remove-GithubMilestone { param($RepositoryId, $MilestoneId) }
     function Get-GithubLabel { param($RepositoryId, $Name, [uint]$MaxPages, [switch]$All, $Select) }
     function New-GithubLabel { param($RepositoryId, $Name, $Color, $Description) }
     function Update-GithubLabel { param($RepositoryId, $Name, $NewName, $Color, $Description) }
@@ -79,6 +82,9 @@ BeforeAll {
     function Get-GitlabUser { param($UserId, [switch]$Me, $Select) }
     function Get-GitlabCommit { param($Sha, $Ref, $Author, $Since, $Until, [uint]$MaxPages, [switch]$All) }
     function Get-GitlabMilestone { param($MilestoneId, $State) }
+    function New-GitlabMilestone { param($ProjectId, $GroupId, $Title, $Description, $DueDate, $StartDate) }
+    function Update-GitlabMilestone { param($ProjectId, $GroupId, $MilestoneId, $Title, $Description, $DueDate, $StartDate, $StateEvent) }
+    function Remove-GitlabMilestone { param($ProjectId, $GroupId, $MilestoneId) }
     function Get-GitlabLabel { param($ProjectId, $GroupId, $LabelId, $Name, $Search, [switch]$IncludeAncestorGroups, [uint]$MaxPages, [switch]$All) }
     function New-GitlabLabel { param($ProjectId, $GroupId, $Name, $Color, $Description, [int]$Priority) }
     function Update-GitlabLabel { param($ProjectId, $GroupId, [int]$LabelId, $NewName, $Color, $Description, $Priority) }
@@ -1751,6 +1757,174 @@ Describe "Remove-Label" {
         It "Should resolve Name to LabelId" {
             Remove-Label -Name 'bug' -Repo 'group/project' -Forge gitlab -Confirm:$false
             Should -Invoke Remove-GitlabLabel -ParameterFilter { $LabelId -eq 42 -and $ProjectId -eq 'group/project' }
+        }
+    }
+}
+
+Describe "New-Milestone" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock New-GithubMilestone {}
+        }
+
+        It "Should pass Title through" {
+            New-Milestone -Title 'v1.0' -Forge github
+            Should -Invoke New-GithubMilestone -ParameterFilter { $Title -eq 'v1.0' }
+        }
+
+        It "Should map DueDate to DueOn" {
+            New-Milestone -Title 'v1.0' -DueDate '2026-12-31' -Forge github
+            Should -Invoke New-GithubMilestone -ParameterFilter { $DueOn -eq '2026-12-31' }
+        }
+
+        It "Should pass State through unchanged" {
+            New-Milestone -Title 'v1.0' -State 'closed' -Forge github
+            Should -Invoke New-GithubMilestone -ParameterFilter { $State -eq 'closed' }
+        }
+
+        It "Should map Repo to RepositoryId" {
+            New-Milestone -Title 'v1.0' -Repo 'owner/repo' -Forge github
+            Should -Invoke New-GithubMilestone -ParameterFilter { $RepositoryId -eq 'owner/repo' }
+        }
+
+        It "Should warn that StartDate is unsupported" {
+            New-Milestone -Title 'v1.0' -StartDate '2026-01-01' -Forge github -WarningVariable Warnings -WarningAction SilentlyContinue
+            $Warnings | Should -Match 'New-Milestone -StartDate'
+        }
+
+        It "Should warn that Group is unsupported" {
+            New-Milestone -Title 'v1.0' -Group 'my-group' -Forge github -WarningVariable Warnings -WarningAction SilentlyContinue
+            $Warnings | Should -Match 'New-Milestone -Group'
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock New-GitlabMilestone {}
+        }
+
+        It "Should map DueDate to DueDate" {
+            New-Milestone -Title 'v1.0' -DueDate '2026-12-31' -Repo 'group/project' -Forge gitlab
+            Should -Invoke New-GitlabMilestone -ParameterFilter { $DueDate -eq '2026-12-31' }
+        }
+
+        It "Should pass StartDate through" {
+            New-Milestone -Title 'v1.0' -StartDate '2026-01-01' -Repo 'group/project' -Forge gitlab
+            Should -Invoke New-GitlabMilestone -ParameterFilter { $StartDate -eq '2026-01-01' }
+        }
+
+        It "Should map Group to GroupId" {
+            New-Milestone -Title 'v1.0' -Group 'my-group' -Forge gitlab
+            Should -Invoke New-GitlabMilestone -ParameterFilter { $GroupId -eq 'my-group' }
+        }
+
+        It "Should prefer Group over Repo, and say so" {
+            New-Milestone -Title 'v1.0' -Group 'my-group' -Repo 'group/project' -Forge gitlab -WarningVariable Warnings -WarningAction SilentlyContinue
+            Should -Invoke New-GitlabMilestone -ParameterFilter { $GroupId -eq 'my-group' -and -not $ProjectId }
+            $Warnings | Should -Match 'New-Milestone -Group and -Repo'
+        }
+
+        It "Should scope to the current repository when neither Repo nor Group is given" {
+            New-Milestone -Title 'v1.0' -Forge gitlab
+            Should -Invoke New-GitlabMilestone -ParameterFilter { $ProjectId -eq '.' }
+        }
+
+        It "Should warn that State is unsupported" {
+            New-Milestone -Title 'v1.0' -State 'closed' -Repo 'group/project' -Forge gitlab -WarningVariable Warnings -WarningAction SilentlyContinue
+            $Warnings | Should -Match 'New-Milestone -State'
+        }
+    }
+}
+
+Describe "Update-Milestone" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Update-GithubMilestone {}
+        }
+
+        It "Should map Id to MilestoneId" {
+            Update-Milestone -Id '3' -Title 'v1.1' -Forge github
+            Should -Invoke Update-GithubMilestone -ParameterFilter { $MilestoneId -eq '3' -and $Title -eq 'v1.1' }
+        }
+
+        It "Should map DueDate to DueOn" {
+            Update-Milestone -Id '3' -DueDate '2026-12-31' -Forge github
+            Should -Invoke Update-GithubMilestone -ParameterFilter { $DueOn -eq '2026-12-31' }
+        }
+
+        It "Should pass State through unchanged" {
+            Update-Milestone -Id '3' -State 'closed' -Forge github
+            Should -Invoke Update-GithubMilestone -ParameterFilter { $State -eq 'closed' }
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Update-GitlabMilestone {}
+        }
+
+        It "Should map Id to MilestoneId" {
+            Update-Milestone -Id '3' -Title 'v1.1' -Repo 'group/project' -Forge gitlab
+            Should -Invoke Update-GitlabMilestone -ParameterFilter { $MilestoneId -eq '3' -and $Title -eq 'v1.1' }
+        }
+
+        It "Should map State 'closed' to StateEvent 'close'" {
+            Update-Milestone -Id '3' -State 'closed' -Repo 'group/project' -Forge gitlab
+            Should -Invoke Update-GitlabMilestone -ParameterFilter { $StateEvent -eq 'close' -and -not $State }
+        }
+
+        It "Should map State 'open' to StateEvent 'activate'" {
+            Update-Milestone -Id '3' -State 'open' -Repo 'group/project' -Forge gitlab
+            Should -Invoke Update-GitlabMilestone -ParameterFilter { $StateEvent -eq 'activate' }
+        }
+
+        It "Should map Group to GroupId" {
+            Update-Milestone -Id '3' -Title 'v1.1' -Group 'my-group' -Forge gitlab
+            Should -Invoke Update-GitlabMilestone -ParameterFilter { $GroupId -eq 'my-group' }
+        }
+    }
+}
+
+Describe "Remove-Milestone" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Remove-GithubMilestone {}
+        }
+
+        It "Should map Id to MilestoneId" {
+            Remove-Milestone -Id '3' -Forge github -Confirm:$false
+            Should -Invoke Remove-GithubMilestone -ParameterFilter { $MilestoneId -eq '3' }
+        }
+
+        It "Should not call the provider with -WhatIf" {
+            Remove-Milestone -Id '3' -Forge github -WhatIf
+            Should -Invoke Remove-GithubMilestone -Times 0
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Remove-GitlabMilestone {}
+        }
+
+        It "Should map Id to MilestoneId" {
+            Remove-Milestone -Id '3' -Repo 'group/project' -Forge gitlab -Confirm:$false
+            Should -Invoke Remove-GitlabMilestone -ParameterFilter { $MilestoneId -eq '3' -and $ProjectId -eq 'group/project' }
         }
     }
 }
