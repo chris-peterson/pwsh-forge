@@ -9,7 +9,7 @@ Guidance for coding agents working in this repository.
 | Command | What it does |
 |---|---|
 | `just test` | Pester over `./tests` |
-| `just lint` | PSScriptAnalyzer over `./src` with `PSScriptAnalyzerSettings.ps1` |
+| `just lint` | PSScriptAnalyzer over `./src` and `./build` with `PSScriptAnalyzerSettings.ps1` |
 | `just help-update` | Regenerate `docs/**/*.md`, `docs/_sidebar.md`, `docs/README.md` from the module |
 | `just help-export` | Compile `docs/**/*.md` into `src/ForgeCli/en-US/ForgeCli-Help.xml` (MAML) |
 | `just docs` | Serve the docsify site locally |
@@ -100,7 +100,12 @@ them to MAML at publish time. The CI `docs` job runs `Update-Help.ps1 -ThrowOnCh
 and commit the result whenever a command's parameters change. `{{ Fill ... }}` placeholders left in a doc fail
 the run.
 
-`publish-module` fires on any `src/**` change landing on `main`, so bump `ModuleVersion` in `ForgeCli.psd1` and
-rewrite `PrivateData.PSData.ReleaseNotes` in the same change; a stale version fails the gallery push.
+Releases are cut by publishing a [GitHub Release](https://github.com/chris-peterson/pwsh-forge/releases); the
+`v`-prefixed tag carries the version. The `release` job promotes the `## [Unreleased]` section of `CHANGELOG.md`
+into a dated section, writes that same text into `ModuleVersion` and `PrivateData.PSData.ReleaseNotes` in
+`ForgeCli.psd1`, publishes to the gallery, sets the release body, and commits the bump back to `main`. So a change
+worth a release note adds a bullet under `## [Unreleased]`, and leaves `ModuleVersion` alone. An empty
+`Unreleased` fails the release. `CONTRIBUTING.md` has the full flow; preview it with
+`./build/Update-ReleaseArtifacts.ps1 -Version v0.13.0 -WhatIf`.
 
 Commands blocked on gaps in the provider modules are tracked in `BACKLOG.md` rather than stubbed out here.

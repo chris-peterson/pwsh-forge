@@ -4,12 +4,9 @@ on:
   push:
     branches: [ '*' ]
   pull_request:
+  release:
+    types: [ published ]
   workflow_dispatch:
-    inputs:
-      force_publish_module:
-        description: 'Force publish module (bypass change detection)'
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -79,7 +76,7 @@ jobs:
       - name: Run PSScriptAnalyzer
         shell: pwsh
         run: |
-          $Results = Invoke-ScriptAnalyzer -Path ./src -Recurse -Settings ./PSScriptAnalyzerSettings.ps1 -ReportSummary
+          $Results = './src', './build' | Invoke-ScriptAnalyzer -Recurse -Settings ./PSScriptAnalyzerSettings.ps1 -ReportSummary
 
           $Errors = $Results | Where-Object Severity -eq 'Error'
           $Warnings = $Results | Where-Object Severity -eq 'Warning'
@@ -155,35 +152,27 @@ jobs:
           $Summary += "Documented cmdlets: **$Documented**`n"
           $Summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
-  release-gate:
-    name: Release Gate
+  release:
+    name: Release
     needs: [test, security, docs]
-    if: github.event.repository.fork == false && github.ref_name == 'main'
+    if: github.event.repository.fork == false && github.event_name == 'release'
     runs-on: ubuntu-latest
-    outputs:
-      changes_in_src: ${{ steps.changes.outputs.src }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: Detect changes
-        uses: dorny/paths-filter@v3.0.2
-        id: changes
-        with:
-          filters: |
-            src:
-              - 'src/**'
-      - run: echo "All checks passed, proceeding with deployment"
 
-  publish-module:
-    name: Publish Module
-    needs: release-gate
-    if: needs.release-gate.outputs.changes_in_src == 'true' || inputs.force_publish_module == true
-    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     environment:
       name: PowerShell Gallery
       url: https://www.powershellgallery.com/packages/ForgeCli
 
+    env:
+      VERSION: ${{ github.event.release.tag_name }}
+
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install PowerShell modules
         shell: pwsh
@@ -193,6 +182,10 @@ jobs:
           Install-Module -Name GitHubCli -Force -Scope CurrentUser
           Install-Module -Name GitlabCli -Force -Scope CurrentUser
 
+      - name: Promote the changelog's Unreleased section into this version
+        shell: pwsh
+        run: ./build/Update-ReleaseArtifacts.ps1 -Version $env:VERSION -NotesOutputPath "$env:RUNNER_TEMP/release-notes.md"
+
       - name: Export help
         shell: pwsh
         run: ./docs/.support/scripts/Export-Help.ps1
@@ -201,3 +194,22 @@ jobs:
         uses: chris-peterson/publish-powershell@v1
         with:
           ApiKey: ${{ secrets.PSGALLERY_API_KEY }}
+
+      - name: Set the release body to the promoted notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit "${VERSION}" --notes-file "${RUNNER_TEMP}/release-notes.md"
+
+      # Last, so a failed publish leaves main without a commit claiming a
+      # release that never shipped.
+      - name: Commit version bump and changelog to main
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/ForgeCli/ForgeCli.psd1 CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "No manifest or changelog changes to commit"
+          else
+            git commit -m "Release ${VERSION}"
+            git push origin main
+          fi
