@@ -4,6 +4,8 @@ All notable changes to ForgeCli are recorded here, newest first.
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-09-13
+
 ### Features
 * Milestone write verbs: `New-Milestone`, `Update-Milestone`, `Remove-Milestone`. `-State closed` reaches Gitlab as `-StateEvent close`, so the forge parameter means the same thing on both providers: https://github.com/chris-peterson/pwsh-forge/pull/13
 * Label commands: `Get-Label`, `New-Label`, `Update-Label`, `Remove-Label`. A `-Name` is resolved to Gitlab's numeric label id before dispatch, so labels stay addressable by the identifier you know: https://github.com/chris-peterson/pwsh-forge/pull/12
