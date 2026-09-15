@@ -55,11 +55,16 @@
   * [Remove-Repo](/Repos/Remove-Repo.md)
 
 * [Search](/Search/)
+  * [Search-Forge](/Search/Search-Forge.md)
   * [Search-Repo](/Search/Search-Repo.md)
 
 * [Users](/Users/)
   * [Get-User](/Users/Get-User.md)
   * [Get-UserActivity](/Users/Get-UserActivity.md)
+
+* [Utility](/Utility/)
+  * [Get-ForgeConfiguration](/Utility/Get-ForgeConfiguration.md)
+  * [Invoke-ForgeApi](/Utility/Invoke-ForgeApi.md)
 
 ---
 

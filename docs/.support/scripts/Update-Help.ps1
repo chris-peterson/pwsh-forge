@@ -99,6 +99,7 @@ $CategoryDescriptions = @{
     'Repos'          = 'Manage repositories and projects'
     'Search'         = 'Search across forges'
     'Users'          = 'User information and activity'
+    'Utility'        = 'Direct API access and provider configuration'
 }
 
 $Categories = Get-ChildItem -Path $DocsFolder -Directory |

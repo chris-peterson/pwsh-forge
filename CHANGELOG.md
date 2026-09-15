@@ -4,6 +4,10 @@ All notable changes to ForgeCli are recorded here, newest first.
 
 ## [Unreleased]
 
+### Features
+* Utility commands: `Search-Forge`, `Invoke-ForgeApi`, `Get-ForgeConfiguration`. `Invoke-ForgeApi` reaches endpoints ForgeCli does not wrap, handing the provider's own path and response straight through, so automation that outgrows the unified surface can stay on ForgeCli.
+* `Search-Forge -Scope` names what to search in forge terms (`code`, `repos`, `commits`, `issues`, `users`, `changerequests`) and translates per provider. `code` and `repos` work on both; the rest are one-sided, and a scope the active provider cannot express warns and searches code.
+
 ## [0.13.0] - 2026-09-13
 
 ### Features

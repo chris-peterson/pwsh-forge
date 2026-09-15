@@ -81,6 +81,7 @@ Browse the sidebar to find cmdlets organized by category:
 - [Repos](/Repos/) - Manage repositories and projects
 - [Search](/Search/) - Search across forges
 - [Users](/Users/) - User information and activity
+- [Utility](/Utility/) - Direct API access and provider configuration
 
 ## Ecosystem
 

@@ -3632,8 +3632,11 @@
       <command:noun>Label</command:noun>
     </command:details>
     <maml:description>
-      <maml:para>Retrieves labels from a repository on GitHub or GitLab. Supplying `-Name` returns the single matching label.</maml:para>
-      <maml:para>GitHub fetches a named label directly; GitLab lists the labels and matches on name, so the result is the same but the request count is not.</maml:para>
+      <maml:para>Retrieves labels from a repository on GitHub or GitLab. Supplying `-Name` returns the single
+matching label.
+
+GitHub fetches a named label directly; GitLab lists the labels and matches on name, so the
+result is the same but the request count is not.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -3967,8 +3970,10 @@
       <command:noun>Label</command:noun>
     </command:details>
     <maml:description>
-      <maml:para>Deletes a label from a repository or group on GitHub or GitLab.</maml:para>
-      <maml:para>GitLab keys its write endpoints on a numeric label id, so the name is resolved to an id before dispatch.</maml:para>
+      <maml:para>Deletes a label from a repository or group on GitHub or GitLab.
+
+GitLab keys its write endpoints on a numeric label id, so the name is resolved to an id before
+dispatch.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -4124,8 +4129,11 @@
       <command:noun>Label</command:noun>
     </command:details>
     <maml:description>
-      <maml:para>Changes a label's name, color, or description on GitHub or GitLab. The label is identified by its current `-Name`; `-NewName` renames it.</maml:para>
-      <maml:para>GitLab keys its write endpoints on a numeric label id, so the name is resolved to an id before dispatch.</maml:para>
+      <maml:para>Changes a label's name, color, or description on GitHub or GitLab. The label is identified by
+its current `-Name`; `-NewName` renames it.
+
+GitLab keys its write endpoints on a numeric label id, so the name is resolved to an id before
+dispatch.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -4477,8 +4485,10 @@
       <command:noun>Milestone</command:noun>
     </command:details>
     <maml:description>
-      <maml:para>Creates a milestone on GitHub or GitLab.</maml:para>
-      <maml:para>GitHub accepts an initial `-State`; GitLab does not, so a milestone created there starts open and `Update-Milestone -State` closes it.</maml:para>
+      <maml:para>Creates a milestone on GitHub or GitLab.
+
+GitHub accepts an initial `-State`; GitLab does not, so a milestone created there starts open
+and `Update-Milestone -State` closes it.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -4862,8 +4872,10 @@
       <command:noun>Milestone</command:noun>
     </command:details>
     <maml:description>
-      <maml:para>Changes a milestone's title, description, dates, or state on GitHub or GitLab.</maml:para>
-      <maml:para>GitHub takes a target state; GitLab takes the event that causes the transition, so a forge `-State closed` reaches GitLab as `-StateEvent close`.</maml:para>
+      <maml:para>Changes a milestone's title, description, dates, or state on GitHub or GitLab.
+
+GitHub takes a target state; GitLab takes the event that causes the transition, so a forge
+`-State closed` reaches GitLab as `-StateEvent close`.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -5723,6 +5735,217 @@
   </command:command>
   <command:command>
     <command:details>
+      <command:name>Search-Forge</command:name>
+      <maml:description>
+        <maml:para>Search a whole forge</maml:para>
+      </maml:description>
+      <command:verb>Search</command:verb>
+      <command:noun>Forge</command:noun>
+    </command:details>
+    <maml:description>
+      <maml:para>Searches across everything the authenticated user can see, rather than within a single
+repository. `Search-Repo` is the repository-scoped counterpart.
+
+The two providers accept different scopes. `code` and `repos` work on both; `commits`,
+`issues`, and `users` are GitHub only, and `changerequests` is GitLab only. Asking for a
+scope the active provider cannot express warns and searches code instead, so check for
+warnings before trusting the result of a scoped search written for the other forge.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Search-Forge</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="0" aliases="none">
+          <maml:name>Query</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">string</command:parameterValue>
+          <dev:type>
+            <maml:name>System.String</maml:name>
+          </dev:type>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Scope</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">string</command:parameterValue>
+          <dev:type>
+            <maml:name>System.String</maml:name>
+          </dev:type>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Group</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">string</command:parameterValue>
+          <dev:type>
+            <maml:name>System.String</maml:name>
+          </dev:type>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Filename</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">string</command:parameterValue>
+          <dev:type>
+            <maml:name>System.String</maml:name>
+          </dev:type>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>MaxPages</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">uint</command:parameterValue>
+          <dev:type>
+            <maml:name>System.UInt32</maml:name>
+          </dev:type>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>All</maml:name>
+          <maml:description />
+          <dev:type>
+            <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          </dev:type>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Provider">
+          <maml:name>Forge</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">string</command:parameterValue>
+          <dev:type>
+            <maml:name>System.String</maml:name>
+          </dev:type>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>All</maml:name>
+        <maml:description>
+          <maml:para>Retrieve all pages of results</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+        </dev:type>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>Filename</maml:name>
+        <maml:description>
+          <maml:para>Restrict a code search to files with this name. Gitlab only</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="Provider">
+        <maml:name>Forge</maml:name>
+        <maml:description>
+          <maml:para>Forge provider (github, gitlab). Auto-detected from git remote if not specified</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>Group</maml:name>
+        <maml:description>
+          <maml:para>Narrow the search to one group. Gitlab only</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>MaxPages</maml:name>
+        <maml:description>
+          <maml:para>Maximum number of pages to retrieve. Gitlab caps by result count instead, at 20 per page</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.UInt32</command:parameterValue>
+        <dev:type>
+          <maml:name>System.UInt32</maml:name>
+        </dev:type>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="0" aliases="none">
+        <maml:name>Query</maml:name>
+        <maml:description>
+          <maml:para>Search query string</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>Scope</maml:name>
+        <maml:description>
+          <maml:para>What to search. Github accepts code, commits, issues, repos, users; Gitlab accepts code,
+changerequests, repos</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para />
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para />
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>--------- Example 1 ---------</maml:title>
+        <maml:introduction>
+          <maml:para>Find every repository whose name or description mentions forge:</maml:para>
+          <maml:para>&#x80;</maml:para>
+          <maml:para>```powershell
+Search-Forge -Query 'forge' -Scope repos
+```</maml:para>
+        </maml:introduction>
+        <dev:code />
+        <dev:remarks />
+      </command:example>
+      <command:example>
+        <maml:title>--------- Example 2 ---------</maml:title>
+        <maml:introduction>
+          <maml:para>Find open merge requests mentioning a term, narrowed to one GitLab group:</maml:para>
+          <maml:para>&#x80;</maml:para>
+          <maml:para>```powershell
+Search-Forge -Query 'retry backoff' -Scope changerequests -Group 'platform' -Forge gitlab
+```</maml:para>
+        </maml:introduction>
+        <dev:code />
+        <dev:remarks />
+      </command:example>
+      <command:example>
+        <maml:title>--------- Example 3 ---------</maml:title>
+        <maml:introduction>
+          <maml:para>Find code matching a term, capped at three pages of results:</maml:para>
+          <maml:para>&#x80;</maml:para>
+          <maml:para>```powershell
+Search-Forge -Query 'Resolve-ForgeCommand' -Scope code -MaxPages 3
+```</maml:para>
+        </maml:introduction>
+        <dev:code />
+        <dev:remarks />
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version</maml:linkText>
+        <maml:uri>https://chris-peterson.github.io/pwsh-forge/#/Search/Search-Forge</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command>
+    <command:details>
       <command:name>Search-Repo</command:name>
       <maml:description>
         <maml:para>Search repositories or projects</maml:para>
@@ -6224,6 +6447,295 @@
       <maml:navigationLink>
         <maml:linkText>Online Version</maml:linkText>
         <maml:uri>https://chris-peterson.github.io/pwsh-forge/#/Users/Get-UserActivity</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command>
+    <command:details>
+      <command:name>Get-ForgeConfiguration</command:name>
+      <maml:description>
+        <maml:para>Show the active provider's configuration</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>ForgeConfiguration</command:noun>
+    </command:details>
+    <maml:description>
+      <maml:para>Returns the configuration of whichever provider is active: base URL, configured sites, and
+whatever else that provider tracks.
+
+The shape is the provider's own and differs between them. GitLab's configuration lists
+several sites with one marked default; GitHub's describes a single host. Read it to answer
+"what am I pointed at", not to drive logic that has to work the same way on both.
+
+This reports provider configuration only. `ForgeCli`'s own settings are separate.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-ForgeConfiguration</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="0" aliases="Provider">
+          <maml:name>Forge</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">string</command:parameterValue>
+          <dev:type>
+            <maml:name>System.String</maml:name>
+          </dev:type>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="0" aliases="Provider">
+        <maml:name>Forge</maml:name>
+        <maml:description>
+          <maml:para>Forge provider (github, gitlab). Auto-detected from git remote if not specified</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para />
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para />
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>--------- Example 1 ---------</maml:title>
+        <maml:introduction>
+          <maml:para>Show the configuration for the forge the current repository belongs to:</maml:para>
+          <maml:para>&#x80;</maml:para>
+          <maml:para>```powershell
+Get-ForgeConfiguration
+```</maml:para>
+        </maml:introduction>
+        <dev:code />
+        <dev:remarks />
+      </command:example>
+      <command:example>
+        <maml:title>--------- Example 2 ---------</maml:title>
+        <maml:introduction>
+          <maml:para>Show GitLab's configuration regardless of the current directory:</maml:para>
+          <maml:para>&#x80;</maml:para>
+          <maml:para>```powershell
+Get-ForgeConfiguration -Forge gitlab
+```</maml:para>
+        </maml:introduction>
+        <dev:code />
+        <dev:remarks />
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version</maml:linkText>
+        <maml:uri>https://chris-peterson.github.io/pwsh-forge/#/Utility/Get-ForgeConfiguration</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command>
+    <command:details>
+      <command:name>Invoke-ForgeApi</command:name>
+      <maml:description>
+        <maml:para>Call a forge REST endpoint directly</maml:para>
+      </maml:description>
+      <command:verb>Invoke</command:verb>
+      <command:noun>ForgeApi</command:noun>
+    </command:details>
+    <maml:description>
+      <maml:para>Reaches an endpoint `ForgeCli` does not wrap, using the credentials and base URL the active
+provider is already configured with. Authentication, pagination, and host resolution are
+handled; everything else is the caller's.
+
+The path and the response are the provider's own, not a unified shape. A GitHub call takes a
+GitHub path and returns GitHub's JSON, and the same is true of GitLab, so code written against
+one will not run against the other. That is the trade an escape hatch makes: reach for
+`Invoke-ForgeApi` when no unified command covers what you need, and expect to branch on the
+provider yourself.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Invoke-ForgeApi</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="0" aliases="Method">
+          <maml:name>HttpMethod</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">string</command:parameterValue>
+          <dev:type>
+            <maml:name>System.String</maml:name>
+          </dev:type>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">string</command:parameterValue>
+          <dev:type>
+            <maml:name>System.String</maml:name>
+          </dev:type>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2" aliases="none">
+          <maml:name>Query</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">hashtable</command:parameterValue>
+          <dev:type>
+            <maml:name>System.Collections.Hashtable</maml:name>
+          </dev:type>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Body</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">hashtable</command:parameterValue>
+          <dev:type>
+            <maml:name>System.Collections.Hashtable</maml:name>
+          </dev:type>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>MaxPages</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">uint</command:parameterValue>
+          <dev:type>
+            <maml:name>System.UInt32</maml:name>
+          </dev:type>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Provider">
+          <maml:name>Forge</maml:name>
+          <maml:description />
+          <command:parameterValue required="true" variableLength="false">string</command:parameterValue>
+          <dev:type>
+            <maml:name>System.String</maml:name>
+          </dev:type>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>Body</maml:name>
+        <maml:description>
+          <maml:para>Request body, sent as JSON</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.Collections.Hashtable</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Collections.Hashtable</maml:name>
+        </dev:type>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="Provider">
+        <maml:name>Forge</maml:name>
+        <maml:description>
+          <maml:para>Forge provider (github, gitlab). Auto-detected from git remote if not specified</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="0" aliases="Method">
+        <maml:name>HttpMethod</maml:name>
+        <maml:description>
+          <maml:para>HTTP verb, such as GET, POST, PUT, or DELETE</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="Named" aliases="none">
+        <maml:name>MaxPages</maml:name>
+        <maml:description>
+          <maml:para>Maximum number of pages to retrieve</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.UInt32</command:parameterValue>
+        <dev:type>
+          <maml:name>System.UInt32</maml:name>
+        </dev:type>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>Endpoint path relative to the provider's API root, such as `user` or `projects/42/hooks`</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="2" aliases="none">
+        <maml:name>Query</maml:name>
+        <maml:description>
+          <maml:para>Query string parameters</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="true">System.Collections.Hashtable</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Collections.Hashtable</maml:name>
+        </dev:type>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para />
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para />
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>--------- Example 1 ---------</maml:title>
+        <maml:introduction>
+          <maml:para>Read the authenticated user from whichever forge the current repository belongs to:</maml:para>
+          <maml:para>&#x80;</maml:para>
+          <maml:para>```powershell
+Invoke-ForgeApi GET 'user'
+```</maml:para>
+        </maml:introduction>
+        <dev:code />
+        <dev:remarks />
+      </command:example>
+      <command:example>
+        <maml:title>--------- Example 2 ---------</maml:title>
+        <maml:introduction>
+          <maml:para>List a GitHub repository's deploy keys, paging through all of them:</maml:para>
+          <maml:para>&#x80;</maml:para>
+          <maml:para>```powershell
+Invoke-ForgeApi GET 'repos/chris-peterson/pwsh-forge/keys' -MaxPages 10 -Forge github
+```</maml:para>
+        </maml:introduction>
+        <dev:code />
+        <dev:remarks />
+      </command:example>
+      <command:example>
+        <maml:title>--------- Example 3 ---------</maml:title>
+        <maml:introduction>
+          <maml:para>Create a GitLab project hook:</maml:para>
+          <maml:para>&#x80;</maml:para>
+          <maml:para>```powershell
+Invoke-ForgeApi POST 'projects/42/hooks' -Body @{ url = 'https://example.com/hook'; push_events = $true } -Forge gitlab
+```</maml:para>
+        </maml:introduction>
+        <dev:code />
+        <dev:remarks />
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Online Version</maml:linkText>
+        <maml:uri>https://chris-peterson.github.io/pwsh-forge/#/Utility/Invoke-ForgeApi</maml:uri>
       </maml:navigationLink>
     </command:relatedLinks>
   </command:command>

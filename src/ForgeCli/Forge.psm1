@@ -2113,3 +2113,142 @@ function Remove-Milestone {
         & $Target.Command @Params
     }
 }
+
+function Search-Forge {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [string]
+        $Query,
+
+        [Parameter()]
+        [ValidateSet('changerequests', 'code', 'commits', 'issues', 'repos', 'users')]
+        [string]
+        $Scope,
+
+        [Parameter()]
+        [string]
+        $Group,
+
+        [Parameter()]
+        [string]
+        $Filename,
+
+        [Parameter()]
+        [uint]
+        $MaxPages,
+
+        [switch]
+        [Parameter()]
+        $All,
+
+        [Parameter()]
+        [Alias('Provider')]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Forge
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Search-Forge' -Provider $Forge
+    $Params = @{}
+
+    switch ($Target.Provider) {
+        'github' {
+            $Params.Query = $Query
+            if ($Group)    { Write-Warning "Search-Forge -Group is not supported by the Github provider" }
+            if ($Filename) { Write-Warning "Search-Forge -Filename is not supported by the Github provider" }
+            if ($MaxPages) { $Params.MaxPages = $MaxPages }
+            if ($All)      { $Params.All      = $true }
+            if ($Scope) {
+                $Mapped = switch ($Scope) {
+                    'code'     { 'code' }
+                    'commits'  { 'commits' }
+                    'issues'   { 'issues' }
+                    'repos'    { 'repositories' }
+                    'users'    { 'users' }
+                }
+                if ($Mapped) { $Params.Scope = $Mapped }
+                else { Write-Warning "Search-Forge -Scope '$Scope' is not supported by the Github provider; searching code instead" }
+            }
+        }
+        'gitlab' {
+            $Params.Search = $Query
+            if ($Group)    { $Params.GroupId  = $Group }
+            if ($Filename) { $Params.Filename = $Filename }
+            if ($All)      { $Params.All      = $true }
+            # Search-Gitlab caps by result count rather than pages, and requests 20 per page
+            if ($MaxPages) { $Params.MaxResults = $MaxPages * 20 }
+            if ($Scope) {
+                $Mapped = switch ($Scope) {
+                    'code'           { 'blobs' }
+                    'changerequests' { 'merge_requests' }
+                    'repos'          { 'projects' }
+                }
+                if ($Mapped) { $Params.Scope = $Mapped }
+                else { Write-Warning "Search-Forge -Scope '$Scope' is not supported by the Gitlab provider; searching code instead" }
+            }
+        }
+    }
+
+    & $Target.Command @Params
+}
+
+function Invoke-ForgeApi {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position=0)]
+        [Alias('Method')]
+        [string]
+        $HttpMethod,
+
+        [Parameter(Mandatory, Position=1)]
+        [string]
+        $Path,
+
+        [Parameter(Position=2)]
+        [hashtable]
+        $Query,
+
+        [Parameter()]
+        [hashtable]
+        $Body,
+
+        [Parameter()]
+        [uint]
+        $MaxPages,
+
+        [Parameter()]
+        [Alias('Provider')]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Forge
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Invoke-ForgeApi' -Provider $Forge
+
+    # Both providers name these parameters identically, so there is nothing to translate
+    $Params = @{
+        HttpMethod = $HttpMethod
+        Path       = $Path
+    }
+    if ($Query)    { $Params.Query    = $Query }
+    if ($Body)     { $Params.Body     = $Body }
+    if ($MaxPages) { $Params.MaxPages = $MaxPages }
+
+    & $Target.Command @Params
+}
+
+function Get-ForgeConfiguration {
+    [CmdletBinding()]
+    param(
+        [Parameter()]
+        [Alias('Provider')]
+        [ValidateSet([SupportedProvider])]
+        [string]
+        $Forge
+    )
+
+    $Target = Resolve-ForgeCommand -CommandName 'Get-ForgeConfiguration' -Provider $Forge
+
+    & $Target.Command
+}
