@@ -136,7 +136,12 @@ an abstraction over both.
 ## Noun Mapping
 
 Each forge command is `<Verb>-<Noun>`. The verb is preserved; only the
-noun differs between providers (with a provider prefix added):
+noun differs between providers (with a provider prefix added).
+
+`Forge`, `ForgeApi`, and `ForgeConfiguration` are the exceptions: they carry a
+`Forge` the providers don't. A bare `Search`, `Invoke-Api`, or
+`Get-Configuration` says nothing about what it acts on, and these sit in a shell
+alongside every other loaded module, so the forge name does the disambiguating.
 
 | Forge Noun             | Github               | Gitlab            |
 |------------------------|----------------------|-------------------|
@@ -145,10 +150,14 @@ noun differs between providers (with a provider prefix added):
 | ChangeRequestApproval  | PullRequestReview    | MergeRequestApproval |
 | ChangeRequestComment   | PullRequestComment   | MergeRequestNote  |
 | Commit                 | Commit               | Commit            |
+| Forge                  | *(none)*             | *(none)*          |
+| ForgeApi               | Api                  | Api               |
+| ForgeConfiguration     | Configuration        | Configuration     |
 | Group                  | Organization         | Group             |
 | GroupMember            | OrganizationMember   | GroupMember       |
 | Issue                  | Issue                | Issue             |
 | IssueComment           | IssueComment         | IssueNote         |
+| Label                  | Label                | Label             |
 | Milestone              | Milestone            | Milestone         |
 | Release                | Release              | Release           |
 | Repo                   | Repository           | Project           |
@@ -158,6 +167,30 @@ noun differs between providers (with a provider prefix added):
 For example, `Get-Repo` dispatches to `Get-GithubRepository` or
 `Get-GitlabProject`. The canonical mapping is maintained in
 [Init.psm1](src/ForgeCli/Private/Init.psm1).
+
+`Forge` maps to no noun on either provider, because the provider name is the
+whole command: `Search-Forge` dispatches to `Search-Github` or `Search-Gitlab`.
+
+## Search Scope
+
+`Search-Forge -Scope` names what to search. The providers disagree about both
+vocabulary and coverage, so the forge value is translated per provider. A scope
+the active provider cannot express warns and searches code, which is what both
+providers search when given no scope.
+
+| Forge Scope      | Github         | Gitlab           |
+|------------------|----------------|------------------|
+| `code`           | `code`         | `blobs`          |
+| `repos`          | `repositories` | `projects`       |
+| `commits`        | `commits`      | —                |
+| `issues`         | `issues`       | —                |
+| `users`          | `users`        | —                |
+| `changerequests` | —              | `merge_requests` |
+
+`code` and `repos` are the only scopes both providers accept.
+
+`Search-Repo -Scope` is a narrower, separate set (`code`, `commits`, `issues`)
+because it searches within one repository.
 
 ## Unified Command Surface
 
@@ -174,6 +207,7 @@ provider-specific command based on git remote context:
 | `Get-ChangeRequestApproval` | `Get-GithubPullRequestReview`     | `Get-GitlabMergeRequestApproval` |
 | `Get-ChangeRequestComment`  | `Get-GithubPullRequestComment`    | `Get-GitlabMergeRequestNote`     |
 | `Get-Commit`                | `Get-GithubCommit`                | `Get-GitlabCommit`               |
+| `Get-ForgeConfiguration`    | `Get-GithubConfiguration`         | `Get-GitlabConfiguration`        |
 | `Get-Group`                 | `Get-GithubOrganization`          | `Get-GitlabGroup`                |
 | `Get-GroupMember`           | `Get-GithubOrganizationMember`    | `Get-GitlabGroupMember`          |
 | `Get-Issue`                 | `Get-GithubIssue`                 | `Get-GitlabIssue`                |
@@ -183,6 +217,7 @@ provider-specific command based on git remote context:
 | `Get-Repo`                  | `Get-GithubRepository`            | `Get-GitlabProject`              |
 | `Get-User`                  | `Get-GithubUser`                  | `Get-GitlabUser`                 |
 | `Get-UserActivity`          | `Get-GithubEvent`                 | `Get-GitlabUserEvent`            |
+| `Invoke-ForgeApi`           | `Invoke-GithubApi`                | `Invoke-GitlabApi`               |
 | `Merge-ChangeRequest`       | `Merge-GithubPullRequest`         | `Merge-GitlabMergeRequest`       |
 | `New-Branch`                | `New-GithubBranch`                | `New-GitlabBranch`               |
 | `New-ChangeRequest`         | `New-GithubPullRequest`           | `New-GitlabMergeRequest`         |
@@ -197,6 +232,7 @@ provider-specific command based on git remote context:
 | `Remove-Label`              | `Remove-GithubLabel`              | `Remove-GitlabLabel`             |
 | `Remove-Milestone`          | `Remove-GithubMilestone`          | `Remove-GitlabMilestone`         |
 | `Remove-Repo`               | `Remove-GithubRepository`         | `Remove-GitlabProject`           |
+| `Search-Forge`              | `Search-Github`                   | `Search-Gitlab`                  |
 | `Search-Repo`               | `Search-GithubRepository`         | `Search-GitlabProject`           |
 | `Update-ChangeRequest`      | `Update-GithubPullRequest`        | `Update-GitlabMergeRequest`      |
 | `Update-Issue`              | `Update-GithubIssue`              | `Update-GitlabIssue`             |

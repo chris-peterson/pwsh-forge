@@ -70,7 +70,7 @@ BeforeAll {
     function Update-GitlabProject { param($Name, $Visibility, $DefaultBranch) }
     function Remove-GitlabProject { param($ProjectId) }
     function Search-GitlabProject { param($Search, $Scope, [uint]$MaxPages, [switch]$All) }
-    function Search-Gitlab { param($Search, $Scope, [switch]$All) }
+    function Search-Gitlab { param($Search, $Scope, $GroupId, $Filename, [uint]$MaxResults, [switch]$All) }
     function Get-GitlabGroup { param($GroupId, [uint]$MaxPages, [switch]$All) }
     function Get-GitlabGroupMember { param($GroupId, $UserId, [uint]$MaxPages, [switch]$All) }
     function Add-GitlabGroupMember { param($GroupId, $UserId, $AccessLevel) }
@@ -1925,6 +1925,209 @@ Describe "Remove-Milestone" {
         It "Should map Id to MilestoneId" {
             Remove-Milestone -Id '3' -Repo 'group/project' -Forge gitlab -Confirm:$false
             Should -Invoke Remove-GitlabMilestone -ParameterFilter { $MilestoneId -eq '3' -and $ProjectId -eq 'group/project' }
+        }
+    }
+}
+
+# =============================================================================
+# Utility
+# =============================================================================
+
+Describe "Search-Forge" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Search-Github {}
+        }
+
+        It "Should pass Query through" {
+            Search-Forge -Query 'forge' -Forge github
+            Should -Invoke Search-Github -ParameterFilter { $Query -eq 'forge' }
+        }
+
+        It "Should map Scope 'code' to 'code'" {
+            Search-Forge -Query 'forge' -Scope 'code' -Forge github
+            Should -Invoke Search-Github -ParameterFilter { $Scope -eq 'code' }
+        }
+
+        It "Should map Scope 'repos' to 'repositories'" {
+            Search-Forge -Query 'forge' -Scope 'repos' -Forge github
+            Should -Invoke Search-Github -ParameterFilter { $Scope -eq 'repositories' }
+        }
+
+        It "Should map Scope 'users' to 'users'" {
+            Search-Forge -Query 'jdoe' -Scope 'users' -Forge github
+            Should -Invoke Search-Github -ParameterFilter { $Scope -eq 'users' }
+        }
+
+        It "Should warn and fall back to code search on Scope 'changerequests'" {
+            Search-Forge -Query 'forge' -Scope 'changerequests' -Forge github -WarningVariable Warnings -WarningAction SilentlyContinue
+            $Warnings | Should -Not -BeNullOrEmpty
+            $Warnings[0] | Should -BeLike "*'changerequests' is not supported by the Github provider*"
+            Should -Invoke Search-Github -ParameterFilter { $null -eq $Scope }
+        }
+
+        It "Should warn about unsupported Group" {
+            Search-Forge -Query 'forge' -Group 'my-org' -Forge github -WarningVariable Warnings -WarningAction SilentlyContinue
+            $Warnings | Should -Not -BeNullOrEmpty
+            $Warnings[0] | Should -BeLike '*Search-Forge -Group*not supported*Github*'
+        }
+
+        It "Should warn about unsupported Filename" {
+            Search-Forge -Query 'forge' -Filename 'Init.psm1' -Forge github -WarningVariable Warnings -WarningAction SilentlyContinue
+            $Warnings | Should -Not -BeNullOrEmpty
+            $Warnings[0] | Should -BeLike '*Search-Forge -Filename*not supported*Github*'
+        }
+
+        It "Should pass MaxPages and All through" {
+            Search-Forge -Query 'forge' -MaxPages 3 -All -Forge github
+            Should -Invoke Search-Github -ParameterFilter { $MaxPages -eq 3 -and $All -eq $true }
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Search-Gitlab {}
+        }
+
+        It "Should map Query to Search" {
+            Search-Forge -Query 'forge' -Forge gitlab
+            Should -Invoke Search-Gitlab -ParameterFilter { $Search -eq 'forge' }
+        }
+
+        It "Should map Scope 'code' to 'blobs'" {
+            Search-Forge -Query 'forge' -Scope 'code' -Forge gitlab
+            Should -Invoke Search-Gitlab -ParameterFilter { $Scope -eq 'blobs' }
+        }
+
+        It "Should map Scope 'changerequests' to 'merge_requests'" {
+            Search-Forge -Query 'forge' -Scope 'changerequests' -Forge gitlab
+            Should -Invoke Search-Gitlab -ParameterFilter { $Scope -eq 'merge_requests' }
+        }
+
+        It "Should map Scope 'repos' to 'projects'" {
+            Search-Forge -Query 'forge' -Scope 'repos' -Forge gitlab
+            Should -Invoke Search-Gitlab -ParameterFilter { $Scope -eq 'projects' }
+        }
+
+        It "Should warn and fall back to code search on Scope 'commits'" {
+            Search-Forge -Query 'forge' -Scope 'commits' -Forge gitlab -WarningVariable Warnings -WarningAction SilentlyContinue
+            $Warnings | Should -Not -BeNullOrEmpty
+            $Warnings[0] | Should -BeLike "*'commits' is not supported by the Gitlab provider*"
+            Should -Invoke Search-Gitlab -ParameterFilter { $null -eq $Scope }
+        }
+
+        It "Should warn and fall back to code search on Scope 'issues'" {
+            Search-Forge -Query 'forge' -Scope 'issues' -Forge gitlab -WarningVariable Warnings -WarningAction SilentlyContinue
+            $Warnings[0] | Should -BeLike "*'issues' is not supported by the Gitlab provider*"
+            Should -Invoke Search-Gitlab -ParameterFilter { $null -eq $Scope }
+        }
+
+        It "Should warn and fall back to code search on Scope 'users'" {
+            Search-Forge -Query 'jdoe' -Scope 'users' -Forge gitlab -WarningVariable Warnings -WarningAction SilentlyContinue
+            $Warnings[0] | Should -BeLike "*'users' is not supported by the Gitlab provider*"
+            Should -Invoke Search-Gitlab -ParameterFilter { $null -eq $Scope }
+        }
+
+        It "Should map Group to GroupId" {
+            Search-Forge -Query 'forge' -Group 'my-group' -Forge gitlab
+            Should -Invoke Search-Gitlab -ParameterFilter { $GroupId -eq 'my-group' }
+        }
+
+        It "Should pass Filename through" {
+            Search-Forge -Query 'forge' -Filename 'Init.psm1' -Forge gitlab
+            Should -Invoke Search-Gitlab -ParameterFilter { $Filename -eq 'Init.psm1' }
+        }
+
+        It "Should map MaxPages to MaxResults at 20 per page" {
+            Search-Forge -Query 'forge' -MaxPages 3 -Forge gitlab
+            Should -Invoke Search-Gitlab -ParameterFilter { $MaxResults -eq 60 }
+        }
+
+        It "Should pass All through" {
+            Search-Forge -Query 'forge' -All -Forge gitlab
+            Should -Invoke Search-Gitlab -ParameterFilter { $All -eq $true }
+        }
+    }
+}
+
+Describe "Invoke-ForgeApi" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Invoke-GithubApi {}
+        }
+
+        It "Should pass HttpMethod and Path through" {
+            Invoke-ForgeApi -HttpMethod 'GET' -Path 'user/repos' -Forge github
+            Should -Invoke Invoke-GithubApi -ParameterFilter { $HttpMethod -eq 'GET' -and $Path -eq 'user/repos' }
+        }
+
+        It "Should pass Query, Body and MaxPages through" {
+            Invoke-ForgeApi -HttpMethod 'POST' -Path 'repos/o/r/issues' -Query @{ state = 'open' } -Body @{ title = 'x' } -MaxPages 2 -Forge github
+            Should -Invoke Invoke-GithubApi -ParameterFilter {
+                $Query.state -eq 'open' -and $Body.title -eq 'x' -and $MaxPages -eq 2
+            }
+        }
+
+        It "Should not forward Query or Body when unset" {
+            Invoke-ForgeApi -HttpMethod 'GET' -Path 'user' -Forge github
+            Should -Invoke Invoke-GithubApi -ParameterFilter { $null -eq $Query -and $null -eq $Body }
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Invoke-GitlabApi {}
+        }
+
+        It "Should pass HttpMethod and Path through" {
+            Invoke-ForgeApi -HttpMethod 'GET' -Path 'projects' -Forge gitlab
+            Should -Invoke Invoke-GitlabApi -ParameterFilter { $HttpMethod -eq 'GET' -and $Path -eq 'projects' }
+        }
+
+        It "Should pass Query, Body and MaxPages through" {
+            Invoke-ForgeApi -HttpMethod 'POST' -Path 'projects/1/issues' -Query @{ state = 'opened' } -Body @{ title = 'x' } -MaxPages 2 -Forge gitlab
+            Should -Invoke Invoke-GitlabApi -ParameterFilter {
+                $Query.state -eq 'opened' -and $Body.title -eq 'x' -and $MaxPages -eq 2
+            }
+        }
+    }
+}
+
+Describe "Get-ForgeConfiguration" {
+
+    Context "GitHub" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+
+            Mock Get-GithubConfiguration {}
+        }
+
+        It "Should dispatch to the Github provider" {
+            Get-ForgeConfiguration -Forge github
+            Should -Invoke Get-GithubConfiguration
+        }
+    }
+
+    Context "GitLab" {
+        BeforeEach {
+            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+
+            Mock Get-GitlabConfiguration {}
+        }
+
+        It "Should dispatch to the Gitlab provider" {
+            Get-ForgeConfiguration -Forge gitlab
+            Should -Invoke Get-GitlabConfiguration
         }
     }
 }

@@ -11,6 +11,10 @@ $global:ForgeProviders = @{
             'ChangeRequestApproval'   = 'PullRequestReview'
             'ChangeRequestComment'    = 'PullRequestComment'
             'Commit'                  = 'Commit'
+            # The provider prefix is the whole command name, so the noun is empty: Search-Github
+            'Forge'                   = ''
+            'ForgeApi'                = 'Api'
+            'ForgeConfiguration'      = 'Configuration'
             'Group'                   = 'Organization'
             'GroupMember'             = 'OrganizationMember'
             'Issue'                   = 'Issue'
@@ -33,6 +37,9 @@ $global:ForgeProviders = @{
             'ChangeRequestApproval'   = 'MergeRequestApproval'
             'ChangeRequestComment'    = 'MergeRequestNote'
             'Commit'                  = 'Commit'
+            'Forge'                   = ''
+            'ForgeApi'                = 'Api'
+            'ForgeConfiguration'      = 'Configuration'
             'Group'                   = 'Group'
             'GroupMember'             = 'GroupMember'
             'Issue'                   = 'Issue'
@@ -52,10 +59,12 @@ foreach ($Key in $global:ForgeProviders.Keys) {
     $Commands = @{}
     foreach ($ForgeCommand in $global:ForgeCommands) {
         $Verb, $Noun = $ForgeCommand -split '-', 2
-        $MappedNoun = $Provider.Resource[$Noun]
-        if (-not $MappedNoun) {
+        # An empty string is a mapping (Search-Forge); a missing or null entry is not
+        $HasMapping = $Provider.Resource.ContainsKey($Noun) -and $null -ne $Provider.Resource[$Noun]
+        if (-not $HasMapping) {
             throw "Forge command '$ForgeCommand' uses noun '$Noun' which is not mapped in the '$Key' provider. Add it to the Resource table in Init.psm1."
         }
+        $MappedNoun = $Provider.Resource[$Noun]
         $Commands[$ForgeCommand] = "$Verb-$($Provider.Prefix)$MappedNoun"
     }
     $Provider.Commands = $Commands

@@ -22,6 +22,12 @@ Once a command is ready to start, it moves to an issue and comes off this list.
 |---|---|---|---|
 | `Update-Repo` | `Update-GithubRepository` | `Update-GitlabProject` | **Blocked**: `Update-GitlabProject` lacks `-Description` param |
 
+## Search
+
+| Feature | Provider | Notes |
+|---|---|---|
+| `Search-GitlabProject -Scope` validation | pwsh-gitlab | `-Scope` is an unvalidated `[string]` defaulting to `blobs`, passed straight to the project search API, and results are always typed `Gitlab.SearchResult.Blob`. A `ValidateSet` would reject an unsupported scope up front instead of at the API, and let `Search-Repo` rely on the provider rather than duplicating the check. |
+
 ## User Activity
 
 | Feature | Provider | Notes |
