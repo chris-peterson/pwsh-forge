@@ -1,0 +1,84 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Milestone
+description: A target that groups issues and change requests, usually toward a date or a release.
+x-github: Milestone
+x-gitlab: Milestone
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  project_path:
+    $ref: '#/$defs/project_path'
+    description: Full path of the repo the milestone was listed for.
+
+  id:
+    description: Number of the milestone within its repo or group, as the forge's milestone URL shows it.
+    type: integer
+    minimum: 1
+    x-github: '`number`'
+    x-gitlab: '`iid`'
+
+  url:
+    description: Web URL of the milestone.
+    type: string
+    format: uri
+    x-github: '`html_url`'
+    x-gitlab: '`web_url`'
+
+  title:
+    description: Title of the milestone.
+    type: string
+    x-github: '`title`'
+    x-gitlab: '`title`'
+
+  description:
+    description: Markdown description of the milestone. `null` when none is set.
+    type: [string, 'null']
+    x-github: '`description`'
+    x-gitlab: '`description`'
+
+  state:
+    description: Whether the milestone is still in use.
+    oneOf:
+      - const: open
+        description: Accepting work.
+      - const: closed
+        description: Finished or abandoned.
+    x-github: '`state`'
+    x-gitlab: '`state`, with `active` as `open`'
+
+  start_date:
+    description: When work toward the milestone starts. GitHub milestones have no start date, so it is always `null` there.
+    anyOf:
+      - $ref: '#/$defs/date'
+      - type: 'null'
+    x-github: always `null`
+    x-gitlab: '`start_date`'
+
+  due_date:
+    description: When the milestone is due. `null` when no due date is set.
+    anyOf:
+      - $ref: '#/$defs/date'
+      - type: 'null'
+    x-github: date part of `due_on`
+    x-gitlab: '`due_date`'
+
+  created_at:
+    $ref: '#/$defs/timestamp'
+    description: When the milestone was created.
+    x-github: '`created_at`'
+    x-gitlab: '`created_at`'
+
+  updated_at:
+    $ref: '#/$defs/timestamp'
+    description: When the milestone last changed.
+    x-github: '`updated_at`'
+    x-gitlab: '`updated_at`'
+
+required: [forge, host, project_path, id, url, title, description, state, start_date, due_date, created_at,
+  updated_at]
+
+additionalProperties: false

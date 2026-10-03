@@ -1,0 +1,73 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: GroupMember
+description: A person's membership in a group, with the role it grants.
+x-github: Organization member
+x-gitlab: Group member
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  group_path:
+    description: Full path of the group, as in the group record's `path`.
+    type: string
+    x-github: organization `login`
+    x-gitlab: group `full_path`
+
+  username:
+    $ref: '#/$defs/username'
+    description: Username of the member.
+    x-github: '`login`'
+    x-gitlab: '`username`'
+
+  name:
+    description: Display name of the member, or the username when the account has no display name.
+    type: string
+    x-github: '`name` of `users/{login}`'
+    x-gitlab: '`name`'
+
+  role:
+    description: >-
+      What the membership lets the person do. GitHub has two organization roles; GitLab has a ladder of access
+      levels.
+    oneOf:
+      - const: owner
+        description: Full control of the group, including its settings and membership.
+        x-github: '`admin`'
+        x-gitlab: '`access_level` 50'
+      - const: maintainer
+        description: Manages repos in the group, short of group settings.
+        x-github: none
+        x-gitlab: '`access_level` 40'
+      - const: developer
+        description: Pushes code and works on issues and change requests.
+        x-github: none
+        x-gitlab: '`access_level` 30'
+      - const: reporter
+        description: Reads code and works on issues.
+        x-github: none
+        x-gitlab: '`access_level` 20'
+      - const: planner
+        description: Plans and tracks work in issues and epics.
+        x-github: none
+        x-gitlab: '`access_level` 15'
+      - const: guest
+        description: Views and comments on issues.
+        x-github: none
+        x-gitlab: '`access_level` 10'
+      - const: minimal_access
+        description: Belongs to the group without access to its content.
+        x-github: none
+        x-gitlab: '`access_level` 5'
+      - const: member
+        description: A GitHub organization member who isn't an owner.
+        x-github: '`member`'
+        x-gitlab: none
+    x-github: organization role; see the values
+    x-gitlab: '`access_level`; see the values'
+
+required: [forge, host, group_path, username, name, role]
+
+additionalProperties: false

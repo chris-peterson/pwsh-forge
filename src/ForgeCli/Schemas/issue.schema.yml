@@ -1,0 +1,135 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Issue
+description: >-
+  A tracked unit of work or report in a repo. Never a change request: GitHub's issues API also returns pull
+  requests, and they are not issue records.
+x-github: Issue
+x-gitlab: Issue
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  project_path:
+    $ref: '#/$defs/project_path'
+    x-github: '`full_name` of `repository_url`'
+    x-gitlab: '`references.full`, without the `#iid` suffix'
+
+  id:
+    description: Number of the issue within its repo, as shown in the forge UI (`#42`). Not the forge's global database id.
+    type: integer
+    minimum: 1
+    x-github: '`number`'
+    x-gitlab: '`iid`'
+
+  url:
+    description: Web URL of the issue. The natural key for a record across forges.
+    type: string
+    format: uri
+    x-github: '`html_url`'
+    x-gitlab: '`web_url`'
+
+  title:
+    description: Title of the issue.
+    type: string
+    x-github: '`title`'
+    x-gitlab: '`title`'
+
+  description:
+    description: Markdown body of the issue. `null` when the author left it empty.
+    type: [string, 'null']
+    x-github: '`body`'
+    x-gitlab: '`description`'
+
+  state:
+    description: Whether the issue is still open.
+    oneOf:
+      - const: open
+        description: Not yet resolved.
+      - const: closed
+        description: Resolved, whether completed or not planned.
+    x-github: '`state`'
+    x-gitlab: '`state`, with `opened` as `open`'
+
+  author_username:
+    $ref: '#/$defs/username'
+    description: Username of the person who opened the issue.
+    x-github: '`user.login`'
+    x-gitlab: '`author.username`'
+
+  author_name:
+    description: Display name of the person who opened the issue, or the username when the account has no display name.
+    type: string
+    x-github: '`name` of `users/{user.login}`'
+    x-gitlab: '`author.name`'
+
+  assignee_usernames:
+    description: Usernames of everyone assigned to the issue. Empty when nobody is.
+    type: array
+    items: { $ref: '#/$defs/username' }
+    x-github: '`assignees[].login`'
+    x-gitlab: '`assignees[].username`'
+
+  labels:
+    description: Names of the labels on the issue.
+    type: array
+    items: { type: string }
+    x-github: '`labels[].name`'
+    x-gitlab: '`labels[]`'
+
+  milestone_title:
+    description: Title of the milestone the issue belongs to. `null` when it has none.
+    type: [string, 'null']
+    x-github: '`milestone.title`'
+    x-gitlab: '`milestone.title`'
+
+  milestone_due_date:
+    description: Due date of the issue's milestone. `null` when it has no milestone, or the milestone has no due date.
+    anyOf:
+      - $ref: '#/$defs/date'
+      - type: 'null'
+    x-github: date part of `milestone.due_on`
+    x-gitlab: '`milestone.due_date`'
+
+  due_date:
+    description: Due date set on the issue itself. GitHub issues have no due date, so it is always `null` there.
+    anyOf:
+      - $ref: '#/$defs/date'
+      - type: 'null'
+    x-github: always `null`
+    x-gitlab: '`due_date`'
+
+  comment_count:
+    description: Number of comments people have written on the issue.
+    type: integer
+    minimum: 0
+    x-github: '`comments`'
+    x-gitlab: '`user_notes_count`'
+
+  created_at:
+    $ref: '#/$defs/timestamp'
+    description: When the issue was opened.
+    x-github: '`created_at`'
+    x-gitlab: '`created_at`'
+
+  updated_at:
+    $ref: '#/$defs/timestamp'
+    description: When the issue last changed, including comments.
+    x-github: '`updated_at`'
+    x-gitlab: '`updated_at`'
+
+  closed_at:
+    description: When the issue was closed. `null` when the forge reports no close time, as for an issue that was never closed.
+    anyOf:
+      - $ref: '#/$defs/timestamp'
+      - type: 'null'
+    x-github: '`closed_at`'
+    x-gitlab: '`closed_at`'
+
+required: [forge, host, project_path, id, url, title, description, state, author_username, author_name,
+  assignee_usernames, labels, milestone_title, milestone_due_date, due_date, comment_count, created_at, updated_at,
+  closed_at]
+
+additionalProperties: false
