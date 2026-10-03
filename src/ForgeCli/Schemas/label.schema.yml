@@ -1,0 +1,38 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Label
+description: A named, colored tag that can be applied to issues and change requests in a repo.
+x-github: Label
+x-gitlab: Label
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  project_path:
+    $ref: '#/$defs/project_path'
+    description: Full path of the repo the label was listed for. On GitLab that includes labels inherited from its groups.
+
+  name:
+    description: Name of the label; its identity within the repo.
+    type: string
+    x-github: '`name`'
+    x-gitlab: '`name`'
+
+  color:
+    description: Background color of the label, as `#rrggbb` in lowercase.
+    type: string
+    pattern: '^#[0-9a-f]{6}$'
+    x-github: '`#` + `color`'
+    x-gitlab: '`color`, lowercased'
+
+  description:
+    description: What the label means. `null` when none is set.
+    type: [string, 'null']
+    x-github: '`description`'
+    x-gitlab: '`description`'
+
+required: [forge, host, project_path, name, color, description]
+
+additionalProperties: false

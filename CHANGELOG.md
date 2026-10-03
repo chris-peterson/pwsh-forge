@@ -8,6 +8,10 @@ All notable changes to ForgeCli are recorded here, newest first.
 * Utility commands: `Search-Forge`, `Invoke-ForgeApi`, `Get-ForgeConfiguration`. `Invoke-ForgeApi` reaches endpoints ForgeCli does not wrap, handing the provider's own path and response straight through, so automation that outgrows the unified surface can stay on ForgeCli.
 * `Search-Forge -Scope` names what to search in forge terms (`code`, `repos`, `commits`, `issues`, `users`, `changerequests`) and translates per provider. `code` and `repos` work on both; the rest are one-sided, and a scope the active provider cannot express warns and searches code.
 
+### Bug Fixes
+* ForgeCli works when another module imports it. Its internal helpers loaded into the importing module's scope, so every command failed with `The term 'Resolve-ForgeCommand' is not recognized`; they now load into the global scope, as an interactive import already did.
+* `Get-Milestone -State all` works against GitLab. It passed an empty state that GitlabCli rejects; `all` now leaves the state unset, and GitLab lists every state. `Get-Issue -State all` and `Get-Issue -Sort comments` likewise leave the parameter unset rather than passing an empty value.
+
 ## [0.13.0] - 2026-09-13
 
 ### Features

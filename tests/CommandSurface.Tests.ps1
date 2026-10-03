@@ -3,6 +3,7 @@ BeforeAll {
     Import-Module $PSScriptRoot/../src/ForgeCli/Private/Init.psm1 -Force
     . $PSScriptRoot/../src/ForgeCli/Private/Functions/GitHelpers.ps1
     . $PSScriptRoot/../src/ForgeCli/Private/Functions/ProviderHelpers.ps1
+    . $PSScriptRoot/Support/Markdown.ps1
 
     function Build-CommandSurfaceTable {
         $ProviderKeys = $global:ForgeProviders.Keys | Sort-Object
@@ -10,47 +11,15 @@ BeforeAll {
             "$((Get-Culture).TextInfo.ToTitleCase($_)) Provider"
         })
 
-        # Compute column widths from headers and data
         $Rows = foreach ($Command in ($global:ForgeCommands | Sort-Object)) {
-            $Cells = @($Command)
+            $Cells = @("``$Command``")
             foreach ($Key in $ProviderKeys) {
-                $Cells += $global:ForgeProviders[$Key].Commands[$Command]
+                $Cells += "``$($global:ForgeProviders[$Key].Commands[$Command])``"
             }
             , $Cells
         }
-        $ColWidths = @()
-        for ($i = 0; $i -lt $Headers.Count; $i++) {
-            $Max = ($Headers[$i]).Length
-            foreach ($Row in $Rows) {
-                $Len = "``$($Row[$i])``".Length
-                if ($Len -gt $Max) { $Max = $Len }
-            }
-            $ColWidths += $Max
-        }
 
-        $Lines = @()
-
-        # Header
-        $HeaderCells = for ($i = 0; $i -lt $Headers.Count; $i++) {
-            $Headers[$i].PadRight($ColWidths[$i])
-        }
-        $Lines += '| {0} |' -f ($HeaderCells -join ' | ')
-
-        # Separator
-        $SepCells = for ($i = 0; $i -lt $Headers.Count; $i++) {
-            '-' * $ColWidths[$i]
-        }
-        $Lines += '|{0}|' -f (($SepCells | ForEach-Object { "-$_-" }) -join '|')
-
-        # Data rows
-        foreach ($Row in $Rows) {
-            $DataCells = for ($i = 0; $i -lt $Row.Count; $i++) {
-                "``$($Row[$i])``".PadRight($ColWidths[$i])
-            }
-            $Lines += '| {0} |' -f ($DataCells -join ' | ')
-        }
-
-        $Lines -join "`n"
+        Format-MarkdownTable $Headers $Rows
     }
 }
 

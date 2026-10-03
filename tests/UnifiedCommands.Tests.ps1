@@ -191,6 +191,16 @@ Describe "Get-Issue" {
             $warnings[0] | Should -BeLike '*comments*not*supported*Gitlab*'
         }
 
+        It "Should leave OrderBy unset for unsupported Sort 'comments'" {
+            Get-Issue -Sort 'comments' -Forge gitlab -WarningAction SilentlyContinue
+            Should -Invoke Get-GitlabIssue -ParameterFilter { -not $PesterBoundParameters.ContainsKey('OrderBy') }
+        }
+
+        It "Should leave State unset for 'all'" {
+            Get-Issue -State 'all' -Forge gitlab
+            Should -Invoke Get-GitlabIssue -ParameterFilter { -not $PesterBoundParameters.ContainsKey('State') }
+        }
+
         It "Should map Direction to Sort" {
             Get-Issue -Direction 'asc' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $Sort -eq 'asc' }
@@ -1419,6 +1429,11 @@ Describe "Get-Milestone" {
         It "Should keep State 'closed' as 'closed'" {
             Get-Milestone -State 'closed' -Forge gitlab
             Should -Invoke Get-GitlabMilestone -ParameterFilter { $State -eq 'closed' }
+        }
+
+        It "Should leave State unset for 'all'" {
+            Get-Milestone -State 'all' -Forge gitlab
+            Should -Invoke Get-GitlabMilestone -ParameterFilter { -not $PesterBoundParameters.ContainsKey('State') }
         }
     }
 }

@@ -1,4 +1,4 @@
-function Resolve-ForgeCommand {
+function global:Resolve-ForgeCommand {
     <#
     .SYNOPSIS
     Resolves the provider and returns the target command name.
@@ -29,7 +29,7 @@ function Resolve-ForgeCommand {
     }
 }
 
-function Resolve-ForgeProvider {
+function global:Resolve-ForgeProvider {
     [CmdletBinding()]
     param(
         [Parameter()]
@@ -91,7 +91,7 @@ Currently supported: $SupportedList
     return $Resolved
 }
 
-function Resolve-ForgeLabelId {
+function global:Resolve-ForgeLabelId {
     <#
     .SYNOPSIS
     Resolves a label name to the numeric id a provider's write commands require.

@@ -48,6 +48,10 @@ A noun in `FunctionsToExport` with no `Resource` entry throws at import time. St
 Load order from the manifest: `ScriptsToProcess` (`Validations.ps1`, `GitHelpers.ps1`, `ProviderHelpers.ps1`)
 → `RootModule` (`Private/Init.psm1`) → `NestedModules` (`Forge.psm1`, all 29 exported commands).
 
+`ScriptsToProcess` runs in the importer's session state, so its helpers are declared `function global:<Name>`;
+a plain function is invisible to `Forge.psm1` when another module imports ForgeCli.
+`tests/ScriptsToProcess.Tests.ps1` enforces it, and the providers follow the same rule.
+
 Provider resolution (`Resolve-ForgeProvider`): an explicit `-Forge` wins; otherwise `Get-ForgeRemoteHost`
 reads `remote.origin.url` and regex-matches the host against each provider's `HostPatterns`.
 `-Forge` is validated by the `SupportedProvider` class against the *live* registry, so the valid set shrinks
@@ -91,6 +95,14 @@ switch ($Target.Provider) {
 - `Get-UserActivity` is the exception to pure dispatch: GitHub has no server-side date/action filters, so it
   builds a `$ClientFilters` list of closures and applies them to the results. Keep that pattern contained to
   commands where the provider genuinely lacks the filter.
+
+## Output contract
+
+Each noun's output is defined by a JSON Schema, written in YAML, in `src/ForgeCli/Schemas/<noun>.schema.yml`, with
+snake_case fields documented down to the value. A field that comes back differently from the two providers is fixed
+in that provider's module (GithubCli or GitlabCli), never translated here. `tests/Contract.Tests.ps1` runs the real
+provider modules against recorded API responses and fails per field and per provider. The `TERMINOLOGY.md` section
+for each noun is generated from its schema. Mechanics: `.claude/rules/output-contract.md`.
 
 ## Docs and release
 
