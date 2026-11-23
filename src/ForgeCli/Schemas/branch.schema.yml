@@ -1,0 +1,49 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Branch
+description: A named line of commits in a repo.
+x-github: Branch
+x-gitlab: Branch
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  project_path: { $ref: '#/$defs/project_path' }
+
+  name:
+    description: Name of the branch, without `refs/heads/`.
+    type: string
+    x-github: '`name`'
+    x-gitlab: '`name`'
+
+  url:
+    description: Web URL of the branch's tree.
+    type: string
+    format: uri
+    x-github: repo `html_url` + `/tree/{name}`
+    x-gitlab: '`web_url`'
+
+  commit_sha:
+    description: Full SHA of the commit the branch points to.
+    type: string
+    pattern: '^[0-9a-f]{40}$'
+    x-github: '`commit.sha`'
+    x-gitlab: '`commit.id`'
+
+  protected:
+    description: Whether branch protection rules apply to the branch.
+    type: boolean
+    x-github: '`protected`'
+    x-gitlab: '`protected`'
+
+  default:
+    description: Whether this is the repo's default branch.
+    type: boolean
+    x-github: '`name` equals the repo''s `default_branch`'
+    x-gitlab: '`default`'
+
+required: [forge, host, project_path, name, url, commit_sha, protected, default]
+
+additionalProperties: false

@@ -1,0 +1,123 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: ChangeRequest
+description: >-
+  A request to review and merge a set of changes: a GitHub pull request or a GitLab merge request.
+x-github: Pull request
+x-gitlab: Merge request
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  project_path:
+    $ref: '#/$defs/project_path'
+    x-github: '`base.repo.full_name`'
+    x-gitlab: '`references.full`, without the `!iid` suffix'
+
+  id:
+    description: >-
+      Number of the change request within its repo, as shown in the forge UI (`#17`, `!46`). Not the forge's
+      global database id.
+    type: integer
+    minimum: 1
+    x-github: '`number`'
+    x-gitlab: '`iid`'
+
+  url:
+    description: Web URL of the change request. The natural key for a record across forges.
+    type: string
+    format: uri
+    x-github: '`html_url`'
+    x-gitlab: '`web_url`'
+
+  title:
+    description: Title of the change request.
+    type: string
+    x-github: '`title`'
+    x-gitlab: '`title`'
+
+  description:
+    description: Markdown body of the change request. `null` when the author left it empty.
+    type: [string, 'null']
+    x-github: '`body`'
+    x-gitlab: '`description`'
+
+  state:
+    description: Where the change request is in its lifecycle. A draft is still `open`; see `draft`.
+    oneOf:
+      - const: open
+        description: Accepting changes and review; not merged or closed.
+      - const: merged
+        description: The changes landed on the target branch.
+      - const: closed
+        description: Closed without merging.
+    x-github: '`state`, or `merged` when `merged_at` is set'
+    x-gitlab: '`state`, with `opened` as `open`'
+
+  draft:
+    description: Whether the author marked the change request as not ready for review.
+    type: boolean
+    x-github: '`draft`'
+    x-gitlab: '`draft`'
+
+  author_username:
+    $ref: '#/$defs/username'
+    description: Username of the author.
+    x-github: '`user.login`'
+    x-gitlab: '`author.username`'
+
+  author_name:
+    description: Display name of the author, or the username when the account has no display name.
+    type: string
+    x-github: '`name` of `users/{user.login}`'
+    x-gitlab: '`author.name`'
+
+  source_branch:
+    description: Branch that holds the changes.
+    type: string
+    x-github: '`head.ref`'
+    x-gitlab: '`source_branch`'
+
+  target_branch:
+    description: Branch the changes merge into.
+    type: string
+    x-github: '`base.ref`'
+    x-gitlab: '`target_branch`'
+
+  created_at:
+    $ref: '#/$defs/timestamp'
+    description: When the change request was opened.
+    x-github: '`created_at`'
+    x-gitlab: '`created_at`'
+
+  updated_at:
+    $ref: '#/$defs/timestamp'
+    description: When the change request last changed, including comments and pushes.
+    x-github: '`updated_at`'
+    x-gitlab: '`updated_at`'
+
+  merged_at:
+    description: >-
+      When the change request merged. `null` when it hasn't merged, and also on a merged change request whose
+      forge recorded no merge time (GitLab returns some older merged MRs this way).
+    anyOf:
+      - $ref: '#/$defs/timestamp'
+      - type: 'null'
+    x-github: '`merged_at`'
+    x-gitlab: '`merged_at`'
+
+required: [forge, host, project_path, id, url, title, description, state, draft, author_username, author_name,
+  source_branch, target_branch, created_at, updated_at, merged_at]
+
+additionalProperties: false
+
+allOf:
+  - if:
+      properties:
+        merged_at: { type: string }
+      required: [merged_at]
+    then:
+      properties:
+        state: { const: merged }

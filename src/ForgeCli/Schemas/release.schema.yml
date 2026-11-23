@@ -1,0 +1,78 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Release
+description: A published version of a repo, tied to a git tag.
+x-github: Release
+x-gitlab: Release
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  project_path: { $ref: '#/$defs/project_path' }
+
+  tag_name:
+    description: Name of the git tag the release is built from; its identity within the repo.
+    type: string
+    x-github: '`tag_name`'
+    x-gitlab: '`tag_name`'
+
+  name:
+    description: Title of the release. `null` when none is set.
+    type: [string, 'null']
+    x-github: '`name`'
+    x-gitlab: '`name`'
+
+  url:
+    description: Web URL of the release.
+    type: string
+    format: uri
+    x-github: '`html_url`'
+    x-gitlab: '`_links.self`'
+
+  description:
+    description: Markdown release notes. `null` when none were written.
+    type: [string, 'null']
+    x-github: '`body`'
+    x-gitlab: '`description`'
+
+  author_username:
+    $ref: '#/$defs/username'
+    description: Username of the person who created the release.
+    x-github: '`author.login`'
+    x-gitlab: '`author.username`'
+
+  draft:
+    description: Whether the release is an unpublished draft. GitLab has no draft releases, so it is always `false` there.
+    type: boolean
+    x-github: '`draft`'
+    x-gitlab: always `false`
+
+  prerelease:
+    description: >-
+      Whether the release is marked as not production-ready. `null` on GitLab, which has no such flag.
+    type: [boolean, 'null']
+    x-github: '`prerelease`'
+    x-gitlab: always `null`
+
+  created_at:
+    $ref: '#/$defs/timestamp'
+    description: When the release record was created.
+    x-github: '`created_at`'
+    x-gitlab: '`created_at`'
+
+  released_at:
+    description: >-
+      When the release was published. `null` for a draft. A GitLab release can carry a future date, for an upcoming
+      release.
+    anyOf:
+      - $ref: '#/$defs/timestamp'
+      - type: 'null'
+    x-github: '`published_at`'
+    x-gitlab: '`released_at`'
+
+required: [forge, host, project_path, tag_name, name, url, description, author_username, draft, prerelease,
+  created_at, released_at]
+
+additionalProperties: false

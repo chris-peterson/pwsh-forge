@@ -1,12 +1,13 @@
 BeforeAll {
-    . $PSScriptRoot/../src/ForgeCli/Private/Validations.ps1
-    Import-Module $PSScriptRoot/../src/ForgeCli/Private/Init.psm1 -Force
-    . $PSScriptRoot/../src/ForgeCli/Private/Functions/GitHelpers.ps1
-    . $PSScriptRoot/../src/ForgeCli/Private/Functions/ProviderHelpers.ps1
-    . ([scriptblock]::Create((Get-Content "$PSScriptRoot/../src/ForgeCli/Forge.psm1" -Raw)))
+    # A dot-sourced script resets $PSScriptRoot, so resolve the source root first
+    $Src = "$PSScriptRoot/../src/ForgeCli"
+    . $Src/Private/Init.ps1
+    . $Src/Private/Functions/GitHelpers.ps1
+    . $Src/Private/Functions/ProviderHelpers.ps1
+    . $Src/Forge.ps1
 
     # Save provider data for restoration after tests that modify it
-    $script:AllProviders = $global:ForgeProviders.Clone()
+    $script:AllProviders = $script:ForgeProviders.Clone()
 
     # GitHub provider command stubs
     function Get-GithubIssue { param($IssueId, $State, [switch]$Mine, $Organization, $Assignee, $Creator, $Labels, $Since, $Sort, $Direction, [uint]$MaxPages, [switch]$All) }
@@ -102,7 +103,7 @@ Describe "Get-Issue" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubIssue {}
         }
@@ -135,7 +136,7 @@ Describe "Get-Issue" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabIssue {}
         }
@@ -191,6 +192,16 @@ Describe "Get-Issue" {
             $warnings[0] | Should -BeLike '*comments*not*supported*Gitlab*'
         }
 
+        It "Should leave OrderBy unset for unsupported Sort 'comments'" {
+            Get-Issue -Sort 'comments' -Forge gitlab -WarningAction SilentlyContinue
+            Should -Invoke Get-GitlabIssue -ParameterFilter { -not $PesterBoundParameters.ContainsKey('OrderBy') }
+        }
+
+        It "Should leave State unset for 'all'" {
+            Get-Issue -State 'all' -Forge gitlab
+            Should -Invoke Get-GitlabIssue -ParameterFilter { -not $PesterBoundParameters.ContainsKey('State') }
+        }
+
         It "Should map Direction to Sort" {
             Get-Issue -Direction 'asc' -Forge gitlab
             Should -Invoke Get-GitlabIssue -ParameterFilter { $Sort -eq 'asc' }
@@ -202,7 +213,7 @@ Describe "New-Issue" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock New-GithubIssue {}
         }
@@ -225,7 +236,7 @@ Describe "New-Issue" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock New-GitlabIssue {}
         }
@@ -246,7 +257,7 @@ Describe "Update-Issue" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Update-GithubIssue {}
         }
@@ -264,7 +275,7 @@ Describe "Update-Issue" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Update-GitlabIssue {}
         }
@@ -285,7 +296,7 @@ Describe "Close-Issue" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Close-GithubIssue {}
         }
@@ -303,7 +314,7 @@ Describe "Close-Issue" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Close-GitlabIssue {}
         }
@@ -323,7 +334,7 @@ Describe "Get-ChangeRequest" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubPullRequest {}
         }
@@ -381,7 +392,7 @@ Describe "Get-ChangeRequest" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabMergeRequest {}
         }
@@ -442,7 +453,7 @@ Describe "New-ChangeRequest" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock New-GithubPullRequest {}
         }
@@ -467,7 +478,7 @@ Describe "New-ChangeRequest" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock New-GitlabMergeRequest {}
         }
@@ -490,7 +501,7 @@ Describe "Merge-ChangeRequest" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Merge-GithubPullRequest {}
         }
@@ -518,7 +529,7 @@ Describe "Merge-ChangeRequest" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Merge-GitlabMergeRequest {}
         }
@@ -548,7 +559,7 @@ Describe "Get-Repo" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubRepository {}
         }
@@ -572,7 +583,7 @@ Describe "Get-Repo" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabProject {}
         }
@@ -598,7 +609,7 @@ Describe "New-Repo" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock New-GithubRepository {}
         }
@@ -618,7 +629,7 @@ Describe "New-Repo" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock New-GitlabProject {}
         }
@@ -636,7 +647,7 @@ Describe "Search-Repo" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Search-GithubRepository {}
         }
@@ -651,7 +662,7 @@ Describe "Search-Repo" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Search-GitlabProject {}
         }
@@ -682,7 +693,7 @@ Describe "Get-Group" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubOrganization {}
         }
@@ -700,7 +711,7 @@ Describe "Get-Group" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabGroup {}
         }
@@ -725,7 +736,7 @@ Describe "Get-Branch" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubBranch {}
         }
@@ -749,7 +760,7 @@ Describe "Get-Branch" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabBranch {}
         }
@@ -780,7 +791,7 @@ Describe "Get-Release" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubRelease {}
         }
@@ -798,7 +809,7 @@ Describe "Get-Release" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabRelease {}
         }
@@ -823,7 +834,7 @@ Describe "Get-User" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubUser {}
         }
@@ -841,7 +852,7 @@ Describe "Get-User" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabUser {}
         }
@@ -861,7 +872,7 @@ Describe "Get-Commit" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubCommit {}
         }
@@ -881,7 +892,7 @@ Describe "Get-Commit" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabCommit {}
         }
@@ -921,7 +932,7 @@ Describe "Close-ChangeRequest" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Close-GithubPullRequest {}
         }
@@ -939,7 +950,7 @@ Describe "Close-ChangeRequest" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Close-GitlabMergeRequest {}
         }
@@ -955,7 +966,7 @@ Describe "Update-ChangeRequest" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Update-GithubPullRequest {}
         }
@@ -995,7 +1006,7 @@ Describe "Update-ChangeRequest" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Update-GitlabMergeRequest {}
         }
@@ -1040,7 +1051,7 @@ Describe "Get-ChangeRequestComment" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubPullRequestComment {}
         }
@@ -1053,7 +1064,7 @@ Describe "Get-ChangeRequestComment" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabMergeRequestNote {}
         }
@@ -1073,7 +1084,7 @@ Describe "Open-Issue" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Open-GithubIssue {}
         }
@@ -1086,7 +1097,7 @@ Describe "Open-Issue" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Open-GitlabIssue {}
         }
@@ -1102,7 +1113,7 @@ Describe "New-IssueComment" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock New-GithubIssueComment {}
         }
@@ -1122,7 +1133,7 @@ Describe "New-IssueComment" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock New-GitlabIssueNote {}
         }
@@ -1144,7 +1155,7 @@ Describe "New-Branch" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock New-GithubBranch {}
         }
@@ -1167,7 +1178,7 @@ Describe "New-Branch" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock New-GitlabBranch {}
         }
@@ -1188,7 +1199,7 @@ Describe "Remove-Branch" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Remove-GithubBranch {}
         }
@@ -1206,7 +1217,7 @@ Describe "Remove-Branch" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Remove-GitlabBranch {}
         }
@@ -1226,7 +1237,7 @@ Describe "Remove-Repo" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Remove-GithubRepository {}
         }
@@ -1239,7 +1250,7 @@ Describe "Remove-Repo" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Remove-GitlabProject {}
         }
@@ -1259,7 +1270,7 @@ Describe "Get-GroupMember" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubOrganizationMember {}
         }
@@ -1277,7 +1288,7 @@ Describe "Get-GroupMember" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabGroupMember {}
         }
@@ -1298,7 +1309,7 @@ Describe "Add-GroupMember" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Add-GithubOrganizationMember {}
         }
@@ -1318,7 +1329,7 @@ Describe "Add-GroupMember" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Add-GitlabGroupMember {}
         }
@@ -1341,7 +1352,7 @@ Describe "Remove-GroupMember" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Remove-GithubOrganizationMember {}
         }
@@ -1361,7 +1372,7 @@ Describe "Remove-GroupMember" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Remove-GitlabGroupMember {}
         }
@@ -1383,7 +1394,7 @@ Describe "Get-Milestone" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubMilestone {}
         }
@@ -1401,7 +1412,7 @@ Describe "Get-Milestone" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabMilestone {}
         }
@@ -1420,6 +1431,11 @@ Describe "Get-Milestone" {
             Get-Milestone -State 'closed' -Forge gitlab
             Should -Invoke Get-GitlabMilestone -ParameterFilter { $State -eq 'closed' }
         }
+
+        It "Should leave State unset for 'all'" {
+            Get-Milestone -State 'all' -Forge gitlab
+            Should -Invoke Get-GitlabMilestone -ParameterFilter { -not $PesterBoundParameters.ContainsKey('State') }
+        }
     }
 }
 
@@ -1427,7 +1443,7 @@ Describe "Get-UserActivity" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubEvent {}
             Mock Get-GithubUser { [PSCustomObject]@{ Login = 'testuser' } }
@@ -1517,7 +1533,7 @@ Describe "Get-UserActivity" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabUserEvent {}
         }
@@ -1568,7 +1584,7 @@ Describe "Get-Label" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubLabel {}
         }
@@ -1591,7 +1607,7 @@ Describe "Get-Label" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabLabel {}
         }
@@ -1628,7 +1644,7 @@ Describe "New-Label" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock New-GithubLabel {}
         }
@@ -1656,7 +1672,7 @@ Describe "New-Label" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock New-GitlabLabel {}
         }
@@ -1682,7 +1698,7 @@ Describe "Update-Label" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Update-GithubLabel {}
         }
@@ -1700,7 +1716,7 @@ Describe "Update-Label" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Update-GitlabLabel {}
             Mock Get-GitlabLabel { [PSCustomObject]@{ Id = 42; Name = 'bug' } }
@@ -1730,7 +1746,7 @@ Describe "Remove-Label" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Remove-GithubLabel {}
         }
@@ -1748,7 +1764,7 @@ Describe "Remove-Label" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Remove-GitlabLabel {}
             Mock Get-GitlabLabel { [PSCustomObject]@{ Id = 42; Name = 'bug' } }
@@ -1765,7 +1781,7 @@ Describe "New-Milestone" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock New-GithubMilestone {}
         }
@@ -1803,7 +1819,7 @@ Describe "New-Milestone" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock New-GitlabMilestone {}
         }
@@ -1845,7 +1861,7 @@ Describe "Update-Milestone" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Update-GithubMilestone {}
         }
@@ -1868,7 +1884,7 @@ Describe "Update-Milestone" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Update-GitlabMilestone {}
         }
@@ -1899,7 +1915,7 @@ Describe "Remove-Milestone" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Remove-GithubMilestone {}
         }
@@ -1917,7 +1933,7 @@ Describe "Remove-Milestone" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Remove-GitlabMilestone {}
         }
@@ -1937,7 +1953,7 @@ Describe "Search-Forge" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Search-Github {}
         }
@@ -1989,7 +2005,7 @@ Describe "Search-Forge" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Search-Gitlab {}
         }
@@ -2059,7 +2075,7 @@ Describe "Invoke-ForgeApi" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Invoke-GithubApi {}
         }
@@ -2084,7 +2100,7 @@ Describe "Invoke-ForgeApi" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Invoke-GitlabApi {}
         }
@@ -2107,7 +2123,7 @@ Describe "Get-ForgeConfiguration" {
 
     Context "GitHub" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
+            $script:ForgeProviders = @{ 'github' = $script:AllProviders['github'] }
 
             Mock Get-GithubConfiguration {}
         }
@@ -2120,7 +2136,7 @@ Describe "Get-ForgeConfiguration" {
 
     Context "GitLab" {
         BeforeEach {
-            $global:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
+            $script:ForgeProviders = @{ 'gitlab' = $script:AllProviders['gitlab'] }
 
             Mock Get-GitlabConfiguration {}
         }

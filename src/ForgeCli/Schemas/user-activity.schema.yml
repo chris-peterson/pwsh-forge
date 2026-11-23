@@ -1,0 +1,204 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: UserActivity
+description: >-
+  One thing a user did on the forge, from its activity feed: a push, opening or merging a change request, a
+  comment. The forge's own event types map onto `action` and `target_type`.
+x-github: Event
+x-gitlab: Event
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  id:
+    description: Id of the event on the forge instance.
+    type: integer
+    minimum: 1
+    x-github: '`id`, as a number'
+    x-gitlab: '`id`'
+
+  created_at:
+    $ref: '#/$defs/timestamp'
+    description: When the activity happened.
+    x-github: '`created_at`'
+    x-gitlab: '`created_at`'
+
+  actor_username:
+    $ref: '#/$defs/username'
+    description: Username of the person who acted.
+    x-github: '`actor.login`'
+    x-gitlab: '`author_username`'
+
+  project_path:
+    description: Full path of the repo the activity happened in. `null` for activity outside any repo.
+    anyOf:
+      - $ref: '#/$defs/project_path'
+      - type: 'null'
+    x-github: '`repo.name`'
+    x-gitlab: '`path_with_namespace` of `project_id`'
+
+  action:
+    description: What the actor did.
+    oneOf:
+      - const: pushed
+        description: Pushed commits to a branch or tag.
+        x-github: '`PushEvent`'
+        x-gitlab: '`pushed to`, `pushed new`'
+      - const: created
+        description: Created a branch, tag, or repo.
+        x-github: '`CreateEvent`'
+        x-gitlab: '`created`'
+      - const: deleted
+        description: Deleted a branch, tag, or repo.
+        x-github: '`DeleteEvent`'
+        x-gitlab: '`deleted`'
+      - const: opened
+        description: Opened a change request or issue.
+        x-github: '`PullRequestEvent`, `IssuesEvent` with `payload.action` `opened`'
+        x-gitlab: '`opened`'
+      - const: closed
+        description: Closed a change request without merging it, or closed an issue.
+        x-github: '`PullRequestEvent` with `payload.action` `closed` and not merged; `IssuesEvent` with `closed`'
+        x-gitlab: '`closed`'
+      - const: reopened
+        description: Reopened a change request or issue.
+        x-github: '`PullRequestEvent`, `IssuesEvent` with `payload.action` `reopened`'
+        x-gitlab: '`reopened`'
+      - const: merged
+        description: Merged a change request.
+        x-github: '`PullRequestEvent` with `payload.action` `closed` and `payload.pull_request.merged`'
+        x-gitlab: '`accepted`'
+      - const: approved
+        description: Approved a change request.
+        x-github: '`PullRequestReviewEvent` with `payload.review.state` `approved`'
+        x-gitlab: '`approved`'
+      - const: reviewed
+        description: Submitted a review that didn't approve.
+        x-github: '`PullRequestReviewEvent` in any other state'
+        x-gitlab: none
+      - const: commented
+        description: Commented on a change request, issue, or commit.
+        x-github: '`IssueCommentEvent`, `PullRequestReviewCommentEvent`, `CommitCommentEvent`'
+        x-gitlab: '`commented on`'
+      - const: released
+        description: Published a release.
+        x-github: '`ReleaseEvent`'
+        x-gitlab: none
+      - const: forked
+        description: Forked a repo.
+        x-github: '`ForkEvent`'
+        x-gitlab: none
+      - const: starred
+        description: Starred a repo.
+        x-github: '`WatchEvent`'
+        x-gitlab: none
+      - const: joined
+        description: Joined a repo or group.
+        x-github: '`MemberEvent`'
+        x-gitlab: '`joined`'
+      - const: left
+        description: Left a repo or group.
+        x-github: none
+        x-gitlab: '`left`'
+      - const: other
+        description: Anything the other values don't describe, such as editing a wiki page.
+        x-github: any other `type`
+        x-gitlab: any other `action_name`
+    x-github: from `type` and `payload.action`; see the values
+    x-gitlab: from `action_name`; see the values
+
+  target_type:
+    description: Kind of thing the activity was on. `null` when the forge names none.
+    oneOf:
+      - const: change_request
+        description: A change request.
+        x-github: '`PullRequestEvent`, `PullRequestReviewEvent`'
+        x-gitlab: '`MergeRequest`'
+      - const: issue
+        description: An issue.
+        x-github: '`IssuesEvent`'
+        x-gitlab: '`Issue`, `WorkItem`'
+      - const: comment
+        description: A comment; `target_id` names what it was on.
+        x-github: '`IssueCommentEvent`, `PullRequestReviewCommentEvent`, `CommitCommentEvent`'
+        x-gitlab: '`Note`, `DiscussionNote`, `DiffNote`'
+      - const: branch
+        description: A branch.
+        x-github: '`PushEvent` to `refs/heads/`; `CreateEvent`, `DeleteEvent` with `payload.ref_type` `branch`'
+        x-gitlab: no `target_type`, `push_data.ref_type` `branch`
+      - const: tag
+        description: A tag.
+        x-github: '`PushEvent` to `refs/tags/`; `CreateEvent`, `DeleteEvent` with `payload.ref_type` `tag`'
+        x-gitlab: no `target_type`, `push_data.ref_type` `tag`
+      - const: repo
+        description: A repo.
+        x-github: '`CreateEvent` with `payload.ref_type` `repository`; `ForkEvent`, `WatchEvent`, `MemberEvent`'
+        x-gitlab: no `target_type` or `push_data`, on a project
+      - const: release
+        description: A release.
+        x-github: '`ReleaseEvent`'
+        x-gitlab: none
+      - const: milestone
+        description: A milestone.
+        x-github: none
+        x-gitlab: '`Milestone`'
+      - const: wiki
+        description: A wiki page.
+        x-github: '`GollumEvent`'
+        x-gitlab: '`WikiPage::Meta`'
+      - type: 'null'
+        description: The forge names no target.
+        x-github: any other `type`
+        x-gitlab: any other `target_type`
+    x-github: from `type` and `payload.ref_type`; see the values
+    x-gitlab: from `target_type` and `push_data.ref_type`; see the values
+
+  target_id:
+    description: >-
+      Number of the change request or issue the activity was on; for a comment, the one commented on. `null` for
+      any other target.
+    type: [integer, 'null']
+    minimum: 1
+    x-github: '`payload.pull_request.number` or `payload.issue.number`'
+    x-gitlab: '`target_iid`, or `note.noteable_iid` for a comment'
+
+  target_title:
+    description: Title of the change request or issue the activity was on. `null` for any other target.
+    type: [string, 'null']
+    x-github: '`payload.pull_request.title` or `payload.issue.title`'
+    x-gitlab: '`target_title`'
+
+  ref:
+    description: Branch or tag a push, create, or delete acted on, without `refs/heads/` or `refs/tags/`. `null` otherwise.
+    type: [string, 'null']
+    x-github: '`payload.ref`'
+    x-gitlab: '`push_data.ref`'
+
+  commit_sha:
+    description: Full SHA of the newest commit a push delivered. `null` for anything but a push.
+    type: [string, 'null']
+    pattern: '^[0-9a-f]{40}$'
+    x-github: '`payload.head`'
+    x-gitlab: '`push_data.commit_to`'
+
+  commit_title:
+    description: First line of the message of `commit_sha`. `null` for anything but a push.
+    type: [string, 'null']
+    x-github: '`title` of `commits/{payload.head}`'
+    x-gitlab: '`push_data.commit_title`'
+
+  commit_count:
+    description: >-
+      Number of commits a push delivered. `null` for anything but a push, and always on GitHub, whose events API
+      doesn't report it.
+    type: [integer, 'null']
+    minimum: 0
+    x-github: always `null`
+    x-gitlab: '`push_data.commit_count`'
+
+required: [forge, host, id, created_at, actor_username, project_path, action, target_type, target_id, target_title,
+  ref, commit_sha, commit_title, commit_count]
+
+additionalProperties: false

@@ -49,8 +49,8 @@ function Resolve-ForgeProvider {
     # Explicit provider override
     if ($Provider) {
         $Key = $Provider.ToLower()
-        if ($global:ForgeProviders.ContainsKey($Key)) {
-            $Resolved = $global:ForgeProviders[$Key]
+        if ($script:ForgeProviders.ContainsKey($Key)) {
+            $Resolved = $script:ForgeProviders[$Key]
         } else {
             throw "Unknown provider: '$Provider'"
         }
@@ -67,8 +67,8 @@ Either cd into a git repository, or specify a provider:
         }
 
         # Match against registered providers
-        foreach ($Key in $global:ForgeProviders.Keys) {
-            $Registered = $global:ForgeProviders[$Key]
+        foreach ($Key in $script:ForgeProviders.Keys) {
+            $Registered = $script:ForgeProviders[$Key]
             foreach ($Pattern in $Registered.HostPatterns) {
                 if ($Context.Host -match $Pattern) {
                     $Resolved = $Registered
@@ -79,7 +79,7 @@ Either cd into a git repository, or specify a provider:
         }
 
         if (-not $Resolved) {
-            $SupportedList = ($global:ForgeProviders.Keys) -join ', '
+            $SupportedList = ($script:ForgeProviders.Keys) -join ', '
             throw @"
 Unrecognized forge host: '$($Context.Host)'
 Currently supported: $SupportedList

@@ -1,74 +1,42 @@
 BeforeAll {
-    . $PSScriptRoot/../src/ForgeCli/Private/Validations.ps1
-    Import-Module $PSScriptRoot/../src/ForgeCli/Private/Init.psm1 -Force
-    . $PSScriptRoot/../src/ForgeCli/Private/Functions/GitHelpers.ps1
-    . $PSScriptRoot/../src/ForgeCli/Private/Functions/ProviderHelpers.ps1
+    # A dot-sourced script resets $PSScriptRoot, so resolve the source root first
+    $Src = "$PSScriptRoot/../src/ForgeCli"
+    . $PSScriptRoot/Support/Markdown.ps1
+    . $Src/Private/Init.ps1
 
     function Build-CommandSurfaceTable {
-        $ProviderKeys = $global:ForgeProviders.Keys | Sort-Object
+        $ProviderKeys = $script:ForgeProviders.Keys | Sort-Object
         $Headers = @('ForgeCli Command') + ($ProviderKeys | ForEach-Object {
             "$((Get-Culture).TextInfo.ToTitleCase($_)) Provider"
         })
 
-        # Compute column widths from headers and data
-        $Rows = foreach ($Command in ($global:ForgeCommands | Sort-Object)) {
-            $Cells = @($Command)
+        $Rows = foreach ($Command in ($script:ForgeCommands | Sort-Object)) {
+            $Cells = @("``$Command``")
             foreach ($Key in $ProviderKeys) {
-                $Cells += $global:ForgeProviders[$Key].Commands[$Command]
+                $Cells += "``$($script:ForgeProviders[$Key].Commands[$Command])``"
             }
             , $Cells
         }
-        $ColWidths = @()
-        for ($i = 0; $i -lt $Headers.Count; $i++) {
-            $Max = ($Headers[$i]).Length
-            foreach ($Row in $Rows) {
-                $Len = "``$($Row[$i])``".Length
-                if ($Len -gt $Max) { $Max = $Len }
-            }
-            $ColWidths += $Max
-        }
 
-        $Lines = @()
-
-        # Header
-        $HeaderCells = for ($i = 0; $i -lt $Headers.Count; $i++) {
-            $Headers[$i].PadRight($ColWidths[$i])
-        }
-        $Lines += '| {0} |' -f ($HeaderCells -join ' | ')
-
-        # Separator
-        $SepCells = for ($i = 0; $i -lt $Headers.Count; $i++) {
-            '-' * $ColWidths[$i]
-        }
-        $Lines += '|{0}|' -f (($SepCells | ForEach-Object { "-$_-" }) -join '|')
-
-        # Data rows
-        foreach ($Row in $Rows) {
-            $DataCells = for ($i = 0; $i -lt $Row.Count; $i++) {
-                "``$($Row[$i])``".PadRight($ColWidths[$i])
-            }
-            $Lines += '| {0} |' -f ($DataCells -join ' | ')
-        }
-
-        $Lines -join "`n"
+        Format-MarkdownTable $Headers $Rows
     }
 }
 
 Describe "Command Surface" {
 
     It "Every provider should have identical Resource keys" {
-        $ExpectedKeys = $global:ForgeProviders.Values.Resource.Keys | Sort-Object -Unique
-        foreach ($Key in $global:ForgeProviders.Keys) {
-            $ActualKeys = $global:ForgeProviders[$Key].Resource.Keys | Sort-Object
+        $ExpectedKeys = $script:ForgeProviders.Values.Resource.Keys | Sort-Object -Unique
+        foreach ($Key in $script:ForgeProviders.Keys) {
+            $ActualKeys = $script:ForgeProviders[$Key].Resource.Keys | Sort-Object
             $ActualKeys | Should -Be $ExpectedKeys -Because "provider '$Key' Resource keys should be consistent"
         }
     }
 
     It "Every provider should map every forge command" {
         $Missing = @()
-        foreach ($ProviderKey in $global:ForgeProviders.Keys) {
-            $Provider = $global:ForgeProviders[$ProviderKey]
-            foreach ($Command in $global:ForgeCommands) {
+        foreach ($ProviderKey in $script:ForgeProviders.Keys) {
+            $Provider = $script:ForgeProviders[$ProviderKey]
+            foreach ($Command in $script:ForgeCommands) {
                 if (-not $Provider.Commands[$Command]) {
                     $Missing += "$ProviderKey`: $Command"
                 }

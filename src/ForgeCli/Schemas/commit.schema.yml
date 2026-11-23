@@ -1,0 +1,87 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Commit
+description: A git commit in a repo.
+x-github: Commit
+x-gitlab: Commit
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  project_path: { $ref: '#/$defs/project_path' }
+
+  sha:
+    description: Full SHA of the commit.
+    type: string
+    pattern: '^[0-9a-f]{40}$'
+    x-github: '`sha`'
+    x-gitlab: '`id`'
+
+  url:
+    description: Web URL of the commit.
+    type: string
+    format: uri
+    x-github: '`html_url`'
+    x-gitlab: '`web_url`'
+
+  title:
+    description: First line of the commit message.
+    type: string
+    x-github: first line of `commit.message`
+    x-gitlab: '`title`'
+
+  message:
+    description: Full commit message, including the title.
+    type: string
+    x-github: '`commit.message`'
+    x-gitlab: '`message`'
+
+  author_name:
+    description: Author name recorded in the commit.
+    type: string
+    x-github: '`commit.author.name`'
+    x-gitlab: '`author_name`'
+
+  author_email:
+    description: Author email recorded in the commit.
+    type: string
+    x-github: '`commit.author.email`'
+    x-gitlab: '`author_email`'
+
+  author_username:
+    description: >-
+      Username of the account the forge matched to the author email. `null` when no account matches, and always
+      `null` on GitLab, whose commits API doesn't report one.
+    anyOf:
+      - $ref: '#/$defs/username'
+      - type: 'null'
+    x-github: '`author.login`'
+    x-gitlab: always `null`
+
+  authored_at:
+    $ref: '#/$defs/timestamp'
+    description: When the change was originally written; kept through rebases and cherry-picks.
+    x-github: '`commit.author.date`'
+    x-gitlab: '`authored_date`'
+
+  committed_at:
+    $ref: '#/$defs/timestamp'
+    description: When the commit was last written, by a rebase, amend, or cherry-pick as much as the first commit.
+    x-github: '`commit.committer.date`'
+    x-gitlab: '`committed_date`'
+
+  parent_shas:
+    description: Full SHAs of the commit's parents. More than one for a merge commit.
+    type: array
+    items:
+      type: string
+      pattern: '^[0-9a-f]{40}$'
+    x-github: '`parents[].sha`'
+    x-gitlab: '`parent_ids`'
+
+required: [forge, host, project_path, sha, url, title, message, author_name, author_email, author_username,
+  authored_at, committed_at, parent_shas]
+
+additionalProperties: false

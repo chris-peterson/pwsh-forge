@@ -1,6 +1,6 @@
-$global:ForgeCommands = (Import-PowerShellDataFile "$PSScriptRoot/../ForgeCli.psd1").FunctionsToExport
+$script:ForgeCommands = (Import-PowerShellDataFile "$PSScriptRoot/../ForgeCli.psd1").FunctionsToExport
 
-$global:ForgeProviders = @{
+$script:ForgeProviders = @{
     'github' = @{
         Module       = 'GithubCli'
         Prefix       = 'Github'
@@ -54,15 +54,15 @@ $global:ForgeProviders = @{
     }
 }
 
-foreach ($Key in $global:ForgeProviders.Keys) {
-    $Provider = $global:ForgeProviders[$Key]
+foreach ($Key in $script:ForgeProviders.Keys) {
+    $Provider = $script:ForgeProviders[$Key]
     $Commands = @{}
-    foreach ($ForgeCommand in $global:ForgeCommands) {
+    foreach ($ForgeCommand in $script:ForgeCommands) {
         $Verb, $Noun = $ForgeCommand -split '-', 2
         # An empty string is a mapping (Search-Forge); a missing or null entry is not
         $HasMapping = $Provider.Resource.ContainsKey($Noun) -and $null -ne $Provider.Resource[$Noun]
         if (-not $HasMapping) {
-            throw "Forge command '$ForgeCommand' uses noun '$Noun' which is not mapped in the '$Key' provider. Add it to the Resource table in Init.psm1."
+            throw "Forge command '$ForgeCommand' uses noun '$Noun' which is not mapped in the '$Key' provider. Add it to the Resource table in Init.ps1."
         }
         $MappedNoun = $Provider.Resource[$Noun]
         $Commands[$ForgeCommand] = "$Verb-$($Provider.Prefix)$MappedNoun"
@@ -72,8 +72,8 @@ foreach ($Key in $global:ForgeProviders.Keys) {
 
 # Probe for installed provider modules and import them.
 # Providers whose modules are not installed are removed from the registry.
-foreach ($Key in @($global:ForgeProviders.Keys)) {
-    $Provider = $global:ForgeProviders[$Key]
+foreach ($Key in @($script:ForgeProviders.Keys)) {
+    $Provider = $script:ForgeProviders[$Key]
     $Module = $Provider.Module
     if (Get-Module -Name $Module) {
         Write-Verbose "Forge: provider '$Key' already loaded ($Module)"
@@ -82,8 +82,8 @@ foreach ($Key in @($global:ForgeProviders.Keys)) {
         Import-Module $Module
     } else {
         Write-Verbose "Forge: provider '$Key' not available ($Module not installed)"
-        $global:ForgeProviders.Remove($Key)
+        $script:ForgeProviders.Remove($Key)
     }
 }
 
-Write-Verbose "Forge: $(($global:ForgeProviders.Keys) -join ', ') provider(s) registered"
+Write-Verbose "Forge: $(($script:ForgeProviders.Keys) -join ', ') provider(s) registered"

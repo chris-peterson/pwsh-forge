@@ -1,0 +1,91 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Repo
+description: The code container that owns branches, change requests, and issues.
+x-github: Repository
+x-gitlab: Project
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  project_path:
+    $ref: '#/$defs/project_path'
+    description: Full path of the repo, and its identity on the forge instance.
+    x-github: '`full_name`'
+    x-gitlab: '`path_with_namespace`'
+
+  name:
+    description: Last segment of `project_path`, as it appears in the repo's URL.
+    type: string
+    x-github: '`name`'
+    x-gitlab: '`path`'
+
+  owner:
+    description: Path of the user or group that owns the repo; `project_path` without its last segment.
+    type: string
+    x-github: '`owner.login`'
+    x-gitlab: '`namespace.full_path`'
+
+  description:
+    description: Short description of the repo. `null` when none is set.
+    type: [string, 'null']
+    x-github: '`description`'
+    x-gitlab: '`description`'
+
+  url:
+    description: Web URL of the repo.
+    type: string
+    format: uri
+    x-github: '`html_url`'
+    x-gitlab: '`web_url`'
+
+  default_branch:
+    description: Branch the forge treats as the repo's main line. `null` for an empty repo.
+    type: [string, 'null']
+    x-github: '`default_branch`'
+    x-gitlab: '`default_branch`'
+
+  visibility:
+    description: Who can see the repo.
+    oneOf:
+      - const: public
+        description: Anyone, including people who aren't signed in.
+      - const: internal
+        description: Any signed-in member of the forge instance or enterprise.
+      - const: private
+        description: Only people granted access.
+    x-github: '`visibility`'
+    x-gitlab: '`visibility`'
+
+  archived:
+    description: Whether the repo is read-only because it was archived.
+    type: boolean
+    x-github: '`archived`'
+    x-gitlab: '`archived`'
+
+  fork:
+    description: Whether the repo was created as a fork of another repo.
+    type: boolean
+    x-github: '`fork`'
+    x-gitlab: '`forked_from_project` is present'
+
+  created_at:
+    $ref: '#/$defs/timestamp'
+    description: When the repo was created.
+    x-github: '`created_at`'
+    x-gitlab: '`created_at`'
+
+  last_activity_at:
+    $ref: '#/$defs/timestamp'
+    description: >-
+      Most recent activity the forge records for the repo. GitHub counts pushes only; GitLab counts any activity,
+      including issues and merge requests.
+    x-github: '`pushed_at`'
+    x-gitlab: '`last_activity_at`'
+
+required: [forge, host, project_path, name, owner, description, url, default_branch, visibility, archived, fork,
+  created_at, last_activity_at]
+
+additionalProperties: false

@@ -1,3 +1,11 @@
+# -Forge's valid set is the live registry, so it shrinks when a provider module isn't installed. The class has to
+# be defined in this file: a parameter attribute can't resolve a class from another of the module's scripts.
+class SupportedProvider : System.Management.Automation.IValidateSetValuesGenerator {
+    [string[]] GetValidValues() {
+        return @($script:ForgeProviders.Keys)
+    }
+}
+
 function Get-Issue {
     [CmdletBinding()]
     param(
@@ -92,22 +100,20 @@ function Get-Issue {
             if ($Since)     { $Params.CreatedAfter      = $Since }
             if ($MaxPages)  { $Params.MaxPages          = $MaxPages }
             if ($All)       { $Params.All               = $true }
-            if ($State) {
+            # GitLab lists every state when State is absent, which is what 'all' asks for.
+            if ($State -and $State -ne 'all') {
                 $Params.State = switch ($State) {
                     'open'   { 'opened' }
                     'closed' { 'closed' }
-                    'all'    { $null }
                 }
             }
             if ($Labels)    { $Params.Labels  = $Labels }
-            if ($Sort) {
+            if ($Sort -eq 'comments') {
+                Write-Warning "Get-Issue -Sort 'comments' is not supported by the Gitlab provider"
+            } elseif ($Sort) {
                 $Params.OrderBy = switch ($Sort) {
                     'created'  { 'created_at' }
                     'updated'  { 'updated_at' }
-                    'comments' { $null }
-                }
-                if ($Sort -eq 'comments') {
-                    Write-Warning "Get-Issue -Sort 'comments' is not supported by the Gitlab provider"
                 }
             }
             if ($Direction) { $Params.Sort = $Direction }
@@ -1442,11 +1448,11 @@ function Get-Milestone {
         'gitlab' {
             if ($Id)   { $Params.MilestoneId = $Id }
             if ($Repo) { $Params.ProjectId = $Repo }
-            if ($State) {
+            # GitLab lists every state when State is absent, which is what 'all' asks for.
+            if ($State -and $State -ne 'all') {
                 $Params.State = switch ($State) {
                     'open'   { 'active' }
                     'closed' { 'closed' }
-                    'all'    { $null }
                 }
             }
         }

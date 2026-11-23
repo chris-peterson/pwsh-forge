@@ -1,0 +1,48 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: User
+description: An account on a forge instance.
+x-github: User
+x-gitlab: User
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  username:
+    $ref: '#/$defs/username'
+    description: Username of the account; its identity on the forge instance.
+    x-github: '`login`'
+    x-gitlab: '`username`'
+
+  name:
+    description: Display name of the account. `null` when none is set.
+    type: [string, 'null']
+    x-github: '`name`'
+    x-gitlab: '`name`'
+
+  url:
+    description: Web URL of the account's profile.
+    type: string
+    format: uri
+    x-github: '`html_url`'
+    x-gitlab: '`web_url`'
+
+  bot:
+    description: Whether the account is an automation account rather than a person.
+    type: boolean
+    x-github: '`type` is `Bot`'
+    x-gitlab: '`bot`'
+
+  created_at:
+    description: When the account was created. `null` when the forge doesn't disclose it to the caller.
+    anyOf:
+      - $ref: '#/$defs/timestamp'
+      - type: 'null'
+    x-github: '`created_at`'
+    x-gitlab: '`created_at`'
+
+required: [forge, host, username, name, url, bot, created_at]
+
+additionalProperties: false

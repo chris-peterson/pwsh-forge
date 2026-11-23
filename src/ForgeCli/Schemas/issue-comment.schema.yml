@@ -1,0 +1,77 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: IssueComment
+description: A comment on an issue.
+x-github: Issue comment
+x-gitlab: Issue note
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  project_path: { $ref: '#/$defs/project_path' }
+
+  issue_id:
+    description: Number of the issue the comment is on, as in the issue record's `id`.
+    type: integer
+    minimum: 1
+    x-github: last segment of `issue_url`
+    x-gitlab: '`noteable_iid`'
+
+  id:
+    description: Id of the comment; the one its web URL anchors to.
+    type: integer
+    minimum: 1
+    x-github: '`id`'
+    x-gitlab: '`id`'
+
+  url:
+    description: Web URL of the comment.
+    type: string
+    format: uri
+    x-github: '`html_url`'
+    x-gitlab: issue `web_url` + `#note_{id}`
+
+  body:
+    description: Markdown body of the comment.
+    type: string
+    x-github: '`body`'
+    x-gitlab: '`body`'
+
+  author_username:
+    $ref: '#/$defs/username'
+    description: Username of the comment's author.
+    x-github: '`user.login`'
+    x-gitlab: '`author.username`'
+
+  author_name:
+    description: Display name of the comment's author, or the username when the account has no display name.
+    type: string
+    x-github: '`name` of `users/{user.login}`'
+    x-gitlab: '`author.name`'
+
+  system:
+    description: >-
+      Whether the forge generated the comment to record activity (a label change, a cross-reference) rather than a
+      person writing it. GitHub's comments API returns only written comments, so it is always `false` there.
+    type: boolean
+    x-github: always `false`
+    x-gitlab: '`system`'
+
+  created_at:
+    $ref: '#/$defs/timestamp'
+    description: When the comment was posted.
+    x-github: '`created_at`'
+    x-gitlab: '`created_at`'
+
+  updated_at:
+    $ref: '#/$defs/timestamp'
+    description: When the comment was last edited, or posted if never edited.
+    x-github: '`updated_at`'
+    x-gitlab: '`updated_at`'
+
+required: [forge, host, project_path, issue_id, id, url, body, author_username, author_name, system, created_at,
+  updated_at]
+
+additionalProperties: false

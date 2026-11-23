@@ -1,12 +1,13 @@
 BeforeAll {
-    . $PSScriptRoot/../src/ForgeCli/Private/Validations.ps1
-    Import-Module $PSScriptRoot/../src/ForgeCli/Private/Init.psm1 -Force
-    . $PSScriptRoot/../src/ForgeCli/Private/Functions/GitHelpers.ps1
-    . $PSScriptRoot/../src/ForgeCli/Private/Functions/ProviderHelpers.ps1
-    . ([scriptblock]::Create((Get-Content "$PSScriptRoot/../src/ForgeCli/Forge.psm1" -Raw)))
+    # A dot-sourced script resets $PSScriptRoot, so resolve the source root first
+    $Src = "$PSScriptRoot/../src/ForgeCli"
+    . $Src/Private/Init.ps1
+    . $Src/Private/Functions/GitHelpers.ps1
+    . $Src/Private/Functions/ProviderHelpers.ps1
+    . $Src/Forge.ps1
 
     # Save provider data for restoration after tests that modify it
-    $script:OriginalProviders = $global:ForgeProviders.Clone()
+    $script:OriginalProviders = $script:ForgeProviders.Clone()
 }
 
 Describe "Resolve-ForgeProvider" {
@@ -55,7 +56,7 @@ Describe "Resolve-ForgeProvider" {
 Describe "Resolve-ForgeCommand" {
 
     AfterEach {
-        $global:ForgeProviders = $script:OriginalProviders.Clone()
+        $script:ForgeProviders = $script:OriginalProviders.Clone()
     }
 
     It "Should return provider name and mapped command" {
@@ -65,13 +66,13 @@ Describe "Resolve-ForgeCommand" {
     }
 
     It "Should normalize provider name to lowercase" {
-        $global:ForgeProviders['github'].Name = 'GitHub'
+        $script:ForgeProviders['github'].Name = 'GitHub'
         $Result = Resolve-ForgeCommand -CommandName 'Get-Issue' -Provider 'github'
         $Result.Provider | Should -Be 'github'
     }
 
     It "Should throw for unsupported command" {
-        $global:ForgeProviders['github'].Commands.Remove('Get-Issue')
+        $script:ForgeProviders['github'].Commands.Remove('Get-Issue')
         { Resolve-ForgeCommand -CommandName 'Get-Issue' -Provider 'github' } | Should -Throw '*does not support*'
     }
 }

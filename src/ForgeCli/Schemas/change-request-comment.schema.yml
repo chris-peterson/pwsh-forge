@@ -1,0 +1,94 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: ChangeRequestComment
+description: >-
+  A comment on a change request: a conversation comment, or an inline comment on a line of the diff. Both kinds
+  are change request comments.
+x-github: Issue comment on the pull request, and pull request review comment
+x-gitlab: Merge request note
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  project_path: { $ref: '#/$defs/project_path' }
+
+  change_request_id:
+    description: Number of the change request the comment is on, as in the change request record's `id`.
+    type: integer
+    minimum: 1
+    x-github: last segment of `issue_url` or `pull_request_url`
+    x-gitlab: '`noteable_iid`'
+
+  id:
+    description: Id of the comment; the one its web URL anchors to.
+    type: integer
+    minimum: 1
+    x-github: '`id`'
+    x-gitlab: '`id`'
+
+  url:
+    description: Web URL of the comment.
+    type: string
+    format: uri
+    x-github: '`html_url`'
+    x-gitlab: merge request `web_url` + `#note_{id}`
+
+  body:
+    description: Markdown body of the comment.
+    type: string
+    x-github: '`body`'
+    x-gitlab: '`body`'
+
+  author_username:
+    $ref: '#/$defs/username'
+    description: Username of the comment's author.
+    x-github: '`user.login`'
+    x-gitlab: '`author.username`'
+
+  author_name:
+    description: Display name of the comment's author, or the username when the account has no display name.
+    type: string
+    x-github: '`name` of `users/{user.login}`'
+    x-gitlab: '`author.name`'
+
+  file_path:
+    description: Path of the file an inline comment is on. `null` for a conversation comment.
+    type: [string, 'null']
+    x-github: '`path` (review comments)'
+    x-gitlab: '`position.new_path`'
+
+  line:
+    description: >-
+      Line an inline comment is on, in the new version of the file; the last line of a multi-line comment. `null`
+      for a conversation comment, or a comment on a removed line.
+    type: [integer, 'null']
+    minimum: 1
+    x-github: '`line` when `side` is `RIGHT` (review comments)'
+    x-gitlab: '`position.new_line`'
+
+  system:
+    description: >-
+      Whether the forge generated the comment to record activity (a push, a status change) rather than a person
+      writing it. GitHub's comments APIs return only written comments, so it is always `false` there.
+    type: boolean
+    x-github: always `false`
+    x-gitlab: '`system`'
+
+  created_at:
+    $ref: '#/$defs/timestamp'
+    description: When the comment was posted.
+    x-github: '`created_at`'
+    x-gitlab: '`created_at`'
+
+  updated_at:
+    $ref: '#/$defs/timestamp'
+    description: When the comment was last edited, or posted if never edited.
+    x-github: '`updated_at`'
+    x-gitlab: '`updated_at`'
+
+required: [forge, host, project_path, change_request_id, id, url, body, author_username, author_name, file_path,
+  line, system, created_at, updated_at]
+
+additionalProperties: false

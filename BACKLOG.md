@@ -7,8 +7,8 @@ Once a command is ready to start, it moves to an issue and comes off this list.
 
 | Forge Command | GitHub | GitLab | Notes |
 |---|---|---|---|
-| `Get-ChangeRequest -ReviewedBy` | `Get-GithubPullRequest -ReviewedBy` | `Get-GitlabMergeRequest -Role reviewer` | **Gap**: pwsh-github lacks `-ReviewedBy`; forge `Get-ChangeRequest` has no `Role`/`ReviewedBy` param. GitLab already works via `-Role reviewer`. GitHub needs search query `reviewed-by:<user>` added to `Get-GithubPullRequest`. |
-| `New-ChangeRequestComment` | `New-GithubPullRequestComment` | `New-GitlabMergeRequestNote` | **Blocked**: `New-GitlabMergeRequestNote` does not exist in pwsh-gitlab; tracked by chris-peterson/pwsh-gitlab#111 |
+| `Get-ChangeRequest -Reviewer` | `Get-GithubPullRequest -ReviewedBy` | `Get-GitlabMergeRequest -ReviewerUsername` | **Semantics differ**: GitHub's `reviewed-by:` matches pull requests the user submitted a review on; GitLab's `reviewer_username` matches merge requests the user is assigned to review. Decide which one `-Reviewer` means and translate the other provider to it. |
+| `New-ChangeRequestComment` | `New-GithubPullRequestComment` | `New-GitlabMergeRequestNote` | **Ready**: `New-GitlabMergeRequestNote` ships in GitlabCli 1.174.0. |
 
 ## Issues
 

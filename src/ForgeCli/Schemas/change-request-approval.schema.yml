@@ -1,0 +1,46 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: ChangeRequestApproval
+description: >-
+  One reviewer's current approval of a change request: a record per approver, not per change request. A withdrawn
+  or superseded approval is not a record.
+x-github: Pull request review in the `APPROVED` state, the latest from its reviewer
+x-gitlab: An entry in the merge request's `approved_by`
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  project_path: { $ref: '#/$defs/project_path' }
+
+  change_request_id:
+    description: Number of the approved change request, as in the change request record's `id`.
+    type: integer
+    minimum: 1
+    x-github: number in `pull_request_url`
+    x-gitlab: '`iid`'
+
+  approver_username:
+    $ref: '#/$defs/username'
+    description: Username of the approver.
+    x-github: '`user.login`'
+    x-gitlab: '`approved_by[].user.username`'
+
+  approver_name:
+    description: Display name of the approver, or the username when the account has no display name.
+    type: string
+    x-github: '`name` of `users/{user.login}`'
+    x-gitlab: '`approved_by[].user.name`'
+
+  approved_at:
+    description: When the approval was given. `null` when the forge reports no time for it.
+    anyOf:
+      - $ref: '#/$defs/timestamp'
+      - type: 'null'
+    x-github: '`submitted_at`'
+    x-gitlab: '`approved_by[].approved_at`'
+
+required: [forge, host, project_path, change_request_id, approver_username, approver_name, approved_at]
+
+additionalProperties: false

@@ -1,0 +1,41 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Group
+description: >-
+  A namespace that owns repos and has members. GitLab groups can nest; GitHub organizations cannot.
+x-github: Organization
+x-gitlab: Group
+type: object
+
+properties:
+  forge: { $ref: '#/$defs/forge' }
+
+  host: { $ref: '#/$defs/host' }
+
+  path:
+    description: Full path of the group, as repo paths under it begin; its identity on the forge instance.
+    type: string
+    x-github: '`login`'
+    x-gitlab: '`full_path`'
+
+  name:
+    description: Display name of the group, or its path when it has none.
+    type: string
+    x-github: '`name`, falling back to `login`'
+    x-gitlab: '`name`'
+
+  description:
+    description: Short description of the group. `null` when none is set.
+    type: [string, 'null']
+    x-github: '`description`'
+    x-gitlab: '`description`'
+
+  url:
+    description: Web URL of the group.
+    type: string
+    format: uri
+    x-github: '`html_url`'
+    x-gitlab: '`web_url`'
+
+required: [forge, host, path, name, description, url]
+
+additionalProperties: false
