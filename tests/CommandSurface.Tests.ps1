@@ -1,20 +1,19 @@
 BeforeAll {
-    . $PSScriptRoot/../src/ForgeCli/Private/Validations.ps1
-    Import-Module $PSScriptRoot/../src/ForgeCli/Private/Init.psm1 -Force
-    . $PSScriptRoot/../src/ForgeCli/Private/Functions/GitHelpers.ps1
-    . $PSScriptRoot/../src/ForgeCli/Private/Functions/ProviderHelpers.ps1
+    # A dot-sourced script resets $PSScriptRoot, so resolve the source root first
+    $Src = "$PSScriptRoot/../src/ForgeCli"
     . $PSScriptRoot/Support/Markdown.ps1
+    . $Src/Private/Init.ps1
 
     function Build-CommandSurfaceTable {
-        $ProviderKeys = $global:ForgeProviders.Keys | Sort-Object
+        $ProviderKeys = $script:ForgeProviders.Keys | Sort-Object
         $Headers = @('ForgeCli Command') + ($ProviderKeys | ForEach-Object {
             "$((Get-Culture).TextInfo.ToTitleCase($_)) Provider"
         })
 
-        $Rows = foreach ($Command in ($global:ForgeCommands | Sort-Object)) {
+        $Rows = foreach ($Command in ($script:ForgeCommands | Sort-Object)) {
             $Cells = @("``$Command``")
             foreach ($Key in $ProviderKeys) {
-                $Cells += "``$($global:ForgeProviders[$Key].Commands[$Command])``"
+                $Cells += "``$($script:ForgeProviders[$Key].Commands[$Command])``"
             }
             , $Cells
         }
@@ -26,18 +25,18 @@ BeforeAll {
 Describe "Command Surface" {
 
     It "Every provider should have identical Resource keys" {
-        $ExpectedKeys = $global:ForgeProviders.Values.Resource.Keys | Sort-Object -Unique
-        foreach ($Key in $global:ForgeProviders.Keys) {
-            $ActualKeys = $global:ForgeProviders[$Key].Resource.Keys | Sort-Object
+        $ExpectedKeys = $script:ForgeProviders.Values.Resource.Keys | Sort-Object -Unique
+        foreach ($Key in $script:ForgeProviders.Keys) {
+            $ActualKeys = $script:ForgeProviders[$Key].Resource.Keys | Sort-Object
             $ActualKeys | Should -Be $ExpectedKeys -Because "provider '$Key' Resource keys should be consistent"
         }
     }
 
     It "Every provider should map every forge command" {
         $Missing = @()
-        foreach ($ProviderKey in $global:ForgeProviders.Keys) {
-            $Provider = $global:ForgeProviders[$ProviderKey]
-            foreach ($Command in $global:ForgeCommands) {
+        foreach ($ProviderKey in $script:ForgeProviders.Keys) {
+            $Provider = $script:ForgeProviders[$ProviderKey]
+            foreach ($Command in $script:ForgeCommands) {
                 if (-not $Provider.Commands[$Command]) {
                     $Missing += "$ProviderKey`: $Command"
                 }

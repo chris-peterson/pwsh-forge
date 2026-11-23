@@ -18,15 +18,24 @@ BeforeAll {
         $Loaded = Get-Module $Name | Select-Object -First 1
         if ($Loaded) { $Loaded.Path } else { $Name }
     }
+    # Both providers load their private helpers and classes through ScriptsToProcess, which runs in the importer's
+    # scope (issue #25). Imported from inside a module, the helpers land where the providers' nested modules can see
+    # them; imported from this block, the classes their parameter attributes name resolve. So import from both:
+    # the module first, for the helpers it leaves behind, then this block, for the instance the mocks land on.
+    $null = New-Module -Name ContractProviders -ArgumentList (, $ProviderSources) -ScriptBlock {
+        param($Sources)
+        Import-Module $Sources -Force -ErrorAction Stop
+    }
     Get-Module GithubCli, GitlabCli -All | Remove-Module -Force
     Import-Module $ProviderSources -Force -ErrorAction Stop
 
-    . $PSScriptRoot/../src/ForgeCli/Private/Validations.ps1
-    Import-Module $PSScriptRoot/../src/ForgeCli/Private/Init.psm1 -Force
-    . $PSScriptRoot/../src/ForgeCli/Private/Functions/GitHelpers.ps1
-    . $PSScriptRoot/../src/ForgeCli/Private/Functions/ProviderHelpers.ps1
-    . $PSScriptRoot/../src/ForgeCli/Private/Functions/RecordHelpers.ps1
-    . ([scriptblock]::Create((Get-Content "$PSScriptRoot/../src/ForgeCli/Forge.psm1" -Raw)))
+    # A dot-sourced script resets $PSScriptRoot, so resolve the source root first
+    $Src = "$PSScriptRoot/../src/ForgeCli"
+    . $Src/Private/Init.ps1
+    . $Src/Private/Functions/GitHelpers.ps1
+    . $Src/Private/Functions/ProviderHelpers.ps1
+    . $Src/Private/Functions/RecordHelpers.ps1
+    . $Src/Forge.ps1
 
     # GithubCli resolves display names through this cache; seeding it keeps the run offline.
     $script:SavedGithubCache = $global:GithubCache

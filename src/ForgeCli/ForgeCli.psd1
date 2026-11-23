@@ -40,14 +40,14 @@
     PowerShellVersion = '7.1'
     CompatiblePSEditions = @('Core')
 
-    ScriptsToProcess = @(
-        'Private/Validations.ps1'
+    # Scripts listed here run in the module's own scope, in order, so the registry Init.ps1 builds is $script: state the
+    # helpers and the commands in Forge.ps1 read, and the helpers stay private. ScriptsToProcess would run them in the
+    # importer's scope instead, out of reach of these commands whenever another module does the importing.
+    NestedModules = @(
         'Private/Functions/GitHelpers.ps1'
         'Private/Functions/ProviderHelpers.ps1'
-    )
-    RootModule = 'Private/Init.psm1'
-    NestedModules = @(
-        'Forge.psm1'
+        'Private/Init.ps1'
+        'Forge.ps1'
     )
 
     FunctionsToExport = @(

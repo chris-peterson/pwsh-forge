@@ -21,7 +21,7 @@ Invoke-Pester -Path ./tests/UnifiedCommands.Tests.ps1
 Invoke-Pester -Path ./tests/UnifiedCommands.Tests.ps1 -FullNameFilter '*Should map Id to IssueId*'
 ```
 
-Tests need `GithubCli` and `GitlabCli` installed (`Install-Module GithubCli, GitlabCli`); `Init.psm1` drops any
+Tests need `GithubCli` and `GitlabCli` installed (`Install-Module GithubCli, GitlabCli`); `Init.ps1` drops any
 provider whose module is missing from the registry, so an uninstalled provider silently disappears from the test
 matrix rather than failing.
 
@@ -32,7 +32,7 @@ CI treats PSScriptAnalyzer **warnings** as failure (exit 2), not just errors.
 ForgeCli dispatches; it never calls a forge API. Each exported command maps its own parameters onto a
 provider command's parameters and invokes it.
 
-The dispatch table is **generated, not written**. `Private/Init.psm1` reads `FunctionsToExport` from
+The dispatch table is **generated, not written**. `Private/Init.ps1` reads `FunctionsToExport` from
 `ForgeCli.psd1`, splits each `<Verb>-<Noun>`, and looks the noun up in each provider's `Resource` table to
 build `Verb-<Prefix><MappedNoun>`:
 
@@ -41,16 +41,18 @@ Get-Repo  →  github: Get-GithubRepository
           →  gitlab: Get-GitlabProject
 ```
 
-A noun in `FunctionsToExport` with no `Resource` entry throws at import time. State lives in two globals
-(`$global:ForgeCommands`, `$global:ForgeProviders`) because `$script:` scope doesn't cross module files;
-`PSAvoidGlobalVars` is excluded for this reason.
+A noun in `FunctionsToExport` with no `Resource` entry throws at import time.
 
-Load order from the manifest: `ScriptsToProcess` (`Validations.ps1`, `GitHelpers.ps1`, `ProviderHelpers.ps1`)
-→ `RootModule` (`Private/Init.psm1`) → `NestedModules` (`Forge.psm1`, all 29 exported commands).
+ForgeCli is one module scope. `ForgeCli.psd1` lists `.ps1` scripts as its `NestedModules`: the helpers in
+`Private/Functions/`, then `Private/Init.ps1`, then `Forge.ps1` (all exported commands). A script listed there runs in
+the module's own scope, so the registry is `$script:ForgeProviders` and `$script:ForgeCommands`, and the helpers are
+private without being declared anything special. Don't move module code to `ScriptsToProcess`: it runs in the
+importer's session state, out of reach of the module's own commands when another module does the importing.
+`tests/ModuleImport.Tests.ps1` covers that case. The `SupportedProvider` class lives in `Forge.ps1` because a
+parameter attribute can't resolve a class defined in another of the module's scripts.
 
-`ScriptsToProcess` runs in the importer's session state, so its helpers are declared `function global:<Name>`;
-a plain function is invisible to `Forge.psm1` when another module imports ForgeCli.
-`tests/ScriptsToProcess.Tests.ps1` enforces it, and the providers follow the same rule.
+The tests dot-source the same files into the test scope rather than importing the module, so `Mock` reaches the
+provider commands and a test can swap `$script:ForgeProviders` for a single provider.
 
 Provider resolution (`Resolve-ForgeProvider`): an explicit `-Forge` wins; otherwise `Get-ForgeRemoteHost`
 reads `remote.origin.url` and regex-matches the host against each provider's `HostPatterns`.
@@ -62,15 +64,15 @@ when a provider module isn't installed.
 A new command touches five places, and the tests enforce three of them:
 
 1. `ForgeCli.psd1` → `FunctionsToExport`
-2. `Private/Init.psm1` → a `Resource` entry in **every** provider, if the noun is new
-3. `Forge.psm1` → the function itself
+2. `Private/Init.ps1` → a `Resource` entry in **every** provider, if the noun is new
+3. `Forge.ps1` → the function itself
 4. `tests/UnifiedCommands.Tests.ps1` → a stub for each new provider command in `BeforeAll`, plus per-provider
    mapping assertions
 5. `TERMINOLOGY.md` → the Unified Command Surface table
 
 `CommandSurface.Tests.ps1` regenerates that TERMINOLOGY.md table and diffs it; on mismatch it prints the
 correct table to paste in. `PROVIDERS.md` (the per-parameter matrix) is hand-maintained and **not**
-test-enforced, so it drifts. Read `Forge.psm1` for the real mapping.
+test-enforced, so it drifts. Read `Forge.ps1` for the real mapping.
 
 ### Command conventions
 

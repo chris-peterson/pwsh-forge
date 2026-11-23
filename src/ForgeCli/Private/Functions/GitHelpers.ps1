@@ -1,4 +1,4 @@
-function global:Get-ForgeRemoteHost {
+function Get-ForgeRemoteHost {
     [CmdletBinding()]
     [OutputType([PSCustomObject])]
     param (

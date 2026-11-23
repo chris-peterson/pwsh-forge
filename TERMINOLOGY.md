@@ -469,7 +469,7 @@ alongside every other loaded module, so the forge name does the disambiguating.
 
 For example, `Get-Repo` dispatches to `Get-GithubRepository` or
 `Get-GitlabProject`. The canonical mapping is maintained in
-[Init.psm1](src/ForgeCli/Private/Init.psm1).
+[Init.ps1](src/ForgeCli/Private/Init.ps1).
 
 `Forge` maps to no noun on either provider, because the provider name is the
 whole command: `Search-Forge` dispatches to `Search-Github` or `Search-Gitlab`.

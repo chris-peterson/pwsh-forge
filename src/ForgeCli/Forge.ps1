@@ -1,3 +1,11 @@
+# -Forge's valid set is the live registry, so it shrinks when a provider module isn't installed. The class has to
+# be defined in this file: a parameter attribute can't resolve a class from another of the module's scripts.
+class SupportedProvider : System.Management.Automation.IValidateSetValuesGenerator {
+    [string[]] GetValidValues() {
+        return @($script:ForgeProviders.Keys)
+    }
+}
+
 function Get-Issue {
     [CmdletBinding()]
     param(

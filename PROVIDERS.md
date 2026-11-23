@@ -2,7 +2,7 @@
 
 How each forge command's common parameters map to provider-specific parameters.
 The mapping code lives inline in each command in
-[Forge.psm1](src/ForgeCli/Forge.psm1) -- this document is the reference.
+[Forge.ps1](src/ForgeCli/Forge.ps1) -- this document is the reference.
 
 ## Get-Issue
 
@@ -219,5 +219,5 @@ their container, and neither is globally unique.
 
 When a cell says "not supported", the forge command will emit a
 warning at runtime. To fix it, add the mapping in the provider's
-`switch` block in [Forge.psm1](src/ForgeCli/Forge.psm1) and update
+`switch` block in [Forge.ps1](src/ForgeCli/Forge.ps1) and update
 this table.
